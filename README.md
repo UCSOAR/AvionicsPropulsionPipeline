@@ -66,3 +66,17 @@ At the moment, a database is not projected to be required for this application.
   - 500 000 edge function invocations
   - 20 MB script size
   - 25 total edge functions allowed
+
+## Comparison table
+
+| Feature                          | AWS                                                          | GCP                                                        | Supabase                                                 |
+| -------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- |
+| File Storage                     | S3                                                           | Cloud Storage                                              | File storage                                             |
+| Function Triggers on File Upload | Lambda functions                                             | Cloud Functions                                            | Edge Functions                                           |
+| Free Tier                        | 12 months free, refreshes monthly                            | Monthly free tier                                          | Monthly free tier                                        |
+| Free Tier Details                | - 5 GB in S3 Standard storage class.                         | - 2 million total invocations.                             | - 1 GB file storage                                      |
+|                                  | - 20,000 `GET` requests.                                     | - 400,000 GB-seconds, 200,000 GHz-seconds of compute time. | - 500,000 edge function invocations                      |
+|                                  | - 2,000 `PUT`, `COPY`, `POST`, or `LIST` requests.           | - 5 GB of outbound data transfer.                          | - 20 MB script size                                      |
+|                                  | - 1 million free Lambda requests.                            |                                                            | - 25 total edge functions allowed                        |
+|                                  | - 400,000 GB-seconds or 3.2 million seconds of compute time. |                                                            |                                                          |
+| Long-term Storage Needs          | Suitable for long-term storage                               | Suitable for long-term storage                             | Limited by free tier, additional storage may incur costs |
