@@ -80,3 +80,12 @@ At the moment, a database is not projected to be required for this application.
 |                                  | - 1 million free Lambda requests.                            |                                                            | - 25 total edge functions allowed                        |
 |                                  | - 400,000 GB-seconds or 3.2 million seconds of compute time. |                                                            |                                                          |
 | Long-term Storage Needs          | Suitable for long-term storage                               | Suitable for long-term storage                             | Limited by free tier, additional storage may incur costs |
+
+## Decision status
+
+Connell (me who wrote this), is currently leaning towards using **GCP**.
+This is because the free tier for Cloud Storage is simply $300 worth of credit.
+This will allow us to go straight to an Archive Storage plan. If we went the AWS route,
+we would have to start with the free Standard Storage plan and move to a long-term
+storage solution like Glacier later. Other than that, AWS and GCP are pretty much on par.
+For me, Supabase is out of the question due its limited storage solutions and dependance on a database.
