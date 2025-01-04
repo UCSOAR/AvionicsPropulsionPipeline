@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +15,11 @@ const maxFileSize int64 = 10 << 20 // 10MB
 const devPort string = "8080"
 
 func BucketUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	// Limit size of uploaded file
 	if r.ContentLength > maxFileSize {
 		http.Error(w, "File is too large", http.StatusBadRequest)
@@ -53,7 +57,21 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 	// Upload file to GCS
 	objectName := header.Filename
 	bucket := client.Bucket(bucketName)
-	writer := bucket.Object(objectName).NewWriter(ctx)
+	obj := bucket.Object(objectName)
+
+	// Check if the file exists
+	if _, err := obj.Attrs(ctx); err == nil {
+		// File exists
+		http.Error(w, "File already exists", http.StatusConflict)
+		return
+	} else if err != storage.ErrObjectNotExist {
+		http.Error(w, "Failed to check file existence", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// File does not exist, proceed to upload
+	writer := obj.NewWriter(ctx)
 
 	// Copy file to GCS
 	if _, err := io.Copy(writer, file); err != nil {
@@ -69,15 +87,19 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "File uploaded to %s", objectName)
-
-	// Respond with success
 	w.WriteHeader(http.StatusOK)
 }
 
 func main() {
-	funcframework.RegisterHTTPFunction("/upload", BucketUpload)
+	handler := CorsMiddleware(http.HandlerFunc(BucketUpload))
 
-	log.Printf("Listening on port %s", devPort)
-	log.Fatal(funcframework.Start(devPort))
+	funcframework.RegisterHTTPFunction("/upload", func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeHTTP(w, r)
+	})
+
+	if err := funcframework.Start(devPort); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Server listening on port %s", devPort)
 }
