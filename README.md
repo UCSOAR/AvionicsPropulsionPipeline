@@ -14,6 +14,12 @@ To sign into GCP use the CLI command:
 gcloud auth login
 ```
 
+Enable API:
+
+```bash
+gcloud services enable cloudfunctions.googleapis.com
+```
+
 Set the project:
 
 ```bash
@@ -25,3 +31,15 @@ Before testing the functions, you need to set the environment variables for the 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/storage-admin.json"
 ```
+
+Deploying a function:
+
+```bash
+gcloud functions deploy <FunctionName> \
+  --runtime go123 \
+  --trigger-http \
+  --allow-unauthenticated \
+  --region us-west1
+```
+
+It is important that `<FunctionName>` is the name of the function you want to deploy and must be part of a package called `function` in a file called `main.go`.

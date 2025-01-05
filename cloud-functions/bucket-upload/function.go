@@ -1,4 +1,4 @@
-package main
+package function
 
 import (
 	"context"
@@ -7,17 +7,30 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
-	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 )
 
 const bucketName string = "gcf-v2-uploads-1026004530618.us-central1.cloudfunctions.appspot.com"
 const maxFileSize int64 = 10 << 20 // 10MB
-const devPort string = "8080"
 
 func BucketUpload(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+	SetCorsHeaders(w)
+
+	switch r.Method {
+	case "POST":
+		{
+			// Only allow POST requests
+			break
+		}
+	case "OPTIONS":
+		{
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+	default:
+		{
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 	}
 
 	// Limit size of uploaded file
@@ -88,18 +101,4 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func main() {
-	handler := CorsMiddleware(http.HandlerFunc(BucketUpload))
-
-	funcframework.RegisterHTTPFunction("/upload", func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r)
-	})
-
-	if err := funcframework.Start(devPort); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Server listening on port %s", devPort)
 }

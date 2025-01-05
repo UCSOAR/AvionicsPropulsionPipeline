@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { devEndpoint } from '../utils/constants';
+import { endpointMapping } from '../utils/constants';
 
 const selectedFile = ref<File | null>(null);
 const uploadError = ref<string | null>(null);
-
-const endpoint = new URL('/upload', devEndpoint);
 
 const onFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -24,7 +22,7 @@ const uploadFile = async () => {
         const formData = new FormData();
         formData.append('file', selectedFile.value);
 
-        const result = await fetch(endpoint, {
+        const result = await fetch(endpointMapping.bucketUploadUrl, {
             method: 'POST',
             body: formData,
         });
@@ -35,7 +33,7 @@ const uploadFile = async () => {
 
             alert('File uploaded successfully!');
         } else {
-            uploadError.value = result.statusText;
+            uploadError.value = 'Failed to upload file.';
         }
     } catch (err) {
         uploadError.value = err as string;
