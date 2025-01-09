@@ -7,13 +7,15 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
+	cloudutils "example.com/cloud-utils"
 )
 
-const bucketName string = "gcf-v2-uploads-1026004530618.us-central1.cloudfunctions.appspot.com"
-const maxFileSize int64 = 10 << 20 // 10MB
-
 func BucketUpload(w http.ResponseWriter, r *http.Request) {
-	SetCorsHeaders(w)
+	cloudutils.SetCorsHeaders(w, cloudutils.Cors{
+		AllowOrigin:  "*",
+		AllowMethods: []string{"POST", "OPTIONS"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+	})
 
 	switch r.Method {
 	case "POST":
@@ -34,13 +36,13 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Limit size of uploaded file
-	if r.ContentLength > maxFileSize {
+	if r.ContentLength > cloudutils.MaxFileSize {
 		http.Error(w, "File is too large", http.StatusBadRequest)
 		return
 	}
 
 	// Parse form data
-	if err := r.ParseMultipartForm(maxFileSize); err != nil {
+	if err := r.ParseMultipartForm(cloudutils.MaxFileSize); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -69,7 +71,7 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Upload file to GCS
 	objectName := header.Filename
-	bucket := client.Bucket(bucketName)
+	bucket := client.Bucket(cloudutils.BucketName)
 	obj := bucket.Object(objectName)
 
 	// Check if the file exists

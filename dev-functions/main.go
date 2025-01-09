@@ -8,18 +8,18 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 )
 
-const devPort string = "8080"
+const devPort uint32 = 8080
 
 func main() {
 	// Register functions to test locally here
 	funcframework.RegisterHTTPFunction("/HelloWorld", helloWorld.HelloWorld)
 	funcframework.RegisterHTTPFunction("/BucketUpload", bucketUpload.BucketUpload)
 
-	log.Printf("Development server listening on port %s", devPort)
+	log.Printf("Development server listening on port %d", devPort)
 
-	if err := funcframework.Start(devPort); err != nil {
+	if err := funcframework.Start(string(rune(devPort))); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Server listening on port %s", devPort)
+	log.Printf("Server listening on port %d", devPort)
 }
