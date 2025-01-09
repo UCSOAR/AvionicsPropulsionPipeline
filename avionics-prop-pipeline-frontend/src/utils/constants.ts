@@ -1,16 +1,16 @@
-interface EndpointMapping {
-  bucketUploadUrl: URL;
-}
-
 export const devPort = 8080;
 
-const devEndpointMapping: EndpointMapping = {
+const devEndpointMapping = {
   bucketUploadUrl: new URL(`http://localhost:${devPort}/BucketUpload`),
+  getBucketUploadsUrl: new URL(`http://localhost:${devPort}/GetBucketUploads`),
 };
 
-const prodEndpointMapping: EndpointMapping = {
+const prodEndpointMapping: typeof devEndpointMapping = {
   bucketUploadUrl: new URL(
     "https://us-west1-avionic-propulsion-pipeline.cloudfunctions.net/BucketUpload"
+  ),
+  getBucketUploadsUrl: new URL(
+    "https://us-west1-avionic-propulsion-pipeline.cloudfunctions.net/GetBucketUploads"
   ),
 };
 

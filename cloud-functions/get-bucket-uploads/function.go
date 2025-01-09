@@ -1,9 +1,77 @@
 package function
 
-import "net/http"
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+
+	"cloud.google.com/go/storage"
+	cloudutils "example.com/cloud-utils"
+	"google.golang.org/api/iterator"
+)
 
 func GetBucketUploads(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	cloudutils.SetCorsHeaders(w, cloudutils.Cors{
+		AllowOrigin:  "*",
+		AllowMethods: []string{"GET", "OPTIONS"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+	})
+
+	switch r.Method {
+	case "GET":
+		{
+			// Only allow GET requests
+			break
+		}
+	case "OPTIONS":
+		{
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+	default:
+		{
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+	}
+
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+
+	if err != nil {
+		http.Error(w, "Failed to create GCS client", http.StatusInternalServerError)
+		return
+	}
+
+	defer client.Close()
+
+	bucket := client.Bucket(cloudutils.BucketName)
+	obj_it := bucket.Objects(ctx, nil)
+
+	var objects []cloudutils.BucketObject
+
+	for {
+		attr, err := obj_it.Next()
+
+		if err == iterator.Done {
+			break
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		objects = append(objects, cloudutils.BucketObject{
+			Name:         attr.Name,
+			Size:         attr.Size,
+			LastModified: attr.Updated.String(),
+		})
+	}
+
+	// Encode the objects to JSON
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(objects); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

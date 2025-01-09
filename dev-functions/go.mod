@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	example.com/cloud-functions/bucket-upload v0.0.0
-	example.com/cloud-functions/hello-world v0.0.0
+	example.com/cloud-functions/get-bucket-uploads v0.0.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.0
 )
 
@@ -18,6 +18,7 @@ require (
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	cloud.google.com/go/storage v1.49.0 // indirect
+	example.com/cloud-utils v0.0.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
@@ -66,6 +67,8 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
+replace example.com/cloud-utils => ../cloud-functions/cloud-utils
+
 replace example.com/cloud-functions/bucket-upload => ../cloud-functions/bucket-upload
 
-replace example.com/cloud-functions/hello-world => ../cloud-functions/hello-world
+replace example.com/cloud-functions/get-bucket-uploads => ../cloud-functions/get-bucket-uploads
