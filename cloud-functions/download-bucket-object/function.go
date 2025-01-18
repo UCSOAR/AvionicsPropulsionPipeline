@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
-	cloudutils "example.com/cloud-utils"
+	cloudUtils "example.com/cloud-utils"
 )
 
 func DownloadBucketObject(w http.ResponseWriter, r *http.Request) {
-	cloudutils.SetCorsHeaders(w, cloudutils.Cors{
+	cloudUtils.SetCorsHeaders(w, cloudUtils.Cors{
 		AllowOrigin:  "*",
 		AllowMethods: []string{"GET", "OPTIONS"},
 		AllowHeaders: []string{"Content-Type", "Content-Disposition", "Authorization"},
@@ -54,7 +54,7 @@ func DownloadBucketObject(w http.ResponseWriter, r *http.Request) {
 	defer client.Close()
 
 	// Get a reader for the object
-	bucket := client.Bucket(cloudutils.BucketName)
+	bucket := client.Bucket(cloudUtils.BucketName)
 	reader, err := bucket.Object(filename).NewReader(ctx)
 
 	if err != nil {

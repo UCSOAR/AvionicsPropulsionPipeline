@@ -56,4 +56,4 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace example.com/cloud-utils => ../cloud-utils
+replace example.com/cloud-utils => ../../function-modules/cloud-utils

@@ -6,12 +6,12 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
-	cloudutils "example.com/cloud-utils"
+	cloudUtils "example.com/cloud-utils"
 	"google.golang.org/api/iterator"
 )
 
 func GetBucketUploads(w http.ResponseWriter, r *http.Request) {
-	cloudutils.SetCorsHeaders(w, cloudutils.Cors{
+	cloudUtils.SetCorsHeaders(w, cloudUtils.Cors{
 		AllowOrigin:  "*",
 		AllowMethods: []string{"GET", "OPTIONS"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
@@ -45,10 +45,10 @@ func GetBucketUploads(w http.ResponseWriter, r *http.Request) {
 
 	defer client.Close()
 
-	bucket := client.Bucket(cloudutils.BucketName)
+	bucket := client.Bucket(cloudUtils.BucketName)
 	obj_it := bucket.Objects(ctx, nil)
 
-	var objects []cloudutils.BucketObject
+	var objects []cloudUtils.BucketObject
 
 	for {
 		attr, err := obj_it.Next()
@@ -60,7 +60,7 @@ func GetBucketUploads(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		objects = append(objects, cloudutils.BucketObject{
+		objects = append(objects, cloudUtils.BucketObject{
 			Name:         attr.Name,
 			Size:         attr.Size,
 			LastModified: attr.Updated.String(),
