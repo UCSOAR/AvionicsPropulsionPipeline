@@ -2,7 +2,7 @@ package staticFireParser
 
 import "fmt"
 
-type EntryHeader struct {
+type ParsedEntryHeader struct {
 	Seperator        rune
 	DecimalSeparator rune
 	HasOneXColumn    bool
@@ -19,11 +19,11 @@ func seperatorFromText(seperatorText string) rune {
 	return ' '
 }
 
-func ParseEntryHeader(rawHeaderText string) (EntryHeader, error) {
+func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 	parsedHeader, err := ParseKv(rawHeaderText)
 
 	if err != nil {
-		return EntryHeader{}, err
+		return ParsedEntryHeader{}, err
 	}
 
 	// Ensure all required keys are present
@@ -42,29 +42,29 @@ func ParseEntryHeader(rawHeaderText string) (EntryHeader, error) {
 
 	for _, key := range requiredKeys {
 		if _, ok := parsedHeader.Kv[key]; !ok {
-			return EntryHeader{}, fmt.Errorf("Missing key: %s", key)
+			return ParsedEntryHeader{}, fmt.Errorf("Missing key: %s", key)
 		}
 	}
 
 	// Handle assertions
 	if parsedHeader.Kv["Writer_Version"][0] != AssertedWriterVersion {
-		return EntryHeader{}, fmt.Errorf("Writer_Version is not %s", AssertedWriterVersion)
+		return ParsedEntryHeader{}, fmt.Errorf("Writer_Version is not %s", AssertedWriterVersion)
 	}
 
 	if parsedHeader.Kv["Reader_Version"][0] != AssertedReaderVersion {
-		return EntryHeader{}, fmt.Errorf("Reader_Version is not %s", AssertedReaderVersion)
+		return ParsedEntryHeader{}, fmt.Errorf("Reader_Version is not %s", AssertedReaderVersion)
 	}
 
 	if parsedHeader.Kv["Multi_Headings"][0] != AssertedMultiHeadings {
-		return EntryHeader{}, fmt.Errorf("Multi_Headings is not %s", AssertedMultiHeadings)
+		return ParsedEntryHeader{}, fmt.Errorf("Multi_Headings is not %s", AssertedMultiHeadings)
 	}
 
 	if parsedHeader.Kv["Time_Pref"][0] != AssertedTimePreferance {
-		return EntryHeader{}, fmt.Errorf("Time_Preference is not %s", AssertedTimePreferance)
+		return ParsedEntryHeader{}, fmt.Errorf("Time_Preference is not %s", AssertedTimePreferance)
 	}
 
 	// Create entry header structure
-	entryHeader := EntryHeader{
+	entryHeader := ParsedEntryHeader{
 		Seperator:        seperatorFromText(parsedHeader.Kv["Separator"][0]),
 		DecimalSeparator: rune(parsedHeader.Kv["Decimal_Separator"][0][0]),
 		HasOneXColumn:    parsedHeader.Kv["X_Columns"][0] == "One",

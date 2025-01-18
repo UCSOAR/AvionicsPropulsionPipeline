@@ -18,7 +18,7 @@ X0	0.0000000000000000E+0		0.0000000000000000E+0
 Delta_X	1.953125E-5		1.953125E-5	
 `
 
-	expected := staticFireParser.ChannelHeader{
+	expected := staticFireParser.ParsedChannelHeader{
 		ChannelCount: 2,
 		Samples:      []uint64{51200, 51200},
 		Dates:        []string{"2016/08/23", "2016/08/23"},

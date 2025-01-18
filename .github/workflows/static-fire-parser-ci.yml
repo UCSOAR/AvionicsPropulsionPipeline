@@ -21,10 +21,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd function-modules/static-fire-parser
+          cd function-modules/static-fire-parser/tests
           go mod tidy
 
       - name: Run tests
         run: |
-          cd function-modules/static-fire-parser
+          cd function-modules/static-fire-parser/tests
           go test ./...
