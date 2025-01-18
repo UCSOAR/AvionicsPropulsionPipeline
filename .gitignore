@@ -61,3 +61,17 @@ STM32L152-Discovery.elf.launch
 
 # VS2022
 .vs/
+
+# Golang
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.cover
+*.tar.gz
+*.tar
+*.sum

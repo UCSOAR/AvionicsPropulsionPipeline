@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Quicksand:wght@300..700&display=swap');
+@import 'variables.scss';
+
+body {
+    margin: 0;
+    background-color: $main-bg-color;
+    color: $main-text-color;
+    text-align: center;
+    font-family: $main-font;
+}
