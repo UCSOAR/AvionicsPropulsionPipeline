@@ -11,7 +11,7 @@ type ParsedHeader struct {
 	Kv map[string]([]string)
 }
 
-func Parse(rawHeaderText string) (ParsedHeader, error) {
+func ParseKv(rawHeaderText string) (ParsedHeader, error) {
 	reader := strings.NewReader(rawHeaderText)
 	scanner := bufio.NewScanner(reader)
 
