@@ -3,12 +3,11 @@ package staticFireParser
 import "fmt"
 
 type ParsedEntryHeader struct {
-	Seperator        rune
-	DecimalSeparator rune
-	HasOneXColumn    bool
-	Operator         string
-	Date             string
-	Time             string
+	Seperator     rune
+	HasOneXColumn bool
+	Operator      string
+	Date          string
+	Time          string
 }
 
 func seperatorFromText(seperatorText string) rune {
@@ -55,6 +54,10 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 		return ParsedEntryHeader{}, fmt.Errorf("Reader_Version is not %s", AssertedReaderVersion)
 	}
 
+	if parsedHeader.Kv["Decimal_Separator"][0] != AssertedDecimalSeparator {
+		return ParsedEntryHeader{}, fmt.Errorf("Decimal_Separator is not %s", AssertedDecimalSeparator)
+	}
+
 	if parsedHeader.Kv["Multi_Headings"][0] != AssertedMultiHeadings {
 		return ParsedEntryHeader{}, fmt.Errorf("Multi_Headings is not %s", AssertedMultiHeadings)
 	}
@@ -65,12 +68,11 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 
 	// Create entry header structure
 	entryHeader := ParsedEntryHeader{
-		Seperator:        seperatorFromText(parsedHeader.Kv["Separator"][0]),
-		DecimalSeparator: rune(parsedHeader.Kv["Decimal_Separator"][0][0]),
-		HasOneXColumn:    parsedHeader.Kv["X_Columns"][0] == "One",
-		Operator:         parsedHeader.Kv["Operator"][0],
-		Date:             parsedHeader.Kv["Date"][0],
-		Time:             parsedHeader.Kv["Time"][0],
+		Seperator:     seperatorFromText(parsedHeader.Kv["Separator"][0]),
+		HasOneXColumn: parsedHeader.Kv["X_Columns"][0] == "One",
+		Operator:      parsedHeader.Kv["Operator"][0],
+		Date:          parsedHeader.Kv["Date"][0],
+		Time:          parsedHeader.Kv["Time"][0],
 	}
 
 	return entryHeader, nil

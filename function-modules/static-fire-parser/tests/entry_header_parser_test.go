@@ -20,12 +20,11 @@ Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
 	expected := staticFireParser.ParsedEntryHeader{
-		Seperator:        '\t',
-		DecimalSeparator: '.',
-		HasOneXColumn:    false,
-		Operator:         "TestOperator",
-		Date:             "2025/01/18",
-		Time:             "10:45:47.0352557312499836422",
+		Seperator:     '\t',
+		HasOneXColumn: false,
+		Operator:      "TestOperator",
+		Date:          "2025/01/18",
+		Time:          "10:45:47.0352557312499836422",
 	}
 
 	result, err := staticFireParser.ParseEntryHeader(rawHeaderText)
