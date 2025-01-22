@@ -3,11 +3,12 @@ package staticFireParser
 import "fmt"
 
 type ParsedEntryHeader struct {
-	Seperator     rune
-	HasOneXColumn bool
-	Operator      string
-	Date          string
-	Time          string
+	Seperator      rune
+	IsMultiHeading bool
+	HasOneXColumn  bool
+	Operator       string
+	Date           string
+	Time           string
 }
 
 func seperatorFromText(seperatorText string) rune {
@@ -58,21 +59,18 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 		return ParsedEntryHeader{}, fmt.Errorf("Decimal_Separator is not %s", AssertedDecimalSeparator)
 	}
 
-	if parsedHeader.Kv["Multi_Headings"][0] != AssertedMultiHeadings {
-		return ParsedEntryHeader{}, fmt.Errorf("Multi_Headings is not %s", AssertedMultiHeadings)
-	}
-
 	if parsedHeader.Kv["Time_Pref"][0] != AssertedTimePreferance {
 		return ParsedEntryHeader{}, fmt.Errorf("Time_Preference is not %s", AssertedTimePreferance)
 	}
 
 	// Create entry header structure
 	entryHeader := ParsedEntryHeader{
-		Seperator:     seperatorFromText(parsedHeader.Kv["Separator"][0]),
-		HasOneXColumn: parsedHeader.Kv["X_Columns"][0] == "One",
-		Operator:      parsedHeader.Kv["Operator"][0],
-		Date:          parsedHeader.Kv["Date"][0],
-		Time:          parsedHeader.Kv["Time"][0],
+		Seperator:      seperatorFromText(parsedHeader.Kv["Separator"][0]),
+		IsMultiHeading: parsedHeader.Kv["Multi_Headings"][0] == "Yes",
+		HasOneXColumn:  parsedHeader.Kv["X_Columns"][0] == "One",
+		Operator:       parsedHeader.Kv["Operator"][0],
+		Date:           parsedHeader.Kv["Date"][0],
+		Time:           parsedHeader.Kv["Time"][0],
 	}
 
 	return entryHeader, nil

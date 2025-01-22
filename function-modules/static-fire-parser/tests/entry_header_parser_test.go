@@ -20,11 +20,12 @@ Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
 	expected := staticFireParser.ParsedEntryHeader{
-		Seperator:     '\t',
-		HasOneXColumn: false,
-		Operator:      "TestOperator",
-		Date:          "2025/01/18",
-		Time:          "10:45:47.0352557312499836422",
+		Seperator:      '\t',
+		IsMultiHeading: true,
+		HasOneXColumn:  false,
+		Operator:       "TestOperator",
+		Date:           "2025/01/18",
+		Time:           "10:45:47.0352557312499836422",
 	}
 
 	result, err := staticFireParser.ParseEntryHeader(rawHeaderText)
@@ -87,25 +88,6 @@ Time 10:45:47.0352557312499836422`
 
 	if err == nil {
 		t.Errorf("Expected error for incorrect Reader_Version")
-	}
-}
-
-func TestIncorrectMultiHeadingsShouldError(t *testing.T) {
-	rawHeaderText := `Writer_Version 2
-Reader_Version 2
-Separator Tab
-Decimal_Separator .
-Multi_Headings No
-X_Columns Multi
-Time_Pref Absolute
-Operator TestOperator
-Date 2025/01/18
-Time 10:45:47.0352557312499836422`
-
-	_, err := staticFireParser.ParseEntryHeader(rawHeaderText)
-
-	if err == nil {
-		t.Errorf("Expected error for incorrect Multi_Headings")
 	}
 }
 

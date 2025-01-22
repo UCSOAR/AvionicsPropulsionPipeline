@@ -3,6 +3,7 @@ package staticFireParser
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -38,17 +39,17 @@ func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 			floatValue, err := strconv.ParseFloat(value, 64)
 
 			if err != nil {
-				return ParsedSv{}, err
+				floatValue = math.NaN()
 			}
 
 			row = append(row, floatValue)
 		}
 
-		// Ensure row has correct number of columns
+		// Fill rest of row with NaN
 		rowColumns := uint64(len(row))
 
-		if rowColumns != columnCount {
-			return ParsedSv{}, fmt.Errorf("Expected %d columns, got %d", columnCount, rowColumns)
+		for i := rowColumns; i < columnCount; i++ {
+			row = append(row, math.NaN())
 		}
 
 		data = append(data, row)

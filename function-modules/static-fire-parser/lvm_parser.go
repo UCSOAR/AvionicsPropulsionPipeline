@@ -16,17 +16,18 @@ func readUntilEOH(scanner *bufio.Scanner) string {
 	var headerBuilder strings.Builder
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := strings.TrimSpace(scanner.Text())
 
 		if line == "" {
 			continue
 		}
 
-		if line == AssertedReaderVersion {
+		if line == AssertedEndOfHeader {
 			break
 		}
 
 		headerBuilder.WriteString(line)
+		headerBuilder.WriteRune('\n')
 	}
 
 	return headerBuilder.String()
@@ -36,13 +37,14 @@ func readUntilEOF(scanner *bufio.Scanner) string {
 	var dataBuilder strings.Builder
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := strings.TrimSpace(scanner.Text())
 
 		if line == "" {
 			continue
 		}
 
 		dataBuilder.WriteString(line)
+		dataBuilder.WriteRune('\n')
 	}
 
 	return dataBuilder.String()

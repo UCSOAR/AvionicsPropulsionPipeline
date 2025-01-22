@@ -53,7 +53,7 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 			DeltaXs:      []float64{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001},
 		},
 		SvData: staticFireParser.ParsedSv{
-			ColumnCount: 8,
+			ColumnCount: 9,
 			ColumnNames: []string{"X_Value", "Injector Temp", "NOX Pressure", "Ox Tank Load Cell", "Thrust Load Cell", "Chamber Pressure", "Light Sensor", "Nitrous Bottle", "Comment"},
 			Data: [][]float64{
 				{0, -250.069013, 0.568622, -20.072851, 9.56483, 0, 0.040771, 1.886051},
