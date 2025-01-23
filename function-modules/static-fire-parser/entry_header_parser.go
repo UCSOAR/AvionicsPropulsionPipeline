@@ -11,6 +11,7 @@ type ParsedEntryHeader struct {
 	Time           string
 }
 
+// Helper function for simply converting the word for a seperator into a rune
 func seperatorFromText(seperatorText string) rune {
 	if seperatorText == "Tab" {
 		return '\t'
@@ -19,6 +20,8 @@ func seperatorFromText(seperatorText string) rune {
 	return ' '
 }
 
+// Parses only the text that contains the entry header section.
+// Returns a struct representing the parsed entry header.
 func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 	parsedHeader, err := ParseKv(rawHeaderText)
 

@@ -6,17 +6,18 @@ import (
 	"strings"
 )
 
-type ParsedHeader struct {
-	// Map of header keys to a list of values
-	Kv map[string]([]string)
+// Represents a parsed key-value header.
+type ParsedKvHeader struct {
+	Kv map[string]([]string) // Map of header keys to a list of values
 }
 
-func ParseKv(rawHeaderText string) (ParsedHeader, error) {
+// Parses a generic key-value header.
+func ParseKv(rawHeaderText string) (ParsedKvHeader, error) {
 	reader := strings.NewReader(rawHeaderText)
 	scanner := bufio.NewScanner(reader)
 
 	// Initialize the map
-	header := ParsedHeader{
+	header := ParsedKvHeader{
 		Kv: make(map[string]([]string)),
 	}
 
@@ -28,7 +29,7 @@ func ParseKv(rawHeaderText string) (ParsedHeader, error) {
 		parts := strings.Fields(line)
 
 		if len(parts) < 2 {
-			return ParsedHeader{}, errors.New("Invalid header line: " + line)
+			return ParsedKvHeader{}, errors.New("Invalid header line: " + line)
 		}
 
 		// Add key-value pair to the map
@@ -37,14 +38,14 @@ func ParseKv(rawHeaderText string) (ParsedHeader, error) {
 
 		// Key cannot already exist
 		if header.Kv[key] != nil {
-			return ParsedHeader{}, errors.New("Duplicate key: " + key)
+			return ParsedKvHeader{}, errors.New("Duplicate key: " + key)
 		}
 
 		header.Kv[key] = rest
 	}
 
 	if err := scanner.Err(); err != nil {
-		return ParsedHeader{}, err
+		return ParsedKvHeader{}, err
 	}
 
 	return header, nil

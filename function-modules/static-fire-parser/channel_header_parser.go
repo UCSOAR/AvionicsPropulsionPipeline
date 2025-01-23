@@ -5,6 +5,9 @@ import (
 	"strconv"
 )
 
+// Represents a parsed LVM channel header.
+// The data stored is relevant to the purposes of this project.
+// It is guaranteed that all arrays will have the same length as `ChannelCount`.
 type ParsedChannelHeader struct {
 	ChannelCount uint64
 	Samples      []uint64
@@ -16,6 +19,8 @@ type ParsedChannelHeader struct {
 	DeltaXs      []float64
 }
 
+// Parses only the text that contains the channel header section.
+// Returns a struct representing the parsed channel header.
 func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	parsedHeader, err := ParseKv(rawHeaderText)
 
@@ -41,6 +46,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 		}
 	}
 
+	// Attempt to parse channel count into an unsigned integer
 	channelCount, err := strconv.ParseUint(parsedHeader.Kv["Channels"][0], 10, 64)
 
 	if err != nil {
@@ -101,6 +107,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 		deltaXs[i] = deltaX
 	}
 
+	// Create and return the parsed channel header
 	channelHeader := ParsedChannelHeader{
 		ChannelCount: channelCount,
 		Samples:      samples,

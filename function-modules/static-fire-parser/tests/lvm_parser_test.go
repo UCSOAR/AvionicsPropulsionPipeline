@@ -56,8 +56,8 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 			ColumnCount: 9,
 			ColumnNames: []string{"X_Value", "Injector Temp", "NOX Pressure", "Ox Tank Load Cell", "Thrust Load Cell", "Chamber Pressure", "Light Sensor", "Nitrous Bottle", "Comment"},
 			Data: [][]float64{
-				{0, -250.069013, 0.568622, -20.072851, 9.56483, 0, 0.040771, 1.886051},
-				{0.001, -250.069013, 0.568622, -20.063231, 10.154943, 0, 0.020755, 0},
+				{0, -250.069013, 0.568622, -20.072851, 9.56483, 0, 0.040771, 1.886051, 0},
+				{0.001, -250.069013, 0.568622, -20.063231, 10.154943, 0, 0.020755, 0, 0},
 			},
 		},
 	}
@@ -69,7 +69,7 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 		return
 	}
 
-	if !reflect.DeepEqual(parsedLvm.EntryHeader, expected.EntryHeader) {
+	if !reflect.DeepEqual(parsedLvm, expected) {
 		t.Errorf("ParseMainLvm() EntryHeader = %v, want %v", parsedLvm.EntryHeader, expected.EntryHeader)
 	}
 }

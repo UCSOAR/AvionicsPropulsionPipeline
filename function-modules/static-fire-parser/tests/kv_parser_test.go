@@ -10,7 +10,7 @@ import (
 func TestValidHeaderShouldParseCorrectly(t *testing.T) {
 	rawHeaderText := `Key1 Value1
 Key2 Value2 Value3`
-	expected := staticFireParser.ParsedHeader{
+	expected := staticFireParser.ParsedKvHeader{
 		Kv: map[string][]string{
 			"Key1": {"Value1"},
 			"Key2": {"Value2", "Value3"},

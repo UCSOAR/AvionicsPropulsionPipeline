@@ -3,17 +3,19 @@ package staticFireParser
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 )
 
+// Represents a parsed seperated value file.
 type ParsedSv struct {
 	ColumnCount uint64
-	ColumnNames []string
-	Data        [][]float64 // Row major order
+	ColumnNames []string    // Guaranteed to have the same length as `ColumnCount`
+	Data        [][]float64 // Guaranteed to have the same column count as `ColumnCount` (row major order)
 }
 
+// Parses a seperated value file.
+// Returns a struct representing the parsed seperated value file.
 func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 	reader := strings.NewReader(rawSvText)
 	scanner := bufio.NewScanner(reader)
@@ -38,18 +40,19 @@ func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 		for _, value := range values {
 			floatValue, err := strconv.ParseFloat(value, 64)
 
+			// Replace invalid values with 0
 			if err != nil {
-				floatValue = math.NaN()
+				floatValue = 0
 			}
 
 			row = append(row, floatValue)
 		}
 
-		// Fill rest of row with NaN
+		// Fill rest of row with 0
 		rowColumns := uint64(len(row))
 
 		for i := rowColumns; i < columnCount; i++ {
-			row = append(row, math.NaN())
+			row = append(row, 0)
 		}
 
 		data = append(data, row)
