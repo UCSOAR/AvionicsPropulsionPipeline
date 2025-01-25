@@ -1,6 +1,7 @@
 # Ignore .pre-commit-config.yaml
 .pre-commit-config.yaml
 
+**/vendor/
 
 # ----- Avionics Embedded Gitignore ----- #
 # Object files

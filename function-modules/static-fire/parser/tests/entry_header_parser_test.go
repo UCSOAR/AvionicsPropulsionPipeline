@@ -1,4 +1,4 @@
-package staticFireParserTests
+package tests
 
 import (
 	"reflect"
