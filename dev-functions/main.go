@@ -12,13 +12,18 @@ import (
 const devPort string = "8080"
 
 func main() {
-	// Register functions to test locally here
+	// Register functions
 	funcframework.RegisterHTTPFunction("/BucketUpload", bucketUpload.BucketUpload)
+	log.Println("Registered HTTP function: /BucketUpload")
+
 	funcframework.RegisterHTTPFunction("/GetBucketUploads", getBucketUploads.GetBucketUploads)
+	log.Println("Registered HTTP function: /GetBucketUploads")
+
 	funcframework.RegisterHTTPFunction("/DownloadBucketObject", downloadBucketObject.DownloadBucketObject)
+	log.Println("Registered HTTP function: /DownloadBucketObject")
 
+	// Start the development server
 	log.Printf("Development server listening on port %s", devPort)
-
 	if err := funcframework.Start(devPort); err != nil {
 		log.Fatal(err)
 	}

@@ -5,13 +5,24 @@ import BucketUploads from './components/BucketUploads.vue';
 
 <template>
   <main>
-    <h1>SOAR Avionics-Propulsion Pipeline</h1>
-    <h2>Upload a file</h2>
+    <h1>File Management</h1>
     <BucketUploadForm />
-
-    <h2>Uploaded files</h2>
     <BucketUploads />
   </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+main {
+  background: #e8f0fe;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+h1 {
+  margin-bottom: 0px;
+  color: #333;
+}
+</style>
