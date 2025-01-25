@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import './styles/app.scss';
+
 import BucketUploadForm from './components/BucketUploadForm.vue';
 import BucketUploads from './components/BucketUploads.vue';
+import Header from './components/Header.vue';
 </script>
 
 <template>
+  <Header />
   <main>
-    <h1>SOAR Avionics-Propulsion Pipeline</h1>
     <h2>Upload a file</h2>
     <BucketUploadForm />
 

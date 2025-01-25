@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
-	cloudutils "example.com/cloud-utils"
+	cloudUtils "example.com/cloud-utils"
 )
 
 func BucketUpload(w http.ResponseWriter, r *http.Request) {
-	cloudutils.SetCorsHeaders(w, cloudutils.Cors{
+	cloudUtils.SetCorsHeaders(w, cloudUtils.Cors{
 		AllowOrigin:  "*",
 		AllowMethods: []string{"POST", "OPTIONS"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
@@ -35,13 +35,13 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Limit size of uploaded file
-	if r.ContentLength > cloudutils.MaxFileSize {
+	if r.ContentLength > cloudUtils.MaxFileSize {
 		http.Error(w, "File is too large", http.StatusBadRequest)
 		return
 	}
 
 	// Parse form data
-	if err := r.ParseMultipartForm(cloudutils.MaxFileSize); err != nil {
+	if err := r.ParseMultipartForm(cloudUtils.MaxFileSize); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -69,7 +69,7 @@ func BucketUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Upload file to GCS
 	objectName := header.Filename
-	bucket := client.Bucket(cloudutils.BucketName)
+	bucket := client.Bucket(cloudUtils.BucketName)
 	obj := bucket.Object(objectName)
 
 	// Check if the file exists
