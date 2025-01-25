@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	cloud.google.com/go/storage v1.50.0
-	example.com/cloud-utils v0.0.0
+	example.com/function-utils v0.0.0
 )
 
 require (
@@ -55,4 +55,4 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace example.com/cloud-utils => ../../function-modules/cloud-utils
+replace example.com/function-utils => ../../function-modules/function-utils

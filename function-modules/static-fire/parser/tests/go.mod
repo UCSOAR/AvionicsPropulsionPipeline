@@ -1,4 +1,4 @@
-module example.com/static-fire-parser-tests
+module example.com/static-fire/parser/tests
 
 go 1.23.5
 

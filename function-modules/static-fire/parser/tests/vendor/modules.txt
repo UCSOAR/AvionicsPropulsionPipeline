@@ -1,0 +1,4 @@
+# example.com/static-fire-parser v0.0.0 => ../
+## explicit; go 1.23.5
+example.com/static-fire-parser
+# example.com/static-fire-parser => ../

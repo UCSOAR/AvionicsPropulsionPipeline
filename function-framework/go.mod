@@ -19,7 +19,7 @@ require (
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	cloud.google.com/go/storage v1.50.0 // indirect
-	example.com/cloud-utils v0.0.0 // indirect
+	example.com/function-utils v0.0.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
@@ -68,7 +68,7 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace example.com/cloud-utils => ../cloud-functions/cloud-utils
+replace example.com/function-utils => ../cloud-functions/function-utils
 
 replace example.com/cloud-functions/bucket-upload => ../cloud-functions/bucket-upload
 

@@ -1,4 +1,4 @@
-package cloudUtils
+package functionUtils
 
 import (
 	"net/http"
