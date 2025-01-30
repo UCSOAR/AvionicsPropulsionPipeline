@@ -5,13 +5,16 @@ import (
 )
 
 type ResultMetadata struct {
-	Operator     string   `json:"operator"`
-	Date         string   `json:"date"`
-	Time         string   `json:"time"`
-	XColumnNames []string `json:"x_column_names"`
-	YColumnNames []string `json:"y_column_names"`
+	Operator      string   `json:"operator"`
+	ResultDate    string   `json:"resultDate"`
+	ResultTime    string   `json:"resultTime"`
+	ProcessedDate string   `json:"processedDate"`
+	ProcessedTime string   `json:"processedTime"`
+	XColumnNames  []string `json:"xColumnNames"`
+	YColumnNames  []string `json:"yColumnNames"`
 }
 
-type ChannelMetadata struct {
-	Header parser.ParsedChannelHeader `json:"data"`
+type HeaderMetadata struct {
+	EntryHeader   parser.ParsedEntryHeader
+	ChannelHeader parser.ParsedChannelHeader
 }

@@ -9,14 +9,14 @@ import (
 // The data stored is relevant to the purposes of this project.
 // It is guaranteed that all arrays will have the same length as `ChannelCount`.
 type ParsedChannelHeader struct {
-	ChannelCount uint64    `json:"channel_count"`
+	ChannelCount uint64    `json:"channelCount"`
 	Samples      []uint64  `json:"samples"`
 	Dates        []string  `json:"dates"`
 	Times        []string  `json:"times"`
-	YUnitLabels  []string  `json:"y_unit_labels"`
-	XDimensions  []string  `json:"x_dimensions"`
-	InitialXs    []float64 `json:"initial_xs"`
-	DeltaXs      []float64 `json:"delta_xs"`
+	YUnitLabels  []string  `json:"yUnitLabels"`
+	XDimensions  []string  `json:"xDimensions"`
+	InitialXs    []float64 `json:"initialXs"`
+	DeltaXs      []float64 `json:"deltaXs"`
 }
 
 // Parses only the text that contains the channel header section.

@@ -61,12 +61,12 @@ func ParseFieldSeperator(seperatorText string) (FieldSeperator, error) {
 }
 
 type ParsedEntryHeader struct {
-	Seperator     FieldSeperator
-	MultiHeadings MultiHeadingsValue
-	XColumns      XColumnsValue
-	Operator      string
-	Date          string
-	Time          string
+	Seperator     FieldSeperator     `json:"seperator"`
+	MultiHeadings MultiHeadingsValue `json:"multiHeadings"`
+	XColumns      XColumnsValue      `json:"xColumns"`
+	Operator      string             `json:"operator"`
+	Date          string             `json:"date"`
+	Time          string             `json:"time"`
 }
 
 // Parses only the text that contains the entry header section.

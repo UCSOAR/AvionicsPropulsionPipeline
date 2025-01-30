@@ -14,6 +14,16 @@ type ParsedSv struct {
 	Data        [][]float64 // Guaranteed to have the same column count as `ColumnCount` (row major order)
 }
 
+// TODO
+type ParsedSv2 struct {
+	XColumnCount uint64      // The number of columns prefixed with "X_Value" in the LVM
+	XColumnNames []string    // Guaranteed to have the same length as `XColumnCount`
+	XData        [][]float64 // Guaranteed to have the same column count as `XColumnCount` (row major order)
+	YColumnCount uint64      // Corresponds to the number of channels in the LVM (will exclude the Comment column)
+	YColumnNames []string    // Guaranteed to have the same length as `YColumnCount`
+	YData        [][]float64 // Guaranteed to have the same column count as `YColumnCount` (row major order)
+}
+
 // Parses a seperated value file.
 // Returns a struct representing the parsed seperated value file.
 func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
