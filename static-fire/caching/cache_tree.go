@@ -1,9 +1,5 @@
 package caching
 
-import (
-	parser "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
-)
-
 // Represents metadata for previewing the results of a static fire.
 type PreviewMetadata struct {
 	Operator      string   `json:"operator"`
@@ -33,8 +29,7 @@ type YColumnNode struct {
 
 // Represents the file structure to create a cache tree.
 type CacheTree struct {
-	PreviewMetadata   PreviewMetadata
-	LvmHeaderMetadata parser.HeaderMetadata // Specific to saving LVM specific metadata (likely will never be used practically).
-	XColumnNodes      []XColumnNode
-	YColumnNodes      []YColumnNode
+	PreviewMetadata PreviewMetadata
+	XColumnNodes    []XColumnNode
+	YColumnNodes    []YColumnNode
 }

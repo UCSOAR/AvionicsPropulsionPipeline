@@ -1,10 +1,13 @@
-module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload
+module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire
 
-go 1.23.4
+go 1.23.5
 
 require (
-	cloud.google.com/go/storage v1.49.0
 	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage v0.0.0
 )
 
 require (
@@ -15,13 +18,13 @@ require (
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
+	cloud.google.com/go/storage v1.50.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
-	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78 // indirect
-	github.com/envoyproxy/go-control-plane v0.13.1 // indirect
+	github.com/envoyproxy/go-control-plane/envoy v1.32.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -56,4 +59,12 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../../function-utils
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../../function-modules/function-utils
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding => ../../function-modules/function-utils/encoding
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire => ../../function-modules/static-fire
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser => ../../function-modules/static-fire/parser
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage => ../../function-modules/static-fire/storage
