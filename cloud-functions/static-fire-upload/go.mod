@@ -7,7 +7,7 @@ require (
 	example.com/function-utils/encoding v0.0.0
 	example.com/static-fire v0.0.0
 	example.com/static-fire/parser v0.0.0
-	example.com/static-fire/metadata v0.0.0
+	example.com/static-fire/storage v0.0.0
 )
 
 require (
@@ -67,4 +67,4 @@ replace example.com/static-fire => ../../function-modules/static-fire
 
 replace example.com/static-fire/parser => ../../function-modules/static-fire/parser
 
-replace example.com/static-fire/metadata => ../../function-modules/static-fire/metadata
+replace example.com/static-fire/storage => ../../function-modules/static-fire/storage

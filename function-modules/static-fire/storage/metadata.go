@@ -1,7 +1,7 @@
 package storage
 
 import (
-	staticFireParser "example.com/static-fire-parser"
+	parser "example.com/static-fire/parser"
 )
 
 type ResultMetadata struct {
@@ -13,5 +13,5 @@ type ResultMetadata struct {
 }
 
 type ChannelMetadata struct {
-	Header staticFireParser.ParsedChannelHeader `json:"data"`
+	Header parser.ParsedChannelHeader `json:"data"`
 }

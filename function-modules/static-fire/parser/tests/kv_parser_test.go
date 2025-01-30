@@ -4,19 +4,19 @@ import (
 	"reflect"
 	"testing"
 
-	staticFireParser "example.com/static-fire-parser"
+	parser "example.com/static-fire/parser"
 )
 
 func TestValidHeaderShouldParseCorrectly(t *testing.T) {
 	rawHeaderText := `Key1 Value1
 Key2 Value2 Value3`
-	expected := staticFireParser.ParsedKvHeader{
+	expected := parser.ParsedKvHeader{
 		Kv: map[string][]string{
 			"Key1": {"Value1"},
 			"Key2": {"Value2", "Value3"},
 		},
 	}
-	result, err := staticFireParser.ParseKv(rawHeaderText)
+	result, err := parser.ParseKv(rawHeaderText)
 
 	if err != nil {
 		t.Errorf("Parse() error = %v", err)
@@ -31,7 +31,7 @@ Key2 Value2 Value3`
 func TestInvalidHeaderLineShouldError(t *testing.T) {
 	rawHeaderText := `InvalidLine`
 
-	_, err := staticFireParser.ParseKv(rawHeaderText)
+	_, err := parser.ParseKv(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected invalid header line error")
@@ -42,7 +42,7 @@ func TestParseDuplicateKeyShouldError(t *testing.T) {
 	rawHeaderText := `Key1 Value1
 Key1 Value2`
 
-	_, err := staticFireParser.ParseKv(rawHeaderText)
+	_, err := parser.ParseKv(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected duplicate key error")

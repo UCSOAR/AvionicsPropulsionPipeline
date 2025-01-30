@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	staticFireParser "example.com/static-fire-parser"
+	parser "example.com/static-fire/parser"
 )
 
 func TestValidLVMParsesCorrectly(t *testing.T) {
@@ -34,28 +34,28 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 0.000000	-250.069013	0.568622	-20.072851	9.564830	0.000000	0.040771	1.886051	Standby
 0.001000	-250.069013	0.568622	-20.063231	10.154943	0.000000	0.020755	0.000000`
 
-	seperator, err := staticFireParser.ParseFieldSeperator("Tab")
+	seperator, err := parser.ParseFieldSeperator("Tab")
 
 	if err != nil {
 		t.Errorf("ParseFieldSeperator() error = %v", err)
 		return
 	}
 
-	multiHeadings, err := staticFireParser.ParseMultiHeadingsValue("No")
+	multiHeadings, err := parser.ParseMultiHeadingsValue("No")
 
 	if err != nil {
 		t.Errorf("ParseMultiHeadingsValue() error = %v", err)
 		return
 	}
 
-	xColumns, err := staticFireParser.ParseXColumnsValue("One")
+	xColumns, err := parser.ParseXColumnsValue("One")
 
 	if err != nil {
 		t.Errorf("ParseXColumnsValue() error = %v", err)
 	}
 
-	expected := staticFireParser.ParsedLvm{
-		EntryHeader: staticFireParser.ParsedEntryHeader{
+	expected := parser.ParsedLvm{
+		EntryHeader: parser.ParsedEntryHeader{
 			Seperator:     seperator,
 			MultiHeadings: multiHeadings,
 			XColumns:      xColumns,
@@ -63,7 +63,7 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 			Date:          "2023/09/21",
 			Time:          "14:41:45.5111323470585990021",
 		},
-		ChannelHeader: staticFireParser.ParsedChannelHeader{
+		ChannelHeader: parser.ParsedChannelHeader{
 			ChannelCount: 7,
 			Samples:      []uint64{100, 100, 100, 100, 100, 100, 100},
 			Dates:        []string{"2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21"},
@@ -73,7 +73,7 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 			InitialXs:    []float64{0, 0, 0, 0, 0, 0, 0},
 			DeltaXs:      []float64{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001},
 		},
-		SvData: staticFireParser.ParsedSv{
+		SvData: parser.ParsedSv{
 			ColumnCount: 9,
 			ColumnNames: []string{"X_Value", "Injector Temp", "NOX Pressure", "Ox Tank Load Cell", "Thrust Load Cell", "Chamber Pressure", "Light Sensor", "Nitrous Bottle", "Comment"},
 			Data: [][]float64{
@@ -83,7 +83,7 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 		},
 	}
 
-	parsedLvm, err := staticFireParser.ParseMainLvm(rawLvmText)
+	parsedLvm, err := parser.ParseMainLvm(rawLvmText)
 
 	if err != nil {
 		t.Errorf("ParseMainLvm() error = %v", err)

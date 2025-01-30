@@ -11,8 +11,8 @@ import (
 	functionUtils "example.com/function-utils"
 	functionUtilsEncoding "example.com/function-utils/encoding"
 	staticfire "example.com/static-fire"
-	staticFireMetadata "example.com/static-fire/metadata"
 	staticfireParser "example.com/static-fire/parser"
+	staticFireMetadata "example.com/static-fire/storage"
 )
 
 func StaticFireUpload(w http.ResponseWriter, r *http.Request) {

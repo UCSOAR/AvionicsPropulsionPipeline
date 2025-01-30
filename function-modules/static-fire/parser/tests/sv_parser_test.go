@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	staticFireParser "example.com/static-fire-parser"
+	parser "example.com/static-fire/parser"
 )
 
 func TestValidSvParsesCorrectly(t *testing.T) {
@@ -13,7 +13,7 @@ func TestValidSvParsesCorrectly(t *testing.T) {
 4.4	5.5	6.6
 7.7	8.8	9.9`
 
-	expected := staticFireParser.ParsedSv{
+	expected := parser.ParsedSv{
 		ColumnCount: 3,
 		ColumnNames: []string{"Column1", "Column2", "Column3"},
 		Data: [][]float64{
@@ -23,7 +23,7 @@ func TestValidSvParsesCorrectly(t *testing.T) {
 		},
 	}
 
-	result, err := staticFireParser.ParseSv(rawSvText, '\t')
+	result, err := parser.ParseSv(rawSvText, '\t')
 
 	if err != nil {
 		t.Errorf("ParseSv() error = %v", err)
@@ -41,7 +41,7 @@ func TestValidSvWithNaNParsesCorrectly(t *testing.T) {
 4.4	5.5	fish
 7.7	8.8	9.9`
 
-	expected := staticFireParser.ParsedSv{
+	expected := parser.ParsedSv{
 		ColumnCount: 3,
 		ColumnNames: []string{"Column1", "Column2", "Column3"},
 		Data: [][]float64{
@@ -51,7 +51,7 @@ func TestValidSvWithNaNParsesCorrectly(t *testing.T) {
 		},
 	}
 
-	result, err := staticFireParser.ParseSv(rawSvText, '\t')
+	result, err := parser.ParseSv(rawSvText, '\t')
 
 	if err != nil {
 		t.Errorf("ParseSv() error = %v", err)
@@ -69,7 +69,7 @@ func TestIncompleteSvShouldFillWithZero(t *testing.T) {
 4.4	5.5	6.6
 7.7	8.8`
 
-	expected := staticFireParser.ParsedSv{
+	expected := parser.ParsedSv{
 		ColumnCount: 3,
 		ColumnNames: []string{"Column1", "Column2", "Column3"},
 		Data: [][]float64{
@@ -79,7 +79,7 @@ func TestIncompleteSvShouldFillWithZero(t *testing.T) {
 		},
 	}
 
-	result, err := staticFireParser.ParseSv(rawSvText, '\t')
+	result, err := parser.ParseSv(rawSvText, '\t')
 
 	if err != nil {
 		t.Errorf("ParseSv() error = %v", err)
