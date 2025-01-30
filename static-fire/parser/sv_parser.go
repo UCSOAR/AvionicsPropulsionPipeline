@@ -26,6 +26,14 @@ func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 	}
 
 	columns := strings.Split(scanner.Text(), string(delimiter))
+
+	// Check if the last column is a comment
+	var shouldRemoveLastColumn bool = columns[len(columns)-1] == "Comment"
+
+	if shouldRemoveLastColumn {
+		columns = columns[0 : len(columns)-1]
+	}
+
 	columnCount := uint64(len(columns))
 
 	// Read data
@@ -34,6 +42,10 @@ func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		values := strings.Split(line, string(delimiter))
+
+		if shouldRemoveLastColumn {
+			values = values[0 : len(values)-1] // Remove last column which is for comments
+		}
 
 		var row []float64
 
