@@ -1,4 +1,4 @@
-module github.com/UCSOAR/AvionicsPropulsionPipeline/function-framework
+module github.com/UCSOAR/AvionicsPropulsionPipeline/dev-functions
 
 go 1.23.4
 

@@ -1,14 +1,17 @@
 package caching
 
+type TimestampMetadata struct {
+	Date string `json:"date"`
+	Time string `json:"time"`
+}
+
 // Represents metadata for previewing the results of a static fire.
 type PreviewMetadata struct {
-	Operator      string   `json:"operator"`
-	ResultDate    string   `json:"resultDate"`
-	ResultTime    string   `json:"resultTime"`
-	ProcessedDate string   `json:"processedDate"`
-	ProcessedTime string   `json:"processedTime"`
-	XColumns      []string `json:"xColumns"` // Names of the X columns
-	YColumns      []string `json:"yColumns"` // Names of the Y columns
+	ResultTimestamp    TimestampMetadata `json:"resultTimestamp"`
+	ProcessedTimestamp TimestampMetadata `json:"processedTimestamp"`
+	Operator           string            `json:"operator"`
+	XColumnNames       []string          `json:"xColumnNames"`
+	YColumnNames       []string          `json:"yColumnNames"`
 }
 
 // Represents a X column node in the cache tree.

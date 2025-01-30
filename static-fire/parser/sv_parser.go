@@ -9,7 +9,7 @@ import (
 
 // Represents a parsed seperated value file.
 type ParsedSv struct {
-	ColumnCount uint64
+	ColumnCount uint64      // Total column count including X columns and Y columns
 	ColumnNames []string    // Guaranteed to have the same length as `ColumnCount`
 	Data        [][]float64 // Guaranteed to have the same column count as `ColumnCount` (row major order)
 }
@@ -28,7 +28,7 @@ func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 	columns := strings.Split(scanner.Text(), string(delimiter))
 
 	// Check if the last column is a comment
-	var shouldRemoveLastColumn bool = columns[len(columns)-1] == "Comment"
+	shouldRemoveLastColumn := columns[len(columns)-1] == "Comment"
 
 	if shouldRemoveLastColumn {
 		columns = columns[0 : len(columns)-1]
@@ -44,7 +44,7 @@ func ParseSv(rawSvText string, delimiter rune) (ParsedSv, error) {
 		values := strings.Split(line, string(delimiter))
 
 		if shouldRemoveLastColumn {
-			values = values[0 : len(values)-1] // Remove last column which is for comments
+			values = values[0 : len(values)-1]
 		}
 
 		var row []float64
