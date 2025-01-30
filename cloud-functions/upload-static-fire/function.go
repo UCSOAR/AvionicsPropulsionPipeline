@@ -2,25 +2,18 @@ package function
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/storage"
-	functionUtils "github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils"
-	functionUtilsEncoding "github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding"
-	staticfire "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire"
-	staticfireParser "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
-	staticFireMetadata "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage"
+	cloudFunctions "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions"
+	staticFireParser "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
 )
 
 func StaticFireUpload(w http.ResponseWriter, r *http.Request) {
-	functionUtils.SetCorsHeaders(w, functionUtils.Cors{
-		AllowOrigin:  "*",
-		AllowMethods: []string{"POST", "OPTIONS"},
-		AllowHeaders: []string{"Content-Type", "Authorization"},
-	})
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	switch r.Method {
 	case "POST":
@@ -41,13 +34,13 @@ func StaticFireUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Limit size of uploaded file
-	if r.ContentLength > functionUtils.MaxFileSize {
+	if r.ContentLength > cloudFunctions.MaxFileSize {
 		http.Error(w, "File is too large", http.StatusBadRequest)
 		return
 	}
 
 	// Parse form data
-	if err := r.ParseMultipartForm(functionUtils.MaxFileSize); err != nil {
+	if err := r.ParseMultipartForm(cloudFunctions.MaxFileSize); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -80,73 +73,84 @@ func StaticFireUpload(w http.ResponseWriter, r *http.Request) {
 
 	defer client.Close()
 
-	// Create processed directory if it does not exist
-	if _, err := CreateDirectory(staticfire.ProcessedUploadsObjectName, ctx, client); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Create a directory to store processed file data
-	newDirName := objectName[:len(objectName)-4]
-	newDirExists, err := CreateDirectory(staticfire.ProcessedUploadsObjectName+newDirName, ctx, client)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if newDirExists {
-		http.Error(w, "A file with this name has already been processed", http.StatusBadRequest)
-		return
-	}
-
-	// Read file data
-	rawFileText, err := io.ReadAll(file)
-
-	if err != nil {
-		http.Error(w, "Failed to read file data", http.StatusInternalServerError)
-		return
-	}
-
-	lvm, err := staticfireParser.ParseMainLvm(string(rawFileText))
+	// Assume we have parsed LVM for now
+	lvm := staticFireParser.ParsedLvm{} // For now...
+	cacheTree, err := lvm.ToCacheTree() // Right now, this returns a test cache tree
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
 
-	// Create metadata for the new file
-	lvmMetadata := staticFireMetadata.LvmMetadata{
-		ProcessedTimestamp: time.Now().Format(time.RFC3339),
-		Operator:           lvm.EntryHeader.Operator,
-		ColumnNames:        lvm.SvData.ColumnNames,
-	}
+	// Create the cache tree file structure
+	_ = cacheTree // For now...
 
-	// Encode parsed LVM and metadata into a binary format
-	lvmBytes, err := functionUtilsEncoding.BinaryEncode(lvm)
+	// Create processed directory if it does not exist
+	// if _, err := CreateDirectory(staticfire.ProcessedUploadsObjectName, ctx, client); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// // Create a directory to store processed file data
+	// newDirName := objectName[:len(objectName)-4]
+	// newDirExists, err := CreateDirectory(staticfire.ProcessedUploadsObjectName+newDirName, ctx, client)
 
-	lvmMetadataBytes, err := functionUtilsEncoding.BinaryEncode(lvmMetadata)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// if newDirExists {
+	// 	http.Error(w, "A file with this name has already been processed", http.StatusBadRequest)
+	// 	return
+	// }
 
-	// Write the LVM and metadata to GCS objects
-	if err := CreateObjectInDir(objectName, staticfire.ProcessedUploadsObjectName+newDirName+"/", lvmBytes, ctx, client); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// // Read file data
+	// rawFileText, err := io.ReadAll(file)
 
-	if err := CreateObjectInDir("metadata", staticfire.ProcessedUploadsObjectName+newDirName+"/", lvmMetadataBytes, ctx, client); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// if err != nil {
+	// 	http.Error(w, "Failed to read file data", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	w.WriteHeader(http.StatusOK)
+	// lvm, err := staticfireParser.ParseMainLvm(string(rawFileText))
+
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+
+	// // Create metadata for the new file
+	// lvmMetadata := staticFireMetadata.LvmMetadata{
+	// 	ProcessedTimestamp: time.Now().Format(time.RFC3339),
+	// 	Operator:           lvm.EntryHeader.Operator,
+	// 	ColumnNames:        lvm.SvData.ColumnNames,
+	// }
+
+	// // Encode parsed LVM and metadata into a binary format
+	// lvmBytes, err := functionUtilsEncoding.BinaryEncode(lvm)
+
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// lvmMetadataBytes, err := functionUtilsEncoding.BinaryEncode(lvmMetadata)
+
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// // Write the LVM and metadata to GCS objects
+	// if err := CreateObjectInDir(objectName, staticfire.ProcessedUploadsObjectName+newDirName+"/", lvmBytes, ctx, client); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// if err := CreateObjectInDir("metadata", staticfire.ProcessedUploadsObjectName+newDirName+"/", lvmMetadataBytes, ctx, client); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// w.WriteHeader(http.StatusOK)
 }

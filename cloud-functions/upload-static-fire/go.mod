@@ -3,11 +3,9 @@ module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-stati
 go 1.23.5
 
 require (
-	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils v0.0.0
-	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding v0.0.0
-	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions v0.0.0
 	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser v0.0.0
-	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching v0.0.0
 )
 
 require (
@@ -59,12 +57,8 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../../function-modules/function-utils
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions => ../
 
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding => ../../function-modules/function-utils/encoding
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser => ../../static-fire/parser
 
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire => ../../function-modules/static-fire
-
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser => ../../function-modules/static-fire/parser
-
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage => ../../function-modules/static-fire/storage
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching => ../../static-fire/caching

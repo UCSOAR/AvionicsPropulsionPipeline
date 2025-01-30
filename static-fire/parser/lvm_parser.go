@@ -3,6 +3,7 @@ package parser
 import (
 	"bufio"
 	"fmt"
+	"mime/multipart"
 	"strings"
 )
 
@@ -60,9 +61,8 @@ func readUntilEOF(scanner *bufio.Scanner) string {
 }
 
 // Parses a raw LVM file into a struct representing the parsed data.
-func ParseLvm(rawLvmText string) (ParsedLvm, error) {
-	reader := strings.NewReader(rawLvmText)
-	scanner := bufio.NewScanner(reader)
+func ParseLvm(lvmFile multipart.File) (ParsedLvm, error) {
+	scanner := bufio.NewScanner(lvmFile)
 
 	// Assert first line
 	if !scanner.Scan() {
