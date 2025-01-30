@@ -1,4 +1,4 @@
-package staticFireParser
+package parser
 
 import (
 	"fmt"
@@ -9,14 +9,14 @@ import (
 // The data stored is relevant to the purposes of this project.
 // It is guaranteed that all arrays will have the same length as `ChannelCount`.
 type ParsedChannelHeader struct {
-	ChannelCount uint64
-	Samples      []uint64
-	Dates        []string
-	Times        []string
-	YunitLabels  []string
-	Xdimensions  []string
-	InitialXs    []float64
-	DeltaXs      []float64
+	ChannelCount uint64    `json:"channel_count"`
+	Samples      []uint64  `json:"samples"`
+	Dates        []string  `json:"dates"`
+	Times        []string  `json:"times"`
+	YUnitLabels  []string  `json:"y_unit_labels"`
+	XDimensions  []string  `json:"x_dimensions"`
+	InitialXs    []float64 `json:"initial_xs"`
+	DeltaXs      []float64 `json:"delta_xs"`
 }
 
 // Parses only the text that contains the channel header section.
@@ -113,8 +113,8 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 		Samples:      samples,
 		Dates:        dates,
 		Times:        times,
-		YunitLabels:  yUnitLabels,
-		Xdimensions:  xDimensions,
+		YUnitLabels:  yUnitLabels,
+		XDimensions:  xDimensions,
 		InitialXs:    initialXs,
 		DeltaXs:      deltaXs,
 	}

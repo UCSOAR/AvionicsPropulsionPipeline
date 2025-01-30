@@ -19,13 +19,27 @@ Operator TestOperator
 Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
+	multiHeadings, err := staticFireParser.ParseMultiHeadingsValue("Yes")
+
+	if err != nil {
+		t.Errorf("ParseMultiHeadingsValue() error = %v", err)
+		return
+	}
+
+	xColumns, err := staticFireParser.ParseXColumnsValue("Multi")
+
+	if err != nil {
+		t.Errorf("ParseXColumnsValue() error = %v", err)
+		return
+	}
+
 	expected := staticFireParser.ParsedEntryHeader{
-		Seperator:      '\t',
-		IsMultiHeading: true,
-		HasOneXColumn:  false,
-		Operator:       "TestOperator",
-		Date:           "2025/01/18",
-		Time:           "10:45:47.0352557312499836422",
+		Seperator:     '\t',
+		MultiHeadings: multiHeadings,
+		XColumns:      xColumns,
+		Operator:      "TestOperator",
+		Date:          "2025/01/18",
+		Time:          "10:45:47.0352557312499836422",
 	}
 
 	result, err := staticFireParser.ParseEntryHeader(rawHeaderText)

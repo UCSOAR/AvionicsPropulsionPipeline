@@ -1,4 +1,4 @@
-package staticFireParser
+package parser
 
 import (
 	"bufio"
@@ -87,7 +87,7 @@ func ParseMainLvm(rawLvmText string) (ParsedLvm, error) {
 
 	// Read the rest of the file which is expected to be the SV data
 	rawSvText := readUntilEOF(scanner)
-	svData, err := ParseSv(rawSvText, entryHeader.Seperator)
+	svData, err := ParseSv(rawSvText, rune(entryHeader.Seperator))
 
 	if err != nil {
 		return ParsedLvm{}, err

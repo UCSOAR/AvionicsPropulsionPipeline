@@ -1,4 +1,4 @@
-package staticFireParser
+package parser
 
 import (
 	"bufio"

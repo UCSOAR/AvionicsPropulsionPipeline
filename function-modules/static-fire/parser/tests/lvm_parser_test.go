@@ -34,10 +34,31 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 0.000000	-250.069013	0.568622	-20.072851	9.564830	0.000000	0.040771	1.886051	Standby
 0.001000	-250.069013	0.568622	-20.063231	10.154943	0.000000	0.020755	0.000000`
 
+	seperator, err := staticFireParser.ParseFieldSeperator("Tab")
+
+	if err != nil {
+		t.Errorf("ParseFieldSeperator() error = %v", err)
+		return
+	}
+
+	multiHeadings, err := staticFireParser.ParseMultiHeadingsValue("No")
+
+	if err != nil {
+		t.Errorf("ParseMultiHeadingsValue() error = %v", err)
+		return
+	}
+
+	xColumns, err := staticFireParser.ParseXColumnsValue("One")
+
+	if err != nil {
+		t.Errorf("ParseXColumnsValue() error = %v", err)
+	}
+
 	expected := staticFireParser.ParsedLvm{
 		EntryHeader: staticFireParser.ParsedEntryHeader{
-			Seperator:     '\t',
-			HasOneXColumn: true,
+			Seperator:     seperator,
+			MultiHeadings: multiHeadings,
+			XColumns:      xColumns,
 			Operator:      "RothneyPC",
 			Date:          "2023/09/21",
 			Time:          "14:41:45.5111323470585990021",
@@ -47,8 +68,8 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 			Samples:      []uint64{100, 100, 100, 100, 100, 100, 100},
 			Dates:        []string{"2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21"},
 			Times:        []string{"14:41:45.5111323470585990021", "14:41:45.5111463466995406219", "14:41:45.5111603463404822418", "14:41:45.5111323470585990021", "14:41:45.5111743459814238617", "14:41:45.5111463466995406219", "14:41:45.5111883456223654816"},
-			YunitLabels:  []string{"Some", "PSI", "kg", "N", "PSI", "Volts", "PSI"},
-			Xdimensions:  []string{"Time", "Time", "Time", "Time", "Time", "Time", "Time"},
+			YUnitLabels:  []string{"Some", "PSI", "kg", "N", "PSI", "Volts", "PSI"},
+			XDimensions:  []string{"Time", "Time", "Time", "Time", "Time", "Time", "Time"},
 			InitialXs:    []float64{0, 0, 0, 0, 0, 0, 0},
 			DeltaXs:      []float64{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001},
 		},

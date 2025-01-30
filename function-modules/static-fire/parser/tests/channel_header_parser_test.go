@@ -23,8 +23,8 @@ Delta_X	1.953125E-5		1.953125E-5
 		Samples:      []uint64{51200, 51200},
 		Dates:        []string{"2016/08/23", "2016/08/23"},
 		Times:        []string{"10:45:47.0352557312499836422", "10:45:47.0352557312499836422"},
-		YunitLabels:  []string{"Volts", "g"},
-		Xdimensions:  []string{"Time", "Time"},
+		YUnitLabels:  []string{"Volts", "g"},
+		XDimensions:  []string{"Time", "Time"},
 		InitialXs:    []float64{0.0000000000000000, 0.0000000000000000},
 		DeltaXs:      []float64{1.953125e-5, 1.953125e-5},
 	}
