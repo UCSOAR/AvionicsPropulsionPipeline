@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	parser "example.com/static-fire/parser"
+	parser "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
 )
 
 func TestValidSvParsesCorrectly(t *testing.T) {

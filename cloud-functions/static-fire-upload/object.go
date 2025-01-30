@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"cloud.google.com/go/storage"
-	functionUtils "example.com/function-utils"
+	functionUtils "github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils"
 )
 
 // Creates a directory in GCS if it does not already exist

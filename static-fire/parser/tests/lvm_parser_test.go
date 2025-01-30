@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	parser "example.com/static-fire/parser"
+	parser "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
 )
 
 func TestValidLVMParsesCorrectly(t *testing.T) {
@@ -55,23 +55,25 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 	}
 
 	expected := parser.ParsedLvm{
-		EntryHeader: parser.ParsedEntryHeader{
-			Seperator:     seperator,
-			MultiHeadings: multiHeadings,
-			XColumns:      xColumns,
-			Operator:      "RothneyPC",
-			Date:          "2023/09/21",
-			Time:          "14:41:45.5111323470585990021",
-		},
-		ChannelHeader: parser.ParsedChannelHeader{
-			ChannelCount: 7,
-			Samples:      []uint64{100, 100, 100, 100, 100, 100, 100},
-			Dates:        []string{"2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21"},
-			Times:        []string{"14:41:45.5111323470585990021", "14:41:45.5111463466995406219", "14:41:45.5111603463404822418", "14:41:45.5111323470585990021", "14:41:45.5111743459814238617", "14:41:45.5111463466995406219", "14:41:45.5111883456223654816"},
-			YUnitLabels:  []string{"Some", "PSI", "kg", "N", "PSI", "Volts", "PSI"},
-			XDimensions:  []string{"Time", "Time", "Time", "Time", "Time", "Time", "Time"},
-			InitialXs:    []float64{0, 0, 0, 0, 0, 0, 0},
-			DeltaXs:      []float64{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001},
+		Headers: parser.HeaderMetadata{
+			EntryHeader: parser.ParsedEntryHeader{
+				Seperator:     seperator,
+				MultiHeadings: multiHeadings,
+				XColumns:      xColumns,
+				Operator:      "RothneyPC",
+				Date:          "2023/09/21",
+				Time:          "14:41:45.5111323470585990021",
+			},
+			ChannelHeader: parser.ParsedChannelHeader{
+				ChannelCount: 7,
+				Samples:      []uint64{100, 100, 100, 100, 100, 100, 100},
+				Dates:        []string{"2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21", "2023/09/21"},
+				Times:        []string{"14:41:45.5111323470585990021", "14:41:45.5111463466995406219", "14:41:45.5111603463404822418", "14:41:45.5111323470585990021", "14:41:45.5111743459814238617", "14:41:45.5111463466995406219", "14:41:45.5111883456223654816"},
+				YUnitLabels:  []string{"Some", "PSI", "kg", "N", "PSI", "Volts", "PSI"},
+				XDimensions:  []string{"Time", "Time", "Time", "Time", "Time", "Time", "Time"},
+				InitialXs:    []float64{0, 0, 0, 0, 0, 0, 0},
+				DeltaXs:      []float64{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001},
+			},
 		},
 		SvData: parser.ParsedSv{
 			ColumnCount: 9,
@@ -83,7 +85,7 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 		},
 	}
 
-	parsedLvm, err := parser.ParseMainLvm(rawLvmText)
+	parsedLvm, err := parser.ParseLvm(rawLvmText)
 
 	if err != nil {
 		t.Errorf("ParseMainLvm() error = %v", err)
@@ -91,6 +93,6 @@ X_Value	Injector Temp	NOX Pressure	Ox Tank Load Cell	Thrust Load Cell	Chamber Pr
 	}
 
 	if !reflect.DeepEqual(parsedLvm, expected) {
-		t.Errorf("ParseMainLvm() EntryHeader = %v, want %v", parsedLvm.EntryHeader, expected.EntryHeader)
+		t.Errorf("ParseMainLvm() EntryHeader = %v, want %v", parsedLvm, expected)
 	}
 }

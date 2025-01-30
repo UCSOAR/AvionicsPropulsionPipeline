@@ -1,10 +1,10 @@
-module example.com/bucket-upload
+module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload
 
 go 1.23.4
 
 require (
 	cloud.google.com/go/storage v1.49.0
-	example.com/function-utils v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils v0.0.0
 )
 
 require (
@@ -56,4 +56,4 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace example.com/function-utils => ../../function-modules/function-utils
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../../function-utils

@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	bucketUpload "example.com/cloud-functions/bucket-upload"
-	downloadBucketObject "example.com/cloud-functions/download-bucket-object"
-	getBucketUploads "example.com/cloud-functions/get-bucket-uploads"
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
+	bucketUpload "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload"
+	downloadBucketObject "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/download-bucket-object"
+	getBucketUploads "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-bucket-uploads"
 )
 
 const devPort string = "8080"

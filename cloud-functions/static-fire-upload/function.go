@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	functionUtils "example.com/function-utils"
-	functionUtilsEncoding "example.com/function-utils/encoding"
-	staticfire "example.com/static-fire"
-	staticfireParser "example.com/static-fire/parser"
-	staticFireMetadata "example.com/static-fire/storage"
+	functionUtils "github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils"
+	functionUtilsEncoding "github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding"
+	staticfire "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire"
+	staticfireParser "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
+	staticFireMetadata "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage"
 )
 
 func StaticFireUpload(w http.ResponseWriter, r *http.Request) {

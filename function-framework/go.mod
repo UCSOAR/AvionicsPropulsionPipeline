@@ -1,11 +1,11 @@
-module example.com/dev-functions
+module github.com/UCSOAR/AvionicsPropulsionPipeline/function-framework
 
 go 1.23.4
 
 require (
-	example.com/cloud-functions/bucket-upload v0.0.0
-	example.com/cloud-functions/download-bucket-object v0.0.0
-	example.com/cloud-functions/get-bucket-uploads v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/download-bucket-object v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-bucket-uploads v0.0.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.0
 )
 
@@ -19,7 +19,7 @@ require (
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	cloud.google.com/go/storage v1.50.0 // indirect
-	example.com/function-utils v0.0.0 // indirect
+	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils v0.0.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
@@ -68,10 +68,10 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace example.com/function-utils => ../cloud-functions/function-utils
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../cloud-functions/function-utils
 
-replace example.com/cloud-functions/bucket-upload => ../cloud-functions/bucket-upload
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload => ../cloud-functions/bucket-upload
 
-replace example.com/cloud-functions/get-bucket-uploads => ../cloud-functions/get-bucket-uploads
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-bucket-uploads => ../cloud-functions/get-bucket-uploads
 
-replace example.com/cloud-functions/download-bucket-object => ../cloud-functions/download-bucket-object
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/download-bucket-object => ../cloud-functions/download-bucket-object

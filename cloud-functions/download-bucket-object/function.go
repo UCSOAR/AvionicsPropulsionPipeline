@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
-	functionUtils "example.com/function-utils"
+	functionUtils "github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils"
 )
 
 func DownloadBucketObject(w http.ResponseWriter, r *http.Request) {

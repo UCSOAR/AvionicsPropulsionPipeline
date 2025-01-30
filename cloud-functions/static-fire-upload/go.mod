@@ -1,13 +1,13 @@
-module example.com/lvm-upload
+module github.com/UCSOAR/AvionicsPropulsionPipeline/lvm-upload
 
 go 1.23.5
 
 require (
-	example.com/function-utils v0.0.0
-	example.com/function-utils/encoding v0.0.0
-	example.com/static-fire v0.0.0
-	example.com/static-fire/parser v0.0.0
-	example.com/static-fire/storage v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage v0.0.0
 )
 
 require (
@@ -59,12 +59,12 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace example.com/function-utils => ../../function-modules/function-utils
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../../function-modules/function-utils
 
-replace example.com/function-utils/encoding => ../../function-modules/function-utils/encoding
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils/encoding => ../../function-modules/function-utils/encoding
 
-replace example.com/static-fire => ../../function-modules/static-fire
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire => ../../function-modules/static-fire
 
-replace example.com/static-fire/parser => ../../function-modules/static-fire/parser
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser => ../../function-modules/static-fire/parser
 
-replace example.com/static-fire/storage => ../../function-modules/static-fire/storage
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/storage => ../../function-modules/static-fire/storage

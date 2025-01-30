@@ -6,11 +6,15 @@ import (
 	"strings"
 )
 
+type HeaderMetadata struct {
+	EntryHeader   ParsedEntryHeader
+	ChannelHeader ParsedChannelHeader
+}
+
 // Represents a parsed LabVIEW Measurement File (LVM).
 type ParsedLvm struct {
-	EntryHeader   ParsedEntryHeader   // Entry header section
-	ChannelHeader ParsedChannelHeader // Channel header section
-	SvData        ParsedSv            // Seperated value data
+	Headers HeaderMetadata
+	SvData  ParsedSv // Seperated value data
 }
 
 // Move a scanner forward until the end of the header.
@@ -56,7 +60,7 @@ func readUntilEOF(scanner *bufio.Scanner) string {
 }
 
 // Parses a raw LVM file into a struct representing the parsed data.
-func ParseMainLvm(rawLvmText string) (ParsedLvm, error) {
+func ParseLvm(rawLvmText string) (ParsedLvm, error) {
 	reader := strings.NewReader(rawLvmText)
 	scanner := bufio.NewScanner(reader)
 
@@ -95,9 +99,11 @@ func ParseMainLvm(rawLvmText string) (ParsedLvm, error) {
 
 	// Construct parsed LVM
 	lvm := ParsedLvm{
-		EntryHeader:   entryHeader,
-		ChannelHeader: channelHeader,
-		SvData:        svData,
+		Headers: HeaderMetadata{
+			EntryHeader:   entryHeader,
+			ChannelHeader: channelHeader,
+		},
+		SvData: svData,
 	}
 
 	return lvm, nil
