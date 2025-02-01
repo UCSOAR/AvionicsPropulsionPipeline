@@ -1,23 +1,13 @@
 export const devPort = 8080;
 
 const devEndpointMapping = {
-  bucketUploadUrl: new URL(`http://localhost:${devPort}/BucketUpload`),
-  getBucketUploadsUrl: new URL(`http://localhost:${devPort}/GetBucketUploads`),
-  downloadBucketObjectUrl: new URL(
-    `http://localhost:${devPort}/DownloadBucketObject`
-  ),
+  uploadStaticFireUrl: new URL(`http://localhost:${devPort}/UploadStaticFire`),
+  getStaticFiresUrl: new URL(`http://localhost:${devPort}/GetStaticFires`),
 };
 
 const prodEndpointMapping: typeof devEndpointMapping = {
-  bucketUploadUrl: new URL(
-    "https://us-west1-avionic-propulsion-pipeline.cloudfunctions.net/BucketUpload"
-  ),
-  getBucketUploadsUrl: new URL(
-    "https://us-west1-avionic-propulsion-pipeline.cloudfunctions.net/GetBucketUploads"
-  ),
-  downloadBucketObjectUrl: new URL(
-    "https://us-west1-avionic-propulsion-pipeline.cloudfunctions.net/DownloadBucketObject"
-  ),
+  uploadStaticFireUrl: new URL(`http://localhost:${devPort}/UploadStaticFire`),
+  getStaticFiresUrl: new URL(`http://localhost:${devPort}/GetStaticFires`),
 };
 
 // Freeze the objects to prevent accidental modification

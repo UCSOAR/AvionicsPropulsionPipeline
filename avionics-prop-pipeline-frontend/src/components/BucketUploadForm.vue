@@ -22,7 +22,7 @@ const uploadFile = async () => {
         const formData = new FormData();
         formData.append('file', selectedFile.value);
 
-        const result = await fetch(endpointMapping.bucketUploadUrl, {
+        const result = await fetch(endpointMapping.uploadStaticFireUrl, {
             method: 'POST',
             body: formData,
         });
