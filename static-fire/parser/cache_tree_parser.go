@@ -145,11 +145,17 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 
 	for i, columnName := range columnNames {
 		if strings.HasPrefix(columnName, AssertedXColumnPrefix) {
-			if i == len(columnNames)-1 {
-				return caching.CacheTree{}, fmt.Errorf("X column name %s is the last column", columnName)
-			}
+			if entryHeader.XColumns == XColumnsOne {
+				// For one X column, the X column is the first column
+				xColumnNames = append(xColumnNames, columnName)
+			} else {
+				if i == len(columnNames)-1 {
+					return caching.CacheTree{}, fmt.Errorf("X column name %s is the last column", columnName)
+				}
 
-			xColumnNames = append(xColumnNames, "X-"+columnNames[i+1])
+				// The X column associated with the Y column after it
+				xColumnNames = append(xColumnNames, "(X) "+columnNames[i+1])
+			}
 		} else {
 			yColumnNames = append(yColumnNames, columnName)
 		}

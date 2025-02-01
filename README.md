@@ -43,3 +43,41 @@ gcloud functions deploy <FunctionName> \
 ```
 
 It is important that `<FunctionName>` is the name of the function you want to deploy and must be part of a package called `function` in a file called `main.go`.
+
+## LabVIEW Measurement to Cache Tree Diagram
+
+A **cache tree** is represented as follows for multiple X columns.
+
+```plaintext
+test.lvm
+  |
+  v
+  test/
+  ├─ PreviewMetadata
+  ├─ x/
+  │  ├─ (X) someYColumnName
+  │  ├─ (X) anotherYColumnName
+  │  └─ (X) yetAnotherYColumnName
+  └─ y/
+     ├─ someYColumnName
+     ├─ anotherYColumnName
+     └─ yetAnotherYColumnName
+```
+
+_Or_, if there is only one X column.
+
+```plaintext
+test.lvm
+  |
+  v
+  test/
+  ├─ PreviewMetadata
+  ├─ x/
+  │  └─ X_Value
+  └─ y/
+     ├─ someYColumnName
+     ├─ anotherYColumnName
+     └─ yetAnotherYColumnName
+```
+
+Where each of these files that is not a directory is a binary data containing the data for the corresponding column or metadata. With this structure, only the necessary data is loaded into memory, and the data is only loaded when it is requested.
