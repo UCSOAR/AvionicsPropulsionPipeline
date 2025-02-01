@@ -7,47 +7,47 @@ const objects = reactive<BucketObject[]>([]);
 const error = ref<string | null>(null);
 
 const fetchObjects = async () => {
-    try {
-        const result = await fetch(endpointMapping.getBucketUploadsUrl);
+    // try {
+    //     const result = await fetch(endpointMapping.getBucketUploadsUrl);
 
-        if (result.ok) {
-            const data = await result.json();
+    //     if (result.ok) {
+    //         const data = await result.json();
 
-            if (data) {
-                objects.splice(0, objects.length, ...data);
-                error.value = null;
-            }
-        } else {
-            error.value = 'Failed to fetch objects.';
-        }
-    } catch (err) {
-        error.value = err as string;
-    }
+    //         if (data) {
+    //             objects.splice(0, objects.length, ...data);
+    //             error.value = null;
+    //         }
+    //     } else {
+    //         error.value = 'Failed to fetch objects.';
+    //     }
+    // } catch (err) {
+    //     error.value = err as string;
+    // }
 };
 
 const downloadObject = async (filename: string) => {
-    try {
-        const endpoint = new URL(endpointMapping.downloadBucketObjectUrl);
-        endpoint.searchParams.append('file', filename);
+    // try {
+    //     const endpoint = new URL(endpointMapping.downloadBucketObjectUrl);
+    //     endpoint.searchParams.append('file', filename);
 
-        const result = await fetch(endpoint);
+    //     const result = await fetch(endpoint);
 
-        if (result.ok) {
-            const blob = await result.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+    //     if (result.ok) {
+    //         const blob = await result.blob();
+    //         const url = window.URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
 
-            a.href = url;
-            a.download = filename;
-            a.click();
+    //         a.href = url;
+    //         a.download = filename;
+    //         a.click();
 
-            window.URL.revokeObjectURL(url);
-        } else {
-            error.value = 'Failed to download object.';
-        }
-    } catch (err) {
-        error.value = err as string;
-    }
+    //         window.URL.revokeObjectURL(url);
+    //     } else {
+    //         error.value = 'Failed to download object.';
+    //     }
+    // } catch (err) {
+    //     error.value = err as string;
+    // }
 }
 
 onMounted(() => fetchObjects());

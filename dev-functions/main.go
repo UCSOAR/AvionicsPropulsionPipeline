@@ -1,4 +1,4 @@
-package devFunctions
+package main
 
 import (
 	"log"
@@ -11,7 +11,7 @@ const devPort string = "8080"
 
 func main() {
 	// Register functions to test locally here
-	funcframework.RegisterHTTPFunction("/BucketUpload", uploadStaticFire.UploadStaticFire)
+	funcframework.RegisterHTTPFunction("/UploadStaticFire", uploadStaticFire.UploadStaticFire)
 
 	log.Printf("Development server listening on port %s", devPort)
 

@@ -1,10 +1,10 @@
 module github.com/UCSOAR/AvionicsPropulsionPipeline/dev-functions
 
-go 1.23.4
+go 1.23.5
 
 require (
-	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire v0.0.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire v0.0.0
 )
 
 require (
@@ -17,10 +17,12 @@ require (
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	cloud.google.com/go/storage v1.50.0 // indirect
-	github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils v0.0.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
+	github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info v0.0.0 // indirect
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching v0.0.0 // indirect
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser v0.0.0 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.15.2 // indirect
@@ -67,3 +69,9 @@ require (
 )
 
 replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire => ../cloud-functions/upload-static-fire
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info => ../bucket-info
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser => ../static-fire/parser
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching => ../static-fire/caching

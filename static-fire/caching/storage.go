@@ -32,10 +32,15 @@ func createDirectory(ctx context.Context, bucket *storage.BucketHandle, name str
 }
 
 func writeEncodedObject[T any](ctx context.Context, bucket *storage.BucketHandle, name string, obj T) error {
-	encoder := gob.NewEncoder(bucket.Object(name).NewWriter(ctx))
+	writer := bucket.Object(name).NewWriter(ctx)
+	encoder := gob.NewEncoder(writer)
 
 	if err := encoder.Encode(obj); err != nil {
 		return fmt.Errorf("Failed to encode object: %v", err)
+	}
+
+	if err := writer.Close(); err != nil {
+		return fmt.Errorf("Failed to write object: %v", err)
 	}
 
 	return nil
@@ -73,14 +78,14 @@ func (tree *CacheTree) Store(name string) error {
 
 	// Encode all X column data and store it in the X column directory
 	for i, xCol := range tree.XColumnNodes {
-		if err := writeEncodedObject(ctx, bucket, name+"/"+xColumnsSubdir+"/"+fmt.Sprintf("%d", i), xCol); err != nil {
+		if err := writeEncodedObject(ctx, bucket, name+"/"+xColumnsSubdir+"/"+tree.PreviewMetadata.XColumnNames[i], xCol); err != nil {
 			return err
 		}
 	}
 
 	// Encode all Y column data and store it in the Y column directory
-	for i, yCol := range tree.YColumnNodes {
-		if err := writeEncodedObject(ctx, bucket, name+"/"+yColumnsSubdir+"/"+fmt.Sprintf("%d", i), yCol); err != nil {
+	for j, yCol := range tree.YColumnNodes {
+		if err := writeEncodedObject(ctx, bucket, name+"/"+yColumnsSubdir+"/"+tree.PreviewMetadata.YColumnNames[j], yCol); err != nil {
 			return err
 		}
 	}
