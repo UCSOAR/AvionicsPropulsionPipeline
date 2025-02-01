@@ -4,18 +4,14 @@ import (
 	"log"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	bucketUpload "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload"
-	downloadBucketObject "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/download-bucket-object"
-	getBucketUploads "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-bucket-uploads"
+	uploadStaticFire "github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire"
 )
 
 const devPort string = "8080"
 
 func main() {
 	// Register functions to test locally here
-	funcframework.RegisterHTTPFunction("/BucketUpload", bucketUpload.BucketUpload)
-	funcframework.RegisterHTTPFunction("/GetBucketUploads", getBucketUploads.GetBucketUploads)
-	funcframework.RegisterHTTPFunction("/DownloadBucketObject", downloadBucketObject.DownloadBucketObject)
+	funcframework.RegisterHTTPFunction("/BucketUpload", uploadStaticFire.UploadStaticFire)
 
 	log.Printf("Development server listening on port %s", devPort)
 

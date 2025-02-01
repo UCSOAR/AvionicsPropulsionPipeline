@@ -3,9 +3,8 @@ module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-stati
 go 1.23.5
 
 require (
-	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info v0.0.0
 	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser v0.0.0
-	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching v0.0.0
 )
 
 require (
@@ -20,6 +19,7 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
+	github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching v0.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.32.3 // indirect
@@ -57,8 +57,8 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions => ../
-
 replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser => ../../static-fire/parser
 
 replace github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching => ../../static-fire/caching
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info => ../../bucket-info

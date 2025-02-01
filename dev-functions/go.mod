@@ -3,9 +3,7 @@ module github.com/UCSOAR/AvionicsPropulsionPipeline/dev-functions
 go 1.23.4
 
 require (
-	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload v0.0.0
-	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/download-bucket-object v0.0.0
-	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-bucket-uploads v0.0.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire v0.0.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.0
 )
 
@@ -68,10 +66,4 @@ require (
 	google.golang.org/protobuf v1.35.2 // indirect
 )
 
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/function-utils => ../cloud-functions/function-utils
-
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/bucket-upload => ../cloud-functions/bucket-upload
-
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-bucket-uploads => ../cloud-functions/get-bucket-uploads
-
-replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/download-bucket-object => ../cloud-functions/download-bucket-object
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire => ../cloud-functions/upload-static-fire
