@@ -4,6 +4,7 @@ go 1.23.5
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.0
+	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-static-fires v0.0.0
 	github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire v0.0.0
 )
 
@@ -69,6 +70,8 @@ require (
 )
 
 replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/upload-static-fire => ../cloud-functions/upload-static-fire
+
+replace github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-static-fires => ../cloud-functions/get-static-fires
 
 replace github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info => ../bucket-info
 

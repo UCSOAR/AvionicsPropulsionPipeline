@@ -60,6 +60,9 @@ func UploadStaticFire(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Remove `.lvm` extension
+	fileName = fileName[:len(fileName)-4]
+
 	// Create the cache tree
 	tree, err := staticFireParser.ParseIntoCacheTree(file)
 

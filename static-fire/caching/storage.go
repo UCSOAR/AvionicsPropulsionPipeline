@@ -7,6 +7,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	bucketInfo "github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info"
+	"google.golang.org/api/iterator"
 )
 
 const xColumnsSubdir = "x"
@@ -91,6 +92,68 @@ func (tree *CacheTree) Store(name string) error {
 	}
 
 	return nil
+}
+
+func GetAllCacheMetadata() (map[string]PreviewMetadata, error) {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create GCS client: %v", err)
+	}
+
+	defer client.Close()
+
+	bucket := client.Bucket(bucketInfo.BucketName)
+	query := storage.Query{
+		Delimiter:                "/",
+		IncludeTrailingDelimiter: true,
+	}
+
+	query.SetAttrSelection([]string{"Prefix"})
+	objIt := bucket.Objects(ctx, &query)
+
+	// Map of cache names to preview metadata
+	data := make(map[string]PreviewMetadata)
+
+	for {
+		attr, err := objIt.Next()
+
+		if err == iterator.Done {
+			break
+		} else if err != nil {
+			return nil, fmt.Errorf("Failed to iterate over objects: %v", err)
+		}
+
+		if attr.Prefix == "" {
+			// Skip objects that are not directories
+			continue
+		}
+
+		// Decode the preview metadata
+		obj := bucket.Object(attr.Prefix + previewMetadataFile)
+		reader, err := obj.NewReader(ctx)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read preview metadata: %v", err)
+		}
+
+		decoder := gob.NewDecoder(reader)
+		var metadata PreviewMetadata
+
+		if err := decoder.Decode(&metadata); err != nil {
+			return nil, fmt.Errorf("Failed to decode preview metadata: %v", err)
+		}
+
+		if err := reader.Close(); err != nil {
+			return nil, fmt.Errorf("Failed to close reader: %v", err)
+		}
+
+		name := attr.Prefix[:len(attr.Prefix)-1]
+		data[name] = metadata
+	}
+
+	return data, nil
 }
 
 func DeleteCache(name string) error {

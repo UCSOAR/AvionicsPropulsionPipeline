@@ -2,10 +2,12 @@ export const devPort = 8080;
 
 const devEndpointMapping = {
   uploadStaticFireUrl: new URL(`http://localhost:${devPort}/UploadStaticFire`),
+  getStaticFiresUrl: new URL(`http://localhost:${devPort}/GetStaticFires`),
 };
 
 const prodEndpointMapping: typeof devEndpointMapping = {
   uploadStaticFireUrl: new URL(`http://localhost:${devPort}/UploadStaticFire`),
+  getStaticFiresUrl: new URL(`http://localhost:${devPort}/GetStaticFires`),
 };
 
 // Freeze the objects to prevent accidental modification
