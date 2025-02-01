@@ -8,3 +8,4 @@ const AssertedReaderVersion = "2"                 // Same as above
 const AssertedTimePreferance = "Absolute"         // We only support absolute time
 const AssertedDecimalSeparator = "."              // We only support decimal points for parsing floats
 const AssertedXColumnPrefix = "X_Value"           // Assume all X columns start with this prefix
+const AssertedCommentColumnName = "Comment"       // Assume all comment columns are named "Comment"

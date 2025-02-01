@@ -34,7 +34,7 @@ func readUntilEOH(scanner *bufio.Scanner) string {
 }
 
 func filterCommentColumn(columnNames []string) []string {
-	if columnNames[len(columnNames)-1] == "Comment" {
+	if columnNames[len(columnNames)-1] == AssertedCommentColumnName {
 		return columnNames[:len(columnNames)-1]
 	}
 
@@ -82,6 +82,16 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 	xColumns := make([]caching.XColumnNode, xColumnCount)
 	yColumns := make([]caching.YColumnNode, yColumnCount)
 
+	// Initialize Y column metadata
+	for i := 0; i < yColumnCount; i++ {
+		yColumns[i] = caching.YColumnNode{
+			Samples:    channelHeader.Samples[i],
+			Date:       channelHeader.Dates[i],
+			UnitLabel:  channelHeader.YUnitLabels[i],
+			XDimension: channelHeader.XDimensions[i],
+		}
+	}
+
 	// Read column names
 	if !scanner.Scan() {
 		return caching.CacheTree{}, fmt.Errorf("No columns found")
@@ -128,20 +138,14 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 			} else {
 				// Otherwise, it is a Y column
 				yColumnIndex := columnIndex - xColumnIndex
-				yColumns[yColumnIndex] = caching.YColumnNode{
-					Rows:       append(yColumns[yColumnIndex].Rows, floatValue),
-					Samples:    channelHeader.Samples[yColumnIndex],
-					Date:       channelHeader.Dates[yColumnIndex],
-					UnitLabel:  channelHeader.YUnitLabels[yColumnIndex],
-					XDimension: channelHeader.XDimensions[yColumnIndex],
-				}
+				yColumns[yColumnIndex].Rows = append(yColumns[yColumnIndex].Rows, floatValue)
 			}
 		}
 	}
 
 	// Generate column names
-	xColumnNames := make([]string, xColumnCount)
-	yColumnNames := make([]string, yColumnCount)
+	xColumnNames := make([]string, 0, xColumnCount)
+	yColumnNames := make([]string, 0, yColumnCount)
 
 	for i, columnName := range columnNames {
 		if strings.HasPrefix(columnName, AssertedXColumnPrefix) {
