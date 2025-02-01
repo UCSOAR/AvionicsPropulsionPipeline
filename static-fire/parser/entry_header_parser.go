@@ -2,37 +2,52 @@ package parser
 
 import "fmt"
 
-type MultiHeadingsValue bool
+type MultiHeadingsValue uint8
+
+const (
+	MultiHeadingsUnknown MultiHeadingsValue = 0
+	MultiHeadingsYes     MultiHeadingsValue = 1
+	MultiHeadingsNo      MultiHeadingsValue = 2
+)
 
 func ParseMultiHeadingsValue(multiHeadingsText string) (MultiHeadingsValue, error) {
 	switch multiHeadingsText {
 	case "Yes":
-		return MultiHeadingsValue(true), nil
+		return MultiHeadingsYes, nil
 	case "No":
-		return MultiHeadingsValue(true), nil
+		return MultiHeadingsNo, nil
 	default:
-		return MultiHeadingsValue(false), fmt.Errorf("Invalid multi headings value: %s", multiHeadingsText)
+		return MultiHeadingsUnknown, fmt.Errorf("Invalid multi headings value: %s", multiHeadingsText)
 	}
 }
 
 func (m MultiHeadingsValue) String() string {
-	if m {
+	switch m {
+	case 1:
 		return "Yes"
+	case 2:
+		return "No"
+	default:
+		return "Unknown"
 	}
-
-	return "No"
 }
 
 type XColumnsValue uint8
 
+const (
+	XColumnsUnknown XColumnsValue = 0
+	XColumnsOne     XColumnsValue = 1
+	XColumnsMulti   XColumnsValue = 2
+)
+
 func ParseXColumnsValue(xColumnsText string) (XColumnsValue, error) {
 	switch xColumnsText {
 	case "One":
-		return XColumnsValue(1), nil
+		return XColumnsOne, nil
 	case "Multi":
-		return XColumnsValue(2), nil
+		return XColumnsMulti, nil
 	default:
-		return XColumnsValue(0), fmt.Errorf("Invalid X columns value: %s", xColumnsText)
+		return XColumnsUnknown, fmt.Errorf("Invalid X columns value: %s", xColumnsText)
 	}
 }
 
@@ -49,14 +64,20 @@ func (x XColumnsValue) String() string {
 
 type FieldSeperator rune
 
+const (
+	FieldSeperatorUnknown FieldSeperator = 0
+	FieldSeperatorTab     FieldSeperator = '\t'
+	FieldSeperatorSpace   FieldSeperator = ' '
+)
+
 func ParseFieldSeperator(seperatorText string) (FieldSeperator, error) {
 	switch seperatorText {
 	case "Tab":
-		return FieldSeperator('\t'), nil
+		return FieldSeperatorTab, nil
 	case "Space":
-		return FieldSeperator(' '), nil
+		return FieldSeperatorTab, nil
 	default:
-		return FieldSeperator(0), fmt.Errorf("Invalid seperator: %s", seperatorText)
+		return FieldSeperatorUnknown, fmt.Errorf("Invalid seperator: %s", seperatorText)
 	}
 }
 

@@ -9,8 +9,8 @@ import (
 // The data stored is relevant to the purposes of this project.
 // It is guaranteed that all arrays will have the same length as `ChannelCount`.
 type ParsedChannelHeader struct {
-	ChannelCount uint64    `json:"channelCount"`
-	Samples      []uint64  `json:"samples"`
+	ChannelCount int       `json:"channelCount"`
+	Samples      []int     `json:"samples"`
 	Dates        []string  `json:"dates"`
 	Times        []string  `json:"times"`
 	YUnitLabels  []string  `json:"yUnitLabels"`
@@ -47,7 +47,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	}
 
 	// Attempt to parse channel count into an unsigned integer
-	channelCount, err := strconv.ParseUint(parsedHeader.Kv["Channels"][0], 10, 64)
+	channelCount, err := strconv.Atoi(parsedHeader.Kv["Channels"][0])
 
 	if err != nil {
 		return ParsedChannelHeader{}, fmt.Errorf("Failed to parse Channels: %s", parsedHeader.Kv["Channels"][0])
@@ -55,16 +55,16 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 
 	// Ensure all arrays have the length of the channel count
 	for i := 1; i < len(requiredKeys); i++ {
-		if uint64(len(parsedHeader.Kv[requiredKeys[i]])) != channelCount {
+		if len(parsedHeader.Kv[requiredKeys[i]]) != channelCount {
 			return ParsedChannelHeader{}, fmt.Errorf("Length of %s does not match channel count", requiredKeys[i])
 		}
 	}
 
 	// Parse samples
-	samples := make([]uint64, channelCount)
+	samples := make([]int, channelCount)
 
-	for i := uint64(0); i < channelCount; i++ {
-		sampleCount, err := strconv.ParseUint(parsedHeader.Kv["Samples"][i], 10, 64)
+	for i := 0; i < channelCount; i++ {
+		sampleCount, err := strconv.Atoi(parsedHeader.Kv["Samples"][i])
 
 		if err != nil {
 			return ParsedChannelHeader{}, fmt.Errorf("Failed to parse Samples: %s", parsedHeader.Kv["Samples"][i])
@@ -84,7 +84,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	// Parse initial Xs
 	initialXs := make([]float64, channelCount)
 
-	for i := uint64(0); i < channelCount; i++ {
+	for i := 0; i < channelCount; i++ {
 		initialX, err := strconv.ParseFloat(parsedHeader.Kv["X0"][i], 64)
 
 		if err != nil {
@@ -97,7 +97,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	// Parse delta Xs
 	deltaXs := make([]float64, channelCount)
 
-	for i := uint64(0); i < channelCount; i++ {
+	for i := 0; i < channelCount; i++ {
 		deltaX, err := strconv.ParseFloat(parsedHeader.Kv["Delta_X"][i], 64)
 
 		if err != nil {
