@@ -1,4 +1,4 @@
-module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-static-fires
+module github.com/UCSOAR/AvionicsPropulsionPipeline/cloud-functions/get-static-fire-metadata
 
 go 1.23.5
 
