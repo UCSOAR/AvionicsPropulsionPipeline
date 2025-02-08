@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"sync"
 
 	"cloud.google.com/go/storage"
 	bucketInfo "github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info"
@@ -172,7 +173,12 @@ func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []stri
 	yColumnChan := make(chan YColumnNode, len(yColumnNames))
 	errorChan := make(chan error)
 
+	wg := sync.WaitGroup{}
+	wg.Add(len(xColumnNames) + len(yColumnNames))
+
 	fetchXColumn := func(name string) {
+		defer wg.Done()
+
 		obj := bucket.Object(cacheTreeName + "/" + xColumnsSubdir + "/" + name)
 		reader, err := obj.NewReader(ctx)
 
@@ -181,6 +187,7 @@ func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []stri
 			return
 		}
 
+		defer reader.Close()
 		var xCol XColumnNode
 
 		{
@@ -201,6 +208,8 @@ func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []stri
 	}
 
 	fetchYColumn := func(name string) {
+		defer wg.Done()
+
 		obj := bucket.Object(cacheTreeName + "/" + yColumnsSubdir + "/" + name)
 		reader, err := obj.NewReader(ctx)
 
@@ -209,6 +218,7 @@ func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []stri
 			return
 		}
 
+		defer reader.Close()
 		var yCol YColumnNode
 
 		{
@@ -236,16 +246,38 @@ func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []stri
 		go fetchYColumn(name)
 	}
 
+	go func() {
+		wg.Wait()
+
+		close(xColumnChan)
+		close(yColumnChan)
+		close(errorChan)
+	}()
+
 	xColumns := make([]XColumnNode, 0, len(xColumnNames))
 	yColumns := make([]YColumnNode, 0, len(yColumnNames))
 
-	select {
-	case xCol := <-xColumnChan:
-		xColumns = append(xColumns, xCol)
-	case yCol := <-yColumnChan:
-		yColumns = append(yColumns, yCol)
-	case err := <-errorChan:
-		return nil, nil, err
+	for xColumnChan != nil || yColumnChan != nil || errorChan != nil {
+		select {
+		case xCol, ok := <-xColumnChan:
+			if !ok {
+				xColumnChan = nil
+			} else {
+				xColumns = append(xColumns, xCol)
+			}
+		case yCol, ok := <-yColumnChan:
+			if !ok {
+				yColumnChan = nil
+			} else {
+				yColumns = append(yColumns, yCol)
+			}
+		case err, ok := <-errorChan:
+			if !ok {
+				errorChan = nil
+			} else {
+				return nil, nil, err
+			}
+		}
 	}
 
 	return xColumns, yColumns, nil

@@ -17,6 +17,18 @@ const toggleTheme = () => {
   const root = document.documentElement;
   root.classList.toggle('dark', isDarkMode.value);
 };
+
+fetch('http://localhost:8080/GetStaticFireColumns', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: "sigma",
+    xColumnNames: ["X_Value"],
+    yColumnNames: ["Pressure", "Volume"],
+  }),
+})
 </script>
 
 <template>
@@ -24,18 +36,8 @@ const toggleTheme = () => {
     <header>
       <div>
         <!-- Conditional Rendering for Light/Dark Mode Logo -->
-        <img
-          v-if="isDarkMode"
-          src="/Logo/soar-logo-dark.svg"
-          alt="Soar Logo"
-          class="logo"
-        />
-        <img
-          v-else
-          src="/Logo/soar-logo-light.svg"
-          alt="Soar Logo"
-          class="logo"
-        />
+        <img v-if="isDarkMode" src="/Logo/soar-logo-dark.svg" alt="Soar Logo" class="logo" />
+        <img v-else src="/Logo/soar-logo-light.svg" alt="Soar Logo" class="logo" />
       </div>
       <button @click="toggleTheme" class="theme-toggle-button">
         <FontAwesomeIcon :icon="isDarkMode ? faSun : faMoon" />
@@ -52,7 +54,7 @@ const toggleTheme = () => {
       <!-- Chart Component -->
       <div class="graph">
         <ColumnTray />
-        <ChartPlaceholder class="chart-container"/>
+        <ChartPlaceholder class="chart-container" />
       </div>
     </div>
   </main>
@@ -60,7 +62,8 @@ const toggleTheme = () => {
 
 <style>
 /* Reset Styles */
-html, body {
+html,
+body {
   margin: 0 !important;
   padding: 0 !important;
   border: 0;
@@ -75,8 +78,8 @@ html, body {
 /* Track */
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius:10px;
-  
+  border-radius: 10px;
+
 }
 
 /* Handle */
@@ -88,19 +91,21 @@ html, body {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
-  border-radius:10px;
-} 
+  border-radius: 10px;
+}
 
 
 /* Main Layout */
 main {
   padding: 20px;
-  height: 100vh; /* Changed from min-height: 100vh to height: 100vh */
+  height: 100vh;
+  /* Changed from min-height: 100vh to height: 100vh */
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: background-color 0.3s ease, color 0.3s ease;
-  box-sizing: border-box; /* Ensures padding is included within 100vh */
+  box-sizing: border-box;
+  /* Ensures padding is included within 100vh */
 }
 
 /* Header Styling */
@@ -123,7 +128,8 @@ header {
   justify-content: center;
   align-self: stretch;
   width: 100%;
-  gap: 10px; /* Reduced gap to bring components closer */
+  gap: 10px;
+  /* Reduced gap to bring components closer */
 }
 
 /* File Tray (Left Panel) */
@@ -147,13 +153,17 @@ header {
 
 /* Chart Container (Right Panel) */
 .chart-container {
-  width: 50%; /* Reduced width for alignment */
-  height: 50%; /* Halved the height */
-  min-height: 200px; /* Ensures responsiveness */
+  width: 50%;
+  /* Reduced width for alignment */
+  height: 50%;
+  /* Halved the height */
+  min-height: 200px;
+  /* Ensures responsiveness */
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  background: #1e1e1e; /* Background for visualization */
+  background: #1e1e1e;
+  /* Background for visualization */
   border-radius: 8px;
   padding: 10px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
@@ -194,7 +204,4 @@ main.dark {
 .theme-toggle-button.dark:hover {
   background: #dddddd;
 }
-
-
-
 </style>
