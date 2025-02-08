@@ -156,6 +156,101 @@ func GetAllCacheMetadata() (map[string]PreviewMetadata, error) {
 	return data, nil
 }
 
+func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []string) ([]XColumnNode, []YColumnNode, error) {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed to create GCS client: %v", err)
+	}
+
+	defer client.Close()
+
+	bucket := client.Bucket(bucketInfo.BucketName)
+
+	xColumnChan := make(chan XColumnNode, len(xColumnNames))
+	yColumnChan := make(chan YColumnNode, len(yColumnNames))
+	errorChan := make(chan error)
+
+	fetchXColumn := func(name string) {
+		obj := bucket.Object(cacheTreeName + "/" + xColumnsSubdir + "/" + name)
+		reader, err := obj.NewReader(ctx)
+
+		if err != nil {
+			errorChan <- fmt.Errorf("Failed to read X column %s: %v", name, err)
+			return
+		}
+
+		var xCol XColumnNode
+
+		{
+			decoder := gob.NewDecoder(reader)
+
+			if err := decoder.Decode(&xCol); err != nil {
+				errorChan <- fmt.Errorf("Failed to decode X column %s: %v", name, err)
+				return
+			}
+		}
+
+		if err := reader.Close(); err != nil {
+			errorChan <- fmt.Errorf("Failed to close reader for X column %s: %v", name, err)
+			return
+		}
+
+		xColumnChan <- xCol
+	}
+
+	fetchYColumn := func(name string) {
+		obj := bucket.Object(cacheTreeName + "/" + yColumnsSubdir + "/" + name)
+		reader, err := obj.NewReader(ctx)
+
+		if err != nil {
+			errorChan <- fmt.Errorf("Failed to read Y column %s: %v", name, err)
+			return
+		}
+
+		var yCol YColumnNode
+
+		{
+			decoder := gob.NewDecoder(reader)
+
+			if err := decoder.Decode(&yCol); err != nil {
+				errorChan <- fmt.Errorf("Failed to decode Y column %s: %v", name, err)
+				return
+			}
+		}
+
+		if err := reader.Close(); err != nil {
+			errorChan <- fmt.Errorf("Failed to close reader for Y column %s: %v", name, err)
+			return
+		}
+
+		yColumnChan <- yCol
+	}
+
+	for _, name := range xColumnNames {
+		go fetchXColumn(name)
+	}
+
+	for _, name := range yColumnNames {
+		go fetchYColumn(name)
+	}
+
+	xColumns := make([]XColumnNode, 0, len(xColumnNames))
+	yColumns := make([]YColumnNode, 0, len(yColumnNames))
+
+	select {
+	case xCol := <-xColumnChan:
+		xColumns = append(xColumns, xCol)
+	case yCol := <-yColumnChan:
+		yColumns = append(yColumns, yCol)
+	case err := <-errorChan:
+		return nil, nil, err
+	}
+
+	return xColumns, yColumns, nil
+}
+
 func DeleteCache(name string) error {
 	return nil
 }
