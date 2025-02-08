@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, provide } from 'vue';
+import { ref, provide } from 'vue';
 import BucketUploadForm from './components/BucketUploadForm.vue';
 import BucketUploads from './components/BucketUploads.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';

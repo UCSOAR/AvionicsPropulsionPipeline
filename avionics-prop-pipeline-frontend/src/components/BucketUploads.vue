@@ -9,6 +9,16 @@ import { useMetadataStore } from "../stores/metadataStore";
 const isDarkMode = inject("isDarkMode", ref(false));
 const cachePreviews = reactive<Record<string, PreviewMetadata>>({});
 const metadataStore = useMetadataStore();
+import { onMounted, reactive, ref, inject } from "vue";
+import { PreviewMetadata } from "../models/BucketObject";
+import { endpointMapping } from "../utils/constants";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faTrash, faFile } from "@fortawesome/free-solid-svg-icons";
+import { useMetadataStore } from "../stores/metadataStore";
+
+const isDarkMode = inject("isDarkMode", ref(false));
+const cachePreviews = reactive<Record<string, PreviewMetadata>>({});
+const metadataStore = useMetadataStore();
 const error = ref<string | null>(null);
 
 // Initialize objects
@@ -69,6 +79,16 @@ onMounted(() => fetchObjects());
             <div class="button-name">
               <p class="file-name">{{ removeExtension(name) }}</p>
             </div>
+          </div>
+        </button>
+        <button type="button" @click="deleteCache(name)" class="delete-button">
+          <font-awesome-icon :icon="faTrash" />
+        </button>
+      </div>
+    </div>
+    <p v-else>No uploaded files yet.</p>
+    <p v-if="error" class="error-message">{{ error }}</p>
+  </div>
           </div>
         </button>
         <button type="button" @click="deleteCache(name)" class="delete-button">
