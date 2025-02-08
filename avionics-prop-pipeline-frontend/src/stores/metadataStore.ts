@@ -5,6 +5,7 @@ export const useMetadataStore = defineStore('metadata', {
     metadata: {} as Record<string, any>, // Holds metadata object
     colX: null as string | null,        // Selected column for X
     colY: null as string | null,        // Selected column for Y
+    name: null as string | null         // The name of the file selected
   }),
   actions: {
     /**
@@ -13,10 +14,11 @@ export const useMetadataStore = defineStore('metadata', {
      * @param X - The column name to set for the X-axis.
      * @param Y - The column name to set for the Y-axis.
      */
-    setMetadata(newMetadata: Record<string, any>, X: string, Y: string) {
+    setMetadata(newMetadata: Record<string, any>, X: string, Y: string, name: string) {
       this.metadata = newMetadata; // Update metadata
       this.colX = X;               // Update selected X column
       this.colY = Y;               // Update selected Y column
+      this.name = name;
     },
   },
 });

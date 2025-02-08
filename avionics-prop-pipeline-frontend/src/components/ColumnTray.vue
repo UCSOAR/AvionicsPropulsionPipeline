@@ -8,17 +8,18 @@ const isDarkMode = inject('isDarkMode', ref(false));
 // Access the metadata store
 const metadataStore = useMetadataStore();
 
+
 // Computed properties for xColumnNames and yColumnNames
 const xColumnNames = computed(() => metadataStore.metadata?.xColumnNames ?? []);
 const yColumnNames = computed(() => metadataStore.metadata?.yColumnNames ?? []);
 
 // Map xColumnNames and yColumnNames to dropdown options
 const xOptions = computed(() =>
-  xColumnNames.value.map((name) => ({ value: name, label: name }))
+  xColumnNames.value.map((name: string) => ({ value: name, label: name }))
 );
 
 const yOptions = computed(() =>
-  yColumnNames.value.map((name) => ({ value: name, label: name }))
+  yColumnNames.value.map((name: string) => ({ value: name, label: name }))
 );
 
 // Default selected values (set to the first available option)
@@ -44,6 +45,9 @@ const confirmOptions = () => {
     x: selectedXValue.value,
     y: selectedYValue.value,
   });
+
+  const name = String(metadataStore.name);
+  metadataStore.setMetadata(metadataStore.metadata, selectedXValue.value, selectedYValue.value, name);
 
   // Add logic here to update your chart or fetch new data
 };

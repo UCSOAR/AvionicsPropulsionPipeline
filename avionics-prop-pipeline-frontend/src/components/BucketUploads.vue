@@ -30,8 +30,9 @@ const fetchObjects = async () => {
   }
 };
 
-const handleFileClick = (obj: PreviewMetadata) => {
-  metadataStore.setMetadata(obj, obj.xColumnNames[0], obj.yColumnNames[0]);
+const handleFileClick = (obj: PreviewMetadata, name: string) => {
+  console.log("Tis the name", name);
+  metadataStore.setMetadata(obj, obj.xColumnNames[0], obj.yColumnNames[0], name);
   console.log("Metadata stored", obj);
 };
 
@@ -59,7 +60,7 @@ onMounted(() => fetchObjects());
           type="button"
           class="file-info-button"
           style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;"
-          @click="handleFileClick(metadata)"
+          @click="handleFileClick(metadata, name)"
         >
           <div class="file-info">
             <div class="file-icon">
