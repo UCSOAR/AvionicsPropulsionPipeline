@@ -64,15 +64,15 @@ STM32L152-Discovery.elf.launch
 .vs/
 
 # Golang
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-*.prof
-*.cover
-*.tar.gz
-*.tar
-*.sum
+**/*.exe
+**/*.exe~
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.test
+**/*.out
+**/*.prof
+**/*.cover
+**/*.tar.gz
+**/*.tar
+**/*.sum
