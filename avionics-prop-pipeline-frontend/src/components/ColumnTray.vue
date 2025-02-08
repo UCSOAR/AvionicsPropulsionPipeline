@@ -1,96 +1,76 @@
 <script setup lang="ts">
-import { computed, ref, inject } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { useMetadataStore } from '../stores/metadataStore';
-import VueApexCharts from 'vue3-apexcharts';
 
-// Inject dark mode from the parent component
+// Inject dark mode (optional, depending on your implementation)
 const isDarkMode = inject('isDarkMode', ref(false));
+
+// Access the metadata store
 const metadataStore = useMetadataStore();
 
-console.log(JSON.stringify(metadataStore.metadata, null, 2));
+// Computed properties for xColumnNames and yColumnNames
+const xColumnNames = computed(() => metadataStore.metadata?.xColumnNames ?? []);
+const yColumnNames = computed(() => metadataStore.metadata?.yColumnNames ?? []);
 
+// Map xColumnNames and yColumnNames to dropdown options
+const xOptions = computed(() =>
+  xColumnNames.value.map((name) => ({ value: name, label: name }))
+);
 
+const yOptions = computed(() =>
+  yColumnNames.value.map((name) => ({ value: name, label: name }))
+);
 
-// --- Column Tray State and Options ---
-const selectedXValue = ref('');
-const selectedYValue = ref('');
+// Default selected values (set to the first available option or empty string)
+const selectedXValue = ref(xOptions.value[0]?.value ?? '');
+const selectedYValue = ref(yOptions.value[0]?.value ?? '');
 
-// Sample dropdown options (adjust these to match your needs)
-const xOptions = ref([
-  { value: 'date', label: 'Date' },
-  { value: 'time', label: 'Time' },
-  { value: 'category', label: 'Category' },
-]);
-
-const yOptions = ref([
-  { value: 'value', label: 'Value' },
-  { value: 'count', label: 'Count' },
-  { value: 'total', label: 'Total' },
-]);
-
-// This function will be called when the Confirm button is clicked.
+// Handle the confirm button click
 const confirmOptions = () => {
   console.log('Confirmed Options:', {
     x: selectedXValue.value,
     y: selectedYValue.value,
   });
-  // Add logic here to update your chart options, fetch new data, etc.
+
+  // Add logic here to update your chart or fetch new data
 };
-
-// --- Chart Data and Options ---
-const series = ref([
-  {
-    name: 'Example Data',
-    data: [
-      [new Date('2023-11-01').getTime(), 8100],
-      [new Date('2023-11-02').getTime(), 8200],
-      [new Date('2023-11-03').getTime(), 8300],
-      [new Date('2023-11-04').getTime(), 8500],
-      [new Date('2023-11-05').getTime(), 8600],
-      [new Date('2023-11-06').getTime(), 8700],
-      [new Date('2023-11-07').getTime(), 8800],
-      [new Date('2023-11-08').getTime(), 8900],
-      [new Date('2023-11-09').getTime(), 9000],
-      [new Date('2023-11-10').getTime(), 9100],
-      [new Date('2023-11-11').getTime(), 9200],
-      [new Date('2023-11-12').getTime(), 9300],
-      [new Date('2023-11-13').getTime(), 9400],
-      [new Date('2023-11-14').getTime(), 9500],
-      [new Date('2023-11-15').getTime(), 9600],
-      [new Date('2023-11-16').getTime(), 9700],
-      [new Date('2023-11-17').getTime(), 9800],
-    ],
-  },
-]);
-
-
 </script>
 
 <template>
   <div>
     <!-- Column Tray Above the Chart -->
     <div :class="['column-tray', { dark: isDarkMode }]">
+      <!-- Dropdown for X Values -->
       <div class="dropdown-group">
         <label for="xValue">X Value:</label>
         <select id="xValue" v-model="selectedXValue">
-          <option v-for="option in xOptions" :key="option.value" :value="option.value">
+          <option
+            v-for="option in xOptions"
+            :key="option.value"
+            :value="option.value"
+          >
             {{ option.label }}
           </option>
         </select>
       </div>
+
+      <!-- Dropdown for Y Values -->
       <div class="dropdown-group">
         <label for="yValue">Y Value:</label>
         <select id="yValue" v-model="selectedYValue">
-          <option v-for="option in yOptions" :key="option.value" :value="option.value">
+          <option
+            v-for="option in yOptions"
+            :key="option.value"
+            :value="option.value"
+          >
             {{ option.label }}
           </option>
         </select>
       </div>
-      <button class="confirm-button" @click="confirmOptions">
-        Confirm
-      </button>
-    </div>
 
+      <!-- Confirm Button -->
+      <button class="confirm-button" @click="confirmOptions">Confirm</button>
+    </div>
   </div>
 </template>
 
