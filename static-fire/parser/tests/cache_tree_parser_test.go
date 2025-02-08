@@ -4,6 +4,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching"
 	"github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
@@ -69,6 +70,28 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 	if !reflect.DeepEqual(parsedCacheTree, expected) {
 		t.Errorf("ParseIntoCacheTree() = %v\nwant\n%v", parsedCacheTree, expected)
 	}
+}
+
+func TestTimeTakenToParseLongLvm(t *testing.T) {
+	file, err := os.Open("./files/valid_long.lvm")
+
+	if err != nil {
+		t.Errorf("os.Open() error = %v", err)
+		return
+	}
+
+	defer file.Close()
+
+	start := time.Now()
+	_, err = parser.ParseIntoCacheTree(file)
+	duration := time.Since(start)
+
+	if err != nil {
+		t.Errorf("ParseIntoCacheTree() error = %v", err)
+		return
+	}
+
+	t.Logf("Time taken to parse: %v ms", float64(duration.Microseconds())/1000)
 }
 
 func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
