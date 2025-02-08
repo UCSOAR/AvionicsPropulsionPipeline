@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
+import { ref, computed, inject, watch } from 'vue';
 import { useMetadataStore } from '../stores/metadataStore';
 
 // Inject dark mode (optional, depending on your implementation)
@@ -21,9 +21,22 @@ const yOptions = computed(() =>
   yColumnNames.value.map((name) => ({ value: name, label: name }))
 );
 
-// Default selected values (set to the first available option or empty string)
-const selectedXValue = ref(xOptions.value[0]?.value ?? '');
-const selectedYValue = ref(yOptions.value[0]?.value ?? '');
+// Default selected values (set to the first available option)
+const selectedXValue = ref('');
+const selectedYValue = ref('');
+
+// Watch for changes in options and update selected values
+watch(xOptions, (newXOptions) => {
+  if (newXOptions.length > 0) {
+    selectedXValue.value = newXOptions[0].value;
+  }
+}, { immediate: true });
+
+watch(yOptions, (newYOptions) => {
+  if (newYOptions.length > 0) {
+    selectedYValue.value = newYOptions[0].value;
+  }
+}, { immediate: true });
 
 // Handle the confirm button click
 const confirmOptions = () => {

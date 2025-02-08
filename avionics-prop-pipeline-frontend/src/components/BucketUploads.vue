@@ -13,7 +13,7 @@ const error = ref<string | null>(null);
 
 const fetchObjects = async () => {
   try {
-    const result = await fetch(endpointMapping.getStaticFiresUrl);
+    const result = await fetch(endpointMapping.getStaticFireMetadataUrl);
     if (result.ok) {
       const data = await result.json();
       console.log(data);
@@ -27,8 +27,11 @@ const fetchObjects = async () => {
   }
 };
 
+
+
 const handleFileClick = (obj: PreviewMetadata) => {
-  metadataStore.setMetadata(obj);
+
+  metadataStore.setMetadata(obj, obj.xColumnNames[0], obj.yColumnNames[0]);
   console.log('meta data stored', obj)
 };
 
