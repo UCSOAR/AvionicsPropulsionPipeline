@@ -11,42 +11,41 @@ const cachePreviews = reactive<Record<string, PreviewMetadata>>({});
 const metadataStore = useMetadataStore();
 const error = ref<string | null>(null);
 
+// Initialize objects
+const objects = ref<Record<string, PreviewMetadata>>({});
+
 const fetchObjects = async () => {
   try {
     const result = await fetch(endpointMapping.getStaticFireMetadataUrl);
     if (result.ok) {
       const data = await result.json();
       console.log(data);
-      Object.assign(objects, data);
+      objects.value = data; // Assign data to objects
       error.value = null;
     } else {
       error.value = "Failed to fetch uploaded files.";
     }
   } catch (err) {
-    error.value = err as string;
+    error.value = (err as Error).message || "An error occurred.";
   }
 };
 
-
-
 const handleFileClick = (obj: PreviewMetadata) => {
-
   metadataStore.setMetadata(obj, obj.xColumnNames[0], obj.yColumnNames[0]);
-  console.log('meta data stored', obj)
+  console.log("Metadata stored", obj);
 };
 
 const deleteCache = async (cacheName: string) => {
-    if (cacheName in cachePreviews) {
-        delete cachePreviews[cacheName];
-    }
+  if (cacheName in cachePreviews) {
+    delete cachePreviews[cacheName];
+  }
 };
 
 // Helper function to remove the extension from a file name
 const removeExtension = (fileName: string): string => {
-    const lastDotIndex = fileName.lastIndexOf(".");
-    return lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
+  const lastDotIndex = fileName.lastIndexOf(".");
+  return lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
 };
-
 
 onMounted(() => fetchObjects());
 </script>
@@ -54,7 +53,7 @@ onMounted(() => fetchObjects());
 <template>
   <div :class="['uploaded-files-box', { dark: isDarkMode }]">
     <!-- <button @click="fetchObjects" class="refresh-button"></button> -->
-    <div v-if="Object.keys(objects).length > 0" class="file-list">
+    <div v-if="objects && Object.keys(objects).length > 0" class="file-list">
       <div v-for="(metadata, name) in objects" :key="name" class="file-item">
         <button
           type="button"
@@ -71,7 +70,7 @@ onMounted(() => fetchObjects());
             </div>
           </div>
         </button>
-        <button type="button" @click="deleteObject(name)" class="delete-button">
+        <button type="button" @click="deleteCache(name)" class="delete-button">
           <font-awesome-icon :icon="faTrash" />
         </button>
       </div>
@@ -80,6 +79,7 @@ onMounted(() => fetchObjects());
     <p v-if="error" class="error-message">{{ error }}</p>
   </div>
 </template>
+
 
 <style scoped>
 /* Box Container */
