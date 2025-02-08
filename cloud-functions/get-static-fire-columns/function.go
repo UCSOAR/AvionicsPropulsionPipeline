@@ -24,13 +24,13 @@ func GetStaticFireColumns(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	switch r.Method {
-	case "GET":
-		break // Only allow GET requests
+	case "POST":
+		break // Only allow POST requests
 	case "OPTIONS":
 		w.WriteHeader(http.StatusOK)
 		return
 	default:
-		http.Error(w, "Only GET requests allowed for fetching static fire columns", http.StatusMethodNotAllowed)
+		http.Error(w, "Only POST requests allowed for fetching static fire columns", http.StatusMethodNotAllowed)
 		return
 	}
 

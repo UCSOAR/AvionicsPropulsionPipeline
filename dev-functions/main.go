@@ -13,7 +13,7 @@ const devPort string = "8080"
 
 func main() {
 	// Register functions to test locally here
-	funcframework.RegisterHTTPFunction("/GetStaticFires", getStaticFireMetadata.GetStaticFires)
+	funcframework.RegisterHTTPFunction("/GetStaticFireMetadata", getStaticFireMetadata.GetStaticFires)
 	funcframework.RegisterHTTPFunction("/GetStaticFireColumns", getStaticFireColumns.GetStaticFireColumns)
 	funcframework.RegisterHTTPFunction("/UploadStaticFire", uploadStaticFire.UploadStaticFire)
 
