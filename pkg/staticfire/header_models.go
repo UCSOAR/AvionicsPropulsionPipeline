@@ -2,6 +2,7 @@ package staticfire
 
 import "fmt"
 
+// Enumerates the possible values for the `MultiHeadings` field in an LVM file.
 type MultiHeadingsValue uint8
 
 const (
@@ -10,6 +11,7 @@ const (
 	MultiHeadingsNo      MultiHeadingsValue = 2
 )
 
+// Enumerates the possible values for the `XColumns` field in an LVM file.
 type XColumnsValue uint8
 
 const (
@@ -18,6 +20,7 @@ const (
 	XColumnsMulti   XColumnsValue = 2
 )
 
+// Enumerates the possible field seperators in an LVM file.
 type FieldSeperator rune
 
 const (
@@ -26,6 +29,7 @@ const (
 	FieldSeperatorSpace   FieldSeperator = ' '
 )
 
+// Represents a parsed LVM entry header.
 type ParsedEntryHeader struct {
 	Seperator     FieldSeperator     `json:"seperator"`
 	MultiHeadings MultiHeadingsValue `json:"multiHeadings"`

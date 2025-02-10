@@ -1,6 +1,5 @@
 package staticfire
 
-// For the purposes of this project, we need to assert the following values
 const AssertedFirstLine = "LabVIEW Measurement"   // The first line of the file
 const AssertedEndOfHeader = "***End_of_Header***" // Denotes the end of a header section
 const AssertedWriterVersion = "2"                 // This parser was written for version 2

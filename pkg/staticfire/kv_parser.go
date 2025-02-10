@@ -12,6 +12,13 @@ type ParsedKvHeader struct {
 }
 
 // Parses a generic key-value header.
+//
+// Parameters:
+//   - rawHeaderText: The raw text of the header to parse.
+//
+// Returns:
+//   - ParsedKvHeader: The parsed key-value header.
+//   - error: An error if the header could not be parsed, or nil if the operation was successful.
 func ParseKv(rawHeaderText string) (ParsedKvHeader, error) {
 	reader := strings.NewReader(rawHeaderText)
 	scanner := bufio.NewScanner(reader)

@@ -3,13 +3,17 @@ package staticfire
 import (
 	"bufio"
 	"fmt"
-	"mime/multipart"
 	"strconv"
 	"strings"
 )
 
-// Move a scanner forward until the end of the header.
-// Returns the scanned text.
+// Helper function to create a string from the current point of a scanner until the end of an LVM header.
+//
+// Parameters:
+//   - scanner: The scanner to read from.
+//
+// Returns:
+//   - string: The string containing the header.
 func readUntilEOH(scanner *bufio.Scanner) string {
 	var headerBuilder strings.Builder
 
@@ -31,6 +35,13 @@ func readUntilEOH(scanner *bufio.Scanner) string {
 	return headerBuilder.String()
 }
 
+// Helper function to filter out the comment column from a list of column names.
+//
+// Parameters:
+//   - columnNames: The list of column names to filter.
+//
+// Returns:
+//   - []string: The list of column names with the comment column removed.
 func filterCommentColumn(columnNames []string) []string {
 	if columnNames[len(columnNames)-1] == AssertedCommentColumnName {
 		return columnNames[:len(columnNames)-1]
@@ -39,20 +50,26 @@ func filterCommentColumn(columnNames []string) []string {
 	return columnNames
 }
 
-func ParseIntoCacheTree(lvmFile multipart.File) (CacheTree, error) {
-	scanner := bufio.NewScanner(lvmFile)
-
+// Parses an LVM file into a cache tree.
+//
+// Parameters:
+//   - lvmScanner: The scanner to read the LVM content from.
+//
+// Returns:
+//   - CacheTree: The cache tree parsed from the LVM content.
+//   - error: An error if the LVM content could not be parsed, or nil if the operation was successful.
+func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
 	// Assert first line
-	if !scanner.Scan() {
+	if !lvmScanner.Scan() {
 		return CacheTree{}, nil
 	}
 
-	if line := strings.TrimSpace(scanner.Text()); line != AssertedFirstLine {
+	if line := strings.TrimSpace(lvmScanner.Text()); line != AssertedFirstLine {
 		return CacheTree{}, fmt.Errorf("First line %s does not match expected %s", line, AssertedFirstLine)
 	}
 
 	// Read forward to the end of the first header (entry header)
-	rawEntryHeaderText := readUntilEOH(scanner)
+	rawEntryHeaderText := readUntilEOH(lvmScanner)
 	entryHeader, err := ParseEntryHeader(rawEntryHeaderText)
 
 	if err != nil {
@@ -60,7 +77,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (CacheTree, error) {
 	}
 
 	// Read forward to the end of the second header (channel header)
-	rawChannelHeaderText := readUntilEOH(scanner)
+	rawChannelHeaderText := readUntilEOH(lvmScanner)
 	channelHeader, err := ParseChannelHeader(rawChannelHeaderText)
 
 	if err != nil {
@@ -91,11 +108,11 @@ func ParseIntoCacheTree(lvmFile multipart.File) (CacheTree, error) {
 	}
 
 	// Read column names
-	if !scanner.Scan() {
+	if !lvmScanner.Scan() {
 		return CacheTree{}, fmt.Errorf("No columns found")
 	}
 
-	columnNames := filterCommentColumn(strings.Split(scanner.Text(), string(entryHeader.Seperator)))
+	columnNames := filterCommentColumn(strings.Split(lvmScanner.Text(), string(entryHeader.Seperator)))
 
 	// Check that number of columns matches expectations
 	totalColumnCount := xColumnCount + yColumnCount
@@ -105,8 +122,8 @@ func ParseIntoCacheTree(lvmFile multipart.File) (CacheTree, error) {
 	}
 
 	// Read until end of file
-	for scanner.Scan() {
-		line := scanner.Text()
+	for lvmScanner.Scan() {
+		line := lvmScanner.Text()
 		values := strings.Split(line, string(entryHeader.Seperator))
 
 		// Check if the last column is a comment

@@ -1,7 +1,11 @@
 package storage
 
 import (
+	"encoding/gob"
+	"os"
+	"path"
 	staticfire "soarpipeline/pkg/staticfire"
+	"sync"
 )
 
 const cacheSubdirName = "cache"
@@ -9,269 +13,264 @@ const xColumnsSubdirName = "x"
 const yColumnsSubdirName = "y"
 const previewMetadataFileName = "preview"
 
-func StoreCache(name string, tree *staticfire.CacheTree) error {
+// Helper function to store a gob object to a file.
+//
+// Parameters:
+//   - path: The path to the file to store the gob object in.
+//   - obj: The gob object to store.
+//
+// Returns:
+//   - error: An error if the gob object could not be stored, or nil if the operation was successful.
+func storeGobObject[T any](path string, obj *T) error {
+	file, err := os.Create(path)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+	encoder := gob.NewEncoder(file)
+
+	if err := encoder.Encode(obj); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func GetAllCacheMetadata() (map[string]staticfire.PreviewMetadata, error) {
-	return nil, nil
+// Helper function to decode a gob object from a file.
+//
+// Parameters:
+//   - path: The path to the file containing the gob object.
+//   - emptyObj: A pointer to an empty object of the type to decode.
+//
+// Returns:
+//   - error: An error if the gob object could not be decoded, or nil if the operation was successful.
+func decodeGobObject[T any](path string, emptyObj *T) error {
+	file, err := os.Open(path)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+	decoder := gob.NewDecoder(file)
+
+	if err := decoder.Decode(emptyObj); err != nil {
+		return err
+	}
+
+	return nil
 }
 
+// Stores the cache tree data in the cache directory.
+//
+// Parameters:
+//   - name: The name of the cache directory to store the cache tree data in.
+//   - tree: The cache tree data to store.
+//
+// Returns:
+//   - error: An error if the cache tree data could not be stored, or nil if the operation was successful.
+func StoreCache(name string, tree *staticfire.CacheTree) error {
+	cacheBasePath := path.Join(StorageDirPath, cacheSubdirName, name)
+	xColumnsBasePath := path.Join(cacheBasePath, xColumnsSubdirName)
+	yColumnsBasePath := path.Join(cacheBasePath, yColumnsSubdirName)
+
+	// Create the cache directory and subdirectories
+	if err := os.MkdirAll(xColumnsBasePath, os.ModePerm); err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(yColumnsBasePath, os.ModePerm); err != nil {
+		return err
+	}
+
+	// Start storing the cache tree data
+	errorChan := make(chan error)
+	wg := sync.WaitGroup{}
+
+	// Store the preview metadata
+	{
+		previewMetadataPath := path.Join(cacheBasePath, previewMetadataFileName)
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			if err := storeGobObject(previewMetadataPath, &tree.PreviewMetadata); err != nil {
+				errorChan <- err
+			}
+		}()
+	}
+
+	// Store the X column data
+	for i, xCol := range tree.XColumnNodes {
+		xColPath := path.Join(xColumnsBasePath, tree.PreviewMetadata.XColumnNames[i])
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			if err := storeGobObject(xColPath, &xCol); err != nil {
+				errorChan <- err
+			}
+		}()
+	}
+
+	// Store the Y column data
+	for j, yCol := range tree.YColumnNodes {
+		yColPath := path.Join(yColumnsBasePath, tree.PreviewMetadata.YColumnNames[j])
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			if err := storeGobObject(yColPath, &yCol); err != nil {
+				errorChan <- err
+			}
+		}()
+	}
+
+	// Ensure error channel gets closed
+	go func() {
+		wg.Wait()
+
+		close(errorChan)
+	}()
+
+	// Check for errors
+	for errorChan != nil {
+		select {
+		case err, ok := <-errorChan:
+			if !ok {
+				errorChan = nil
+			} else {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// Reads the preview metadata for all caches in the cache directory.
+//
+// Returns:
+//   - metadata: A map of cache names to their respective preview metadata.
+//   - error: An error if the metadata could not be read, or nil if the operation was successful.
+func ReadAllCacheMetadata() (map[string]staticfire.PreviewMetadata, error) {
+	type MetadataKV struct {
+		name     string
+		metadata staticfire.PreviewMetadata
+	}
+
+	// Look at all subdirectories in the cache directory
+	cacheDirPath := path.Join(StorageDirPath, cacheSubdirName)
+	entries, err := os.ReadDir(cacheDirPath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Read the preview metadata for each cache
+	metadata := make(map[string]staticfire.PreviewMetadata, len(entries))
+	metadataChan := make(chan MetadataKV, len(entries))
+	errorChan := make(chan error)
+	wg := sync.WaitGroup{}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		cacheName := entry.Name()
+
+		// Read the preview metadata
+		previewMetadataPath := path.Join(cacheDirPath, cacheName, previewMetadataFileName)
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			var metadata staticfire.PreviewMetadata
+
+			if err := decodeGobObject(previewMetadataPath, &metadata); err != nil {
+				errorChan <- err
+			} else {
+				metadataChan <- MetadataKV{cacheName, metadata}
+			}
+		}()
+	}
+
+	// Ensure channels are closed
+	go func() {
+		wg.Wait()
+
+		close(metadataChan)
+		close(errorChan)
+	}()
+
+	// Check for errors and collect metadata
+	for metadataChan != nil || errorChan != nil {
+		select {
+		case kv, ok := <-metadataChan:
+			if !ok {
+				metadataChan = nil
+			} else {
+				metadata[kv.name] = kv.metadata
+			}
+		case err, ok := <-errorChan:
+			if !ok {
+				errorChan = nil
+			} else {
+				return nil, err
+			}
+		}
+	}
+
+	return metadata, nil
+}
+
+// Retrieves the X and Y columns for the specified cache.
+// Each column is identified by its name in the cache tree.
+//
+// Parameters:
+//   - name: The name of the cache directory to retrieve columns from.
+//   - xColumnNames: The names of the X columns to retrieve.
+//   - yColumnNames: The names of the Y columns to retrieve.
+//
+// Returns:
+//   - xColumnNodes: A map of X column names to their respective column nodes.
+//   - yColumnNodes: A map of Y column names to their respective column nodes.
+//   - error: An error if the columns could not be retrieved, or nil if the operation was successful.
 func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.XColumnNode, map[string]staticfire.YColumnNode, error) {
+	type ColumnKV[T any] struct {
+		name   string
+		column T
+	}
+
+	xColumnNodes := make(map[string]staticfire.XColumnNode, len(xColumnNames))
+	yColumnNodes := make(map[string]staticfire.YColumnNode, len(yColumnNames))
+
+	// TODO: Implement this function
+	_ = xColumnNodes
+	_ = yColumnNodes
+
 	return nil, nil, nil
 }
 
+// Removes the cache directory specified by the given name.
+//
+// Parameters:
+//   - name: The name of the cache directory to be deleted.
+//
+// Returns:
+//   - error: An error if the directory could not be removed, or nil if the operation was successful.
 func DeleteCache(name string) error {
+	cacheDirPath := path.Join(StorageDirPath, cacheSubdirName, name)
+
+	if err := os.RemoveAll(cacheDirPath); err != nil {
+		return err
+	}
+
 	return nil
 }
-
-// import (
-// 	"context"
-// 	"encoding/gob"
-// 	"fmt"
-
-// 	"cloud.google.com/go/storage"
-// 	bucketInfo "github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info"
-// 	"google.golang.org/api/iterator"
-// )
-
-// func createDirectory(ctx context.Context, bucket *storage.BucketHandle, name string) error {
-// 	dirObj := bucket.Object(name + "/")
-
-// 	if _, err := dirObj.Attrs(ctx); err == nil {
-// 		// Directory already exists
-// 		return fmt.Errorf("Directory with name %s already exists", name)
-// 	} else if err != storage.ErrObjectNotExist {
-// 		return fmt.Errorf("Failed to check directory existence: %v", err)
-// 	}
-
-// 	// Create the directory
-// 	if err := dirObj.NewWriter(ctx).Close(); err != nil {
-// 		return fmt.Errorf("Failed to create directory: %v", err)
-// 	}
-
-// 	return nil
-// }
-
-// func writeEncodedObject[T any](ctx context.Context, bucket *storage.BucketHandle, name string, obj T) error {
-// 	writer := bucket.Object(name).NewWriter(ctx)
-// 	encoder := gob.NewEncoder(writer)
-
-// 	if err := encoder.Encode(obj); err != nil {
-// 		return fmt.Errorf("Failed to encode object: %v", err)
-// 	}
-
-// 	if err := writer.Close(); err != nil {
-// 		return fmt.Errorf("Failed to write object: %v", err)
-// 	}
-
-// 	return nil
-// }
-
-// func (tree *CacheTree) Store(name string) error {
-// 	ctx := context.Background()
-// 	client, err := storage.NewClient(ctx)
-
-// 	if err != nil {
-// 		return fmt.Errorf("Failed to create GCS client: %v", err)
-// 	}
-
-// 	defer client.Close()
-
-// 	bucket := client.Bucket(bucketInfo.BucketName)
-
-// 	// Create the tree structure in the file system
-// 	// Create the root directory
-// 	if err := createDirectory(ctx, bucket, name); err != nil {
-// 		return err
-// 	}
-
-// 	// Create subdirectories for storing X and Y column data
-// 	for _, dir := range []string{xColumnsSubdir, yColumnsSubdir} {
-// 		if err := createDirectory(ctx, bucket, name+"/"+dir); err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	// Encode preview metadata and store it in the root directory
-// 	if err := writeEncodedObject(ctx, bucket, name+"/"+previewMetadataFile, tree.PreviewMetadata); err != nil {
-// 		return err
-// 	}
-
-// 	// Encode all X column data and store it in the X column directory
-// 	for i, xCol := range tree.XColumnNodes {
-// 		if err := writeEncodedObject(ctx, bucket, name+"/"+xColumnsSubdir+"/"+tree.PreviewMetadata.XColumnNames[i], xCol); err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	// Encode all Y column data and store it in the Y column directory
-// 	for j, yCol := range tree.YColumnNodes {
-// 		if err := writeEncodedObject(ctx, bucket, name+"/"+yColumnsSubdir+"/"+tree.PreviewMetadata.YColumnNames[j], yCol); err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func GetAllCacheMetadata() (map[string]PreviewMetadata, error) {
-// 	ctx := context.Background()
-// 	client, err := storage.NewClient(ctx)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Failed to create GCS client: %v", err)
-// 	}
-
-// 	defer client.Close()
-
-// 	bucket := client.Bucket(bucketInfo.BucketName)
-// 	query := storage.Query{
-// 		Delimiter:                "/",
-// 		IncludeTrailingDelimiter: true,
-// 	}
-
-// 	query.SetAttrSelection([]string{"Prefix"})
-// 	objIt := bucket.Objects(ctx, &query)
-
-// 	// Map of cache names to preview metadata
-// 	data := make(map[string]PreviewMetadata)
-
-// 	for {
-// 		attr, err := objIt.Next()
-
-// 		if err == iterator.Done {
-// 			break
-// 		} else if err != nil {
-// 			return nil, fmt.Errorf("Failed to iterate over objects: %v", err)
-// 		}
-
-// 		if attr.Prefix == "" {
-// 			// Skip objects that are not directories
-// 			continue
-// 		}
-
-// 		// Decode the preview metadata
-// 		obj := bucket.Object(attr.Prefix + previewMetadataFile)
-// 		reader, err := obj.NewReader(ctx)
-
-// 		if err != nil {
-// 			return nil, fmt.Errorf("Failed to read preview metadata: %v", err)
-// 		}
-
-// 		decoder := gob.NewDecoder(reader)
-// 		var metadata PreviewMetadata
-
-// 		if err := decoder.Decode(&metadata); err != nil {
-// 			return nil, fmt.Errorf("Failed to decode preview metadata: %v", err)
-// 		}
-
-// 		if err := reader.Close(); err != nil {
-// 			return nil, fmt.Errorf("Failed to close reader: %v", err)
-// 		}
-
-// 		name := attr.Prefix[:len(attr.Prefix)-1]
-// 		data[name] = metadata
-// 	}
-
-// 	return data, nil
-// }
-
-// func GetColumns(cacheTreeName string, xColumnNames []string, yColumnNames []string) ([]XColumnNode, []YColumnNode, error) {
-// 	ctx := context.Background()
-// 	client, err := storage.NewClient(ctx)
-
-// 	if err != nil {
-// 		return nil, nil, fmt.Errorf("Failed to create GCS client: %v", err)
-// 	}
-
-// 	defer client.Close()
-
-// 	bucket := client.Bucket(bucketInfo.BucketName)
-
-// 	xColumnChan := make(chan XColumnNode, len(xColumnNames))
-// 	yColumnChan := make(chan YColumnNode, len(yColumnNames))
-// 	errorChan := make(chan error)
-
-// 	fetchXColumn := func(name string) {
-// 		obj := bucket.Object(cacheTreeName + "/" + xColumnsSubdir + "/" + name)
-// 		reader, err := obj.NewReader(ctx)
-
-// 		if err != nil {
-// 			errorChan <- fmt.Errorf("Failed to read X column %s: %v", name, err)
-// 			return
-// 		}
-
-// 		var xCol XColumnNode
-
-// 		{
-// 			decoder := gob.NewDecoder(reader)
-
-// 			if err := decoder.Decode(&xCol); err != nil {
-// 				errorChan <- fmt.Errorf("Failed to decode X column %s: %v", name, err)
-// 				return
-// 			}
-// 		}
-
-// 		if err := reader.Close(); err != nil {
-// 			errorChan <- fmt.Errorf("Failed to close reader for X column %s: %v", name, err)
-// 			return
-// 		}
-
-// 		xColumnChan <- xCol
-// 	}
-
-// 	fetchYColumn := func(name string) {
-// 		obj := bucket.Object(cacheTreeName + "/" + yColumnsSubdir + "/" + name)
-// 		reader, err := obj.NewReader(ctx)
-
-// 		if err != nil {
-// 			errorChan <- fmt.Errorf("Failed to read Y column %s: %v", name, err)
-// 			return
-// 		}
-
-// 		var yCol YColumnNode
-
-// 		{
-// 			decoder := gob.NewDecoder(reader)
-
-// 			if err := decoder.Decode(&yCol); err != nil {
-// 				errorChan <- fmt.Errorf("Failed to decode Y column %s: %v", name, err)
-// 				return
-// 			}
-// 		}
-
-// 		if err := reader.Close(); err != nil {
-// 			errorChan <- fmt.Errorf("Failed to close reader for Y column %s: %v", name, err)
-// 			return
-// 		}
-
-// 		yColumnChan <- yCol
-// 	}
-
-// 	for _, name := range xColumnNames {
-// 		go fetchXColumn(name)
-// 	}
-
-// 	for _, name := range yColumnNames {
-// 		go fetchYColumn(name)
-// 	}
-
-// 	xColumns := make([]XColumnNode, 0, len(xColumnNames))
-// 	yColumns := make([]YColumnNode, 0, len(yColumnNames))
-
-// 	select {
-// 	case xCol := <-xColumnChan:
-// 		xColumns = append(xColumns, xCol)
-// 	case yCol := <-yColumnChan:
-// 		yColumns = append(yColumns, yCol)
-// 	case err := <-errorChan:
-// 		return nil, nil, err
-// 	}
-
-// 	return xColumns, yColumns, nil
-// }
-
-// func DeleteCache(name string) error {
-// 	return nil
-// }
