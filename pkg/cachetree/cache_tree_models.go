@@ -1,4 +1,4 @@
-package caching
+package cachetree
 
 type TimestampMetadata struct {
 	Date string `json:"date"`

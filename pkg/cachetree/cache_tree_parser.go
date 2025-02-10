@@ -1,4 +1,4 @@
-package parser
+package cachetree
 
 import (
 	"bufio"
@@ -6,8 +6,6 @@ import (
 	"mime/multipart"
 	"strconv"
 	"strings"
-
-	caching "github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching"
 )
 
 // Move a scanner forward until the end of the header.
@@ -41,16 +39,16 @@ func filterCommentColumn(columnNames []string) []string {
 	return columnNames
 }
 
-func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
+func ParseIntoCacheTree(lvmFile multipart.File) (CacheTree, error) {
 	scanner := bufio.NewScanner(lvmFile)
 
 	// Assert first line
 	if !scanner.Scan() {
-		return caching.CacheTree{}, nil
+		return CacheTree{}, nil
 	}
 
 	if line := strings.TrimSpace(scanner.Text()); line != AssertedFirstLine {
-		return caching.CacheTree{}, fmt.Errorf("First line %s does not match expected %s", line, AssertedFirstLine)
+		return CacheTree{}, fmt.Errorf("First line %s does not match expected %s", line, AssertedFirstLine)
 	}
 
 	// Read forward to the end of the first header (entry header)
@@ -58,7 +56,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 	entryHeader, err := ParseEntryHeader(rawEntryHeaderText)
 
 	if err != nil {
-		return caching.CacheTree{}, err
+		return CacheTree{}, err
 	}
 
 	// Read forward to the end of the second header (channel header)
@@ -66,7 +64,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 	channelHeader, err := ParseChannelHeader(rawChannelHeaderText)
 
 	if err != nil {
-		return caching.CacheTree{}, err
+		return CacheTree{}, err
 	}
 
 	// Count number of X and Y columns
@@ -79,12 +77,12 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 		xColumnCount = channelHeader.ChannelCount
 	}
 
-	xColumns := make([]caching.XColumnNode, xColumnCount)
-	yColumns := make([]caching.YColumnNode, yColumnCount)
+	xColumns := make([]XColumnNode, xColumnCount)
+	yColumns := make([]YColumnNode, yColumnCount)
 
 	// Initialize Y column metadata
 	for i := 0; i < yColumnCount; i++ {
-		yColumns[i] = caching.YColumnNode{
+		yColumns[i] = YColumnNode{
 			Samples:    channelHeader.Samples[i],
 			Date:       channelHeader.Dates[i],
 			UnitLabel:  channelHeader.YUnitLabels[i],
@@ -94,7 +92,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 
 	// Read column names
 	if !scanner.Scan() {
-		return caching.CacheTree{}, fmt.Errorf("No columns found")
+		return CacheTree{}, fmt.Errorf("No columns found")
 	}
 
 	columnNames := filterCommentColumn(strings.Split(scanner.Text(), string(entryHeader.Seperator)))
@@ -103,7 +101,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 	totalColumnCount := xColumnCount + yColumnCount
 
 	if len(columnNames) != xColumnCount+yColumnCount {
-		return caching.CacheTree{}, fmt.Errorf("Expected %d columns, got %d", totalColumnCount, len(columnNames))
+		return CacheTree{}, fmt.Errorf("Expected %d columns, got %d", totalColumnCount, len(columnNames))
 	}
 
 	// Read until end of file
@@ -116,7 +114,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 			// Drop the comment column
 			values = values[:totalColumnCount]
 		} else if len(values) < totalColumnCount {
-			return caching.CacheTree{}, fmt.Errorf("Too few values in line: %s", line)
+			return CacheTree{}, fmt.Errorf("Too few values in line: %s", line)
 		}
 
 		// For each column, parse the value and add it as a new row
@@ -126,7 +124,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 			floatValue, err := strconv.ParseFloat(value, 64)
 
 			if err != nil {
-				return caching.CacheTree{}, fmt.Errorf("Failed to parse value: %s", value)
+				return CacheTree{}, fmt.Errorf("Failed to parse value: %s", value)
 			}
 
 			// A column is an X column if:
@@ -154,7 +152,7 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 				xColumnNames = append(xColumnNames, columnName)
 			} else {
 				if i == len(columnNames)-1 {
-					return caching.CacheTree{}, fmt.Errorf("X column name %s is the last column", columnName)
+					return CacheTree{}, fmt.Errorf("X column name %s is the last column", columnName)
 				}
 
 				// The X column associated with the Y column after it
@@ -165,9 +163,9 @@ func ParseIntoCacheTree(lvmFile multipart.File) (caching.CacheTree, error) {
 		}
 	}
 
-	tree := caching.CacheTree{
-		PreviewMetadata: caching.PreviewMetadata{
-			ResultTimestamp: caching.TimestampMetadata{
+	tree := CacheTree{
+		PreviewMetadata: PreviewMetadata{
+			ResultTimestamp: TimestampMetadata{
 				Date: entryHeader.Date,
 				Time: entryHeader.Time,
 			},

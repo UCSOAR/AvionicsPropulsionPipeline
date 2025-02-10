@@ -6,14 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/caching"
-	"github.com/UCSOAR/AvionicsPropulsionPipeline/static-fire/parser"
+	cachetree "soarpipeline/pkg/cachetree"
 )
 
 func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
-	expected := caching.CacheTree{
-		PreviewMetadata: caching.PreviewMetadata{
-			ResultTimestamp: caching.TimestampMetadata{
+	expected := cachetree.CacheTree{
+		PreviewMetadata: cachetree.PreviewMetadata{
+			ResultTimestamp: cachetree.TimestampMetadata{
 				Date: "2020/08/07",
 				Time: "09:47:02.1010842323303222656",
 			},
@@ -21,12 +20,12 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 			XColumnNames: []string{"X_Value"},
 			YColumnNames: []string{"Pressure", "Temp", "Volume"},
 		},
-		XColumnNodes: []caching.XColumnNode{
+		XColumnNodes: []cachetree.XColumnNode{
 			{
 				Rows: []float64{0, 0.328878},
 			},
 		},
-		YColumnNodes: []caching.YColumnNode{
+		YColumnNodes: []cachetree.YColumnNode{
 			{
 				Samples:    1,
 				Date:       "2020/08/07",
@@ -51,7 +50,7 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 		},
 	}
 
-	file, err := os.Open("./files/valid_one_x_column.lvm")
+	file, err := os.Open("../data/valid_one_x_column.lvm")
 
 	if err != nil {
 		t.Errorf("os.Open() error = %v", err)
@@ -60,7 +59,7 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 
 	defer file.Close()
 
-	parsedCacheTree, err := parser.ParseIntoCacheTree(file)
+	parsedCacheTree, err := cachetree.ParseIntoCacheTree(file)
 
 	if err != nil {
 		t.Errorf("ParseIntoCacheTree() error = %v", err)
@@ -73,7 +72,7 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 }
 
 func TestTimeTakenToParseLongLvm(t *testing.T) {
-	file, err := os.Open("./files/valid_long.lvm")
+	file, err := os.Open("../data/valid_long.lvm")
 
 	if err != nil {
 		t.Errorf("os.Open() error = %v", err)
@@ -83,7 +82,7 @@ func TestTimeTakenToParseLongLvm(t *testing.T) {
 	defer file.Close()
 
 	start := time.Now()
-	_, err = parser.ParseIntoCacheTree(file)
+	_, err = cachetree.ParseIntoCacheTree(file)
 	duration := time.Since(start)
 
 	if err != nil {
@@ -95,9 +94,9 @@ func TestTimeTakenToParseLongLvm(t *testing.T) {
 }
 
 func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
-	expected := caching.CacheTree{
-		PreviewMetadata: caching.PreviewMetadata{
-			ResultTimestamp: caching.TimestampMetadata{
+	expected := cachetree.CacheTree{
+		PreviewMetadata: cachetree.PreviewMetadata{
+			ResultTimestamp: cachetree.TimestampMetadata{
 				Date: "2016/08/23",
 				Time: "10:45:47.0352557312499836422",
 			},
@@ -105,7 +104,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 			XColumnNames: []string{"(X) Voltage", "(X) Acceleration"},
 			YColumnNames: []string{"Voltage", "Acceleration"},
 		},
-		XColumnNodes: []caching.XColumnNode{
+		XColumnNodes: []cachetree.XColumnNode{
 			{
 				Rows: []float64{0, 1.953125e-5, 3.906250e-5},
 			},
@@ -113,7 +112,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 				Rows: []float64{0, 1.953125e-5, 3.906250e-5},
 			},
 		},
-		YColumnNodes: []caching.YColumnNode{
+		YColumnNodes: []cachetree.YColumnNode{
 			{
 				Samples:    51200,
 				Date:       "2016/08/23",
@@ -131,7 +130,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 		},
 	}
 
-	file, err := os.Open("./files/valid_multi_x_column.lvm")
+	file, err := os.Open("../data/valid_multi_x_column.lvm")
 
 	if err != nil {
 		t.Errorf("os.Open() error = %v", err)
@@ -140,7 +139,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 
 	defer file.Close()
 
-	parsedCacheTree, err := parser.ParseIntoCacheTree(file)
+	parsedCacheTree, err := cachetree.ParseIntoCacheTree(file)
 
 	if err != nil {
 		t.Errorf("ParseIntoCacheTree() error = %v", err)
@@ -153,7 +152,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 }
 
 func TestInvalidLvmFailsToParse(t *testing.T) {
-	file, err := os.Open("./files/invalid.lvm")
+	file, err := os.Open("../data/invalid_1.lvm")
 
 	if err != nil {
 		t.Errorf("os.Open() error = %v", err)
@@ -162,7 +161,7 @@ func TestInvalidLvmFailsToParse(t *testing.T) {
 
 	defer file.Close()
 
-	_, err = parser.ParseIntoCacheTree(file)
+	_, err = cachetree.ParseIntoCacheTree(file)
 
 	if err == nil {
 		t.Error("ParseIntoCacheTree() error = nil, want error")

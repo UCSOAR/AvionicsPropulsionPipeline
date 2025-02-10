@@ -1,23 +1,9 @@
-package parser
+package cachetree
 
 import (
 	"fmt"
 	"strconv"
 )
-
-// Represents a parsed LVM channel header.
-// The data stored is relevant to the purposes of this project.
-// It is guaranteed that all arrays will have the same length as `ChannelCount`.
-type ParsedChannelHeader struct {
-	ChannelCount int       `json:"channelCount"`
-	Samples      []int     `json:"samples"`
-	Dates        []string  `json:"dates"`
-	Times        []string  `json:"times"`
-	YUnitLabels  []string  `json:"yUnitLabels"`
-	XDimensions  []string  `json:"xDimensions"`
-	InitialXs    []float64 `json:"initialXs"`
-	DeltaXs      []float64 `json:"deltaXs"`
-}
 
 // Parses only the text that contains the channel header section.
 // Returns a struct representing the parsed channel header.
