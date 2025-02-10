@@ -1,4 +1,4 @@
-package cachetree
+package staticfire
 
 type TimestampMetadata struct {
 	Date string `json:"date"`

@@ -4,19 +4,19 @@ import (
 	"reflect"
 	"testing"
 
-	cachetree "soarpipeline/pkg/cachetree"
+	staticfire "soarpipeline/pkg/staticfire"
 )
 
 func TestValidHeaderShouldParseCorrectly(t *testing.T) {
 	rawHeaderText := `Key1 Value1
 Key2 Value2 Value3`
-	expected := cachetree.ParsedKvHeader{
+	expected := staticfire.ParsedKvHeader{
 		Kv: map[string][]string{
 			"Key1": {"Value1"},
 			"Key2": {"Value2", "Value3"},
 		},
 	}
-	result, err := cachetree.ParseKv(rawHeaderText)
+	result, err := staticfire.ParseKv(rawHeaderText)
 
 	if err != nil {
 		t.Errorf("Parse() error = %v", err)
@@ -31,7 +31,7 @@ Key2 Value2 Value3`
 func TestInvalidHeaderLineShouldError(t *testing.T) {
 	rawHeaderText := `InvalidLine`
 
-	_, err := cachetree.ParseKv(rawHeaderText)
+	_, err := staticfire.ParseKv(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected invalid header line error")
@@ -42,7 +42,7 @@ func TestParseDuplicateKeyShouldError(t *testing.T) {
 	rawHeaderText := `Key1 Value1
 Key1 Value2`
 
-	_, err := cachetree.ParseKv(rawHeaderText)
+	_, err := staticfire.ParseKv(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected duplicate key error")

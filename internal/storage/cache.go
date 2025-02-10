@@ -1,4 +1,29 @@
-package cachetree
+package storage
+
+import (
+	staticfire "soarpipeline/pkg/staticfire"
+)
+
+const cacheSubdirName = "cache"
+const xColumnsSubdirName = "x"
+const yColumnsSubdirName = "y"
+const previewMetadataFileName = "preview"
+
+func StoreCache(name string, tree *staticfire.CacheTree) error {
+	return nil
+}
+
+func GetAllCacheMetadata() (map[string]staticfire.PreviewMetadata, error) {
+	return nil, nil
+}
+
+func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.XColumnNode, map[string]staticfire.YColumnNode, error) {
+	return nil, nil, nil
+}
+
+func DeleteCache(name string) error {
+	return nil
+}
 
 // import (
 // 	"context"
@@ -9,10 +34,6 @@ package cachetree
 // 	bucketInfo "github.com/UCSOAR/AvionicsPropulsionPipeline/bucket-info"
 // 	"google.golang.org/api/iterator"
 // )
-
-// const xColumnsSubdir = "x"
-// const yColumnsSubdir = "y"
-// const previewMetadataFile = "preview"
 
 // func createDirectory(ctx context.Context, bucket *storage.BucketHandle, name string) error {
 // 	dirObj := bucket.Object(name + "/")

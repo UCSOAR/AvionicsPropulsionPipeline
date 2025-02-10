@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	cachetree "soarpipeline/pkg/cachetree"
+	staticfire "soarpipeline/pkg/staticfire"
 )
 
 func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
-	expected := cachetree.CacheTree{
-		PreviewMetadata: cachetree.PreviewMetadata{
-			ResultTimestamp: cachetree.TimestampMetadata{
+	expected := staticfire.CacheTree{
+		PreviewMetadata: staticfire.PreviewMetadata{
+			ResultTimestamp: staticfire.TimestampMetadata{
 				Date: "2020/08/07",
 				Time: "09:47:02.1010842323303222656",
 			},
@@ -20,12 +20,12 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 			XColumnNames: []string{"X_Value"},
 			YColumnNames: []string{"Pressure", "Temp", "Volume"},
 		},
-		XColumnNodes: []cachetree.XColumnNode{
+		XColumnNodes: []staticfire.XColumnNode{
 			{
 				Rows: []float64{0, 0.328878},
 			},
 		},
-		YColumnNodes: []cachetree.YColumnNode{
+		YColumnNodes: []staticfire.YColumnNode{
 			{
 				Samples:    1,
 				Date:       "2020/08/07",
@@ -59,7 +59,7 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 
 	defer file.Close()
 
-	parsedCacheTree, err := cachetree.ParseIntoCacheTree(file)
+	parsedCacheTree, err := staticfire.ParseIntoCacheTree(file)
 
 	if err != nil {
 		t.Errorf("ParseIntoCacheTree() error = %v", err)
@@ -82,7 +82,7 @@ func TestTimeTakenToParseLongLvm(t *testing.T) {
 	defer file.Close()
 
 	start := time.Now()
-	_, err = cachetree.ParseIntoCacheTree(file)
+	_, err = staticfire.ParseIntoCacheTree(file)
 	duration := time.Since(start)
 
 	if err != nil {
@@ -94,9 +94,9 @@ func TestTimeTakenToParseLongLvm(t *testing.T) {
 }
 
 func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
-	expected := cachetree.CacheTree{
-		PreviewMetadata: cachetree.PreviewMetadata{
-			ResultTimestamp: cachetree.TimestampMetadata{
+	expected := staticfire.CacheTree{
+		PreviewMetadata: staticfire.PreviewMetadata{
+			ResultTimestamp: staticfire.TimestampMetadata{
 				Date: "2016/08/23",
 				Time: "10:45:47.0352557312499836422",
 			},
@@ -104,7 +104,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 			XColumnNames: []string{"(X) Voltage", "(X) Acceleration"},
 			YColumnNames: []string{"Voltage", "Acceleration"},
 		},
-		XColumnNodes: []cachetree.XColumnNode{
+		XColumnNodes: []staticfire.XColumnNode{
 			{
 				Rows: []float64{0, 1.953125e-5, 3.906250e-5},
 			},
@@ -112,7 +112,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 				Rows: []float64{0, 1.953125e-5, 3.906250e-5},
 			},
 		},
-		YColumnNodes: []cachetree.YColumnNode{
+		YColumnNodes: []staticfire.YColumnNode{
 			{
 				Samples:    51200,
 				Date:       "2016/08/23",
@@ -139,7 +139,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 
 	defer file.Close()
 
-	parsedCacheTree, err := cachetree.ParseIntoCacheTree(file)
+	parsedCacheTree, err := staticfire.ParseIntoCacheTree(file)
 
 	if err != nil {
 		t.Errorf("ParseIntoCacheTree() error = %v", err)
@@ -161,7 +161,7 @@ func TestInvalidLvmFailsToParse(t *testing.T) {
 
 	defer file.Close()
 
-	_, err = cachetree.ParseIntoCacheTree(file)
+	_, err = staticfire.ParseIntoCacheTree(file)
 
 	if err == nil {
 		t.Error("ParseIntoCacheTree() error = nil, want error")

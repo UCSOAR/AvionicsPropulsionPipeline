@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	cachetree "soarpipeline/pkg/cachetree"
+	staticfire "soarpipeline/pkg/staticfire"
 )
 
 func TestValidEntryHeaderTextParsesCorrectly(t *testing.T) {
@@ -19,21 +19,21 @@ Operator TestOperator
 Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
-	multiHeadings, err := cachetree.ParseMultiHeadingsValue("Yes")
+	multiHeadings, err := staticfire.ParseMultiHeadingsValue("Yes")
 
 	if err != nil {
 		t.Errorf("ParseMultiHeadingsValue() error = %v", err)
 		return
 	}
 
-	xColumns, err := cachetree.ParseXColumnsValue("Multi")
+	xColumns, err := staticfire.ParseXColumnsValue("Multi")
 
 	if err != nil {
 		t.Errorf("ParseXColumnsValue() error = %v", err)
 		return
 	}
 
-	expected := cachetree.ParsedEntryHeader{
+	expected := staticfire.ParsedEntryHeader{
 		Seperator:     '\t',
 		MultiHeadings: multiHeadings,
 		XColumns:      xColumns,
@@ -42,7 +42,7 @@ Time 10:45:47.0352557312499836422`
 		Time:          "10:45:47.0352557312499836422",
 	}
 
-	result, err := cachetree.ParseEntryHeader(rawHeaderText)
+	result, err := staticfire.ParseEntryHeader(rawHeaderText)
 
 	if err != nil {
 		t.Errorf("ParseEntryHeader() error = %v", err)
@@ -60,7 +60,7 @@ Reader_Version 2
 Separator Tab
 Decimal_Separator .`
 
-	_, err := cachetree.ParseEntryHeader(rawHeaderText)
+	_, err := staticfire.ParseEntryHeader(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected error for incomplete header")
@@ -79,7 +79,7 @@ Operator TestOperator
 Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
-	_, err := cachetree.ParseEntryHeader(rawHeaderText)
+	_, err := staticfire.ParseEntryHeader(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected error for incorrect Writer_Version")
@@ -98,7 +98,7 @@ Operator TestOperator
 Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
-	_, err := cachetree.ParseEntryHeader(rawHeaderText)
+	_, err := staticfire.ParseEntryHeader(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected error for incorrect Reader_Version")
@@ -117,7 +117,7 @@ Operator TestOperator
 Date 2025/01/18
 Time 10:45:47.0352557312499836422`
 
-	_, err := cachetree.ParseEntryHeader(rawHeaderText)
+	_, err := staticfire.ParseEntryHeader(rawHeaderText)
 
 	if err == nil {
 		t.Errorf("Expected error for incorrect Time_Pref")

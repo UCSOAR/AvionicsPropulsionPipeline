@@ -1,4 +1,4 @@
-package cachetree
+package staticfire
 
 import (
 	"bufio"
