@@ -140,13 +140,12 @@ func StoreCache(name string, tree *staticfire.CacheTree) error {
 
 	// Check for errors
 	for errorChan != nil {
-		select {
-		case err, ok := <-errorChan:
-			if !ok {
-				errorChan = nil
-			} else {
-				return err
-			}
+		err, ok := <-errorChan
+
+		if !ok {
+			errorChan = nil
+		} else {
+			return err
 		}
 	}
 
@@ -248,14 +247,88 @@ func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string)
 		column T
 	}
 
+	xColumnsBasePath := path.Join(StorageDirPath, cacheSubdirName, name, xColumnsSubdirName)
+	yColumnsBasePath := path.Join(StorageDirPath, cacheSubdirName, name, yColumnsSubdirName)
+
+	// Retrieve columns concurrently
+	errorChan := make(chan error)
+	wg := sync.WaitGroup{}
+
+	// Retrieve the X columns
+	xColumnChan := make(chan ColumnKV[staticfire.XColumnNode], len(xColumnNames))
+
+	for _, xColName := range xColumnNames {
+		xColPath := path.Join(xColumnsBasePath, xColName)
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			var xCol staticfire.XColumnNode
+
+			if err := decodeGobObject(xColPath, &xCol); err != nil {
+				errorChan <- err
+			} else {
+				xColumnChan <- ColumnKV[staticfire.XColumnNode]{xColName, xCol}
+			}
+		}()
+	}
+
+	// Retrieve the Y columns
+	yColumnChan := make(chan ColumnKV[staticfire.YColumnNode], len(yColumnNames))
+
+	for _, yColName := range yColumnNames {
+		yColPath := path.Join(yColumnsBasePath, yColName)
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			var yCol staticfire.YColumnNode
+
+			if err := decodeGobObject(yColPath, &yCol); err != nil {
+				errorChan <- err
+			} else {
+				yColumnChan <- ColumnKV[staticfire.YColumnNode]{yColName, yCol}
+			}
+		}()
+	}
+
+	// Ensure channels are closed
+	go func() {
+		wg.Wait()
+
+		close(xColumnChan)
+		close(yColumnChan)
+		close(errorChan)
+	}()
+
+	// Check for errors and collect columns
 	xColumnNodes := make(map[string]staticfire.XColumnNode, len(xColumnNames))
 	yColumnNodes := make(map[string]staticfire.YColumnNode, len(yColumnNames))
 
-	// TODO: Implement this function
-	_ = xColumnNodes
-	_ = yColumnNodes
+	for xColumnChan != nil || yColumnChan != nil || errorChan != nil {
+		select {
+		case xKv, ok := <-xColumnChan:
+			if !ok {
+				xColumnChan = nil
+			} else {
+				xColumnNodes[xKv.name] = xKv.column
+			}
+		case yKv, ok := <-yColumnChan:
+			if !ok {
+				yColumnChan = nil
+			} else {
+				yColumnNodes[yKv.name] = yKv.column
+			}
+		case err, ok := <-errorChan:
+			if !ok {
+				errorChan = nil
+			} else {
+				return nil, nil, err
+			}
+		}
+	}
 
-	return nil, nil, nil
+	return xColumnNodes, yColumnNodes, nil
 }
 
 // Removes the cache directory specified by the given name.
