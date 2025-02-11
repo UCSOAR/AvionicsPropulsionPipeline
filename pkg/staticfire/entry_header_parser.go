@@ -2,6 +2,19 @@ package staticfire
 
 import "fmt"
 
+var requiredEntryHeaderKeys = [...]string{
+	"Writer_Version",
+	"Reader_Version",
+	"Separator",
+	"Decimal_Separator",
+	"Multi_Headings",
+	"X_Columns",
+	"Time_Pref",
+	"Operator",
+	"Date",
+	"Time",
+}
+
 // Parses only the text that contains the entry header section.
 // Returns a struct representing the parsed entry header.
 func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
@@ -12,20 +25,7 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 	}
 
 	// Ensure all required keys are present
-	requiredKeys := []string{
-		"Writer_Version",
-		"Reader_Version",
-		"Separator",
-		"Decimal_Separator",
-		"Multi_Headings",
-		"X_Columns",
-		"Time_Pref",
-		"Operator",
-		"Date",
-		"Time",
-	}
-
-	for _, key := range requiredKeys {
+	for _, key := range requiredEntryHeaderKeys {
 		if _, ok := parsedHeader.Kv[key]; !ok {
 			return ParsedEntryHeader{}, fmt.Errorf("Missing key: %s", key)
 		}

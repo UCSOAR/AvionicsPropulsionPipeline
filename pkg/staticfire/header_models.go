@@ -6,18 +6,18 @@ import "fmt"
 type MultiHeadingsValue uint8
 
 const (
-	MultiHeadingsUnknown MultiHeadingsValue = 0
-	MultiHeadingsYes     MultiHeadingsValue = 1
-	MultiHeadingsNo      MultiHeadingsValue = 2
+	MultiHeadingsUnknown MultiHeadingsValue = iota
+	MultiHeadingsYes     MultiHeadingsValue = iota
+	MultiHeadingsNo      MultiHeadingsValue = iota
 )
 
 // Enumerates the possible values for the `XColumns` field in an LVM file.
 type XColumnsValue uint8
 
 const (
-	XColumnsUnknown XColumnsValue = 0
-	XColumnsOne     XColumnsValue = 1
-	XColumnsMulti   XColumnsValue = 2
+	XColumnsUnknown XColumnsValue = iota
+	XColumnsOne     XColumnsValue = iota
+	XColumnsMulti   XColumnsValue = iota
 )
 
 // Enumerates the possible field seperators in an LVM file.

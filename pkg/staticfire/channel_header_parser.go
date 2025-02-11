@@ -5,6 +5,17 @@ import (
 	"strconv"
 )
 
+var requiredChannelHeaderKeys = [...]string{
+	"Channels",
+	"Samples",
+	"Date",
+	"Time",
+	"Y_Unit_Label",
+	"X_Dimension",
+	"X0",
+	"Delta_X",
+}
+
 // Parses only the text that contains the channel header section.
 // Returns a struct representing the parsed channel header.
 func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
@@ -15,18 +26,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	}
 
 	// Ensure all required keys are present
-	requiredKeys := []string{
-		"Channels",
-		"Samples",
-		"Date",
-		"Time",
-		"Y_Unit_Label",
-		"X_Dimension",
-		"X0",
-		"Delta_X",
-	}
-
-	for _, key := range requiredKeys {
+	for _, key := range requiredChannelHeaderKeys {
 		if _, ok := parsedHeader.Kv[key]; !ok {
 			return ParsedChannelHeader{}, fmt.Errorf("Missing key: %s", key)
 		}
@@ -40,9 +40,9 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	}
 
 	// Ensure all arrays have the length of the channel count
-	for i := 1; i < len(requiredKeys); i++ {
-		if len(parsedHeader.Kv[requiredKeys[i]]) != channelCount {
-			return ParsedChannelHeader{}, fmt.Errorf("Length of %s does not match channel count", requiredKeys[i])
+	for i := 1; i < len(requiredChannelHeaderKeys); i++ {
+		if len(parsedHeader.Kv[requiredChannelHeaderKeys[i]]) != channelCount {
+			return ParsedChannelHeader{}, fmt.Errorf("Length of %s does not match channel count", requiredChannelHeaderKeys[i])
 		}
 	}
 
