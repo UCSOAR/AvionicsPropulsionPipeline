@@ -3,15 +3,10 @@ package storage
 import (
 	"encoding/gob"
 	"os"
-	"path"
+
 	staticfire "soarpipeline/pkg/staticfire"
 	"sync"
 )
-
-const cacheSubdirName = "cache"
-const xColumnsSubdirName = "x"
-const yColumnsSubdirName = "y"
-const previewMetadataFileName = "preview"
 
 // Helper function to store a gob object to a file.
 //
@@ -71,17 +66,17 @@ func decodeGobObject[T any](path string, emptyObj *T) error {
 //
 // Returns:
 //   - error: An error if the cache tree data could not be stored, or nil if the operation was successful.
-func StoreCache(name string, tree *staticfire.CacheTree) error {
-	cacheBasePath := path.Join(StorageDirPath, cacheSubdirName, name)
-	xColumnsBasePath := path.Join(cacheBasePath, xColumnsSubdirName)
-	yColumnsBasePath := path.Join(cacheBasePath, yColumnsSubdirName)
+func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTree) error {
+	xColumnsPath := ctx.GetXColumnsPath(name)
+	yColumnsPath := ctx.GetYColumnsPath(name)
+	previewMetadataPath := ctx.GetPreviewMetadataPath(name)
 
 	// Create the cache directory and subdirectories
-	if err := os.MkdirAll(xColumnsBasePath, os.ModePerm); err != nil {
+	if err := os.MkdirAll(xColumnsPath, os.ModePerm); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(yColumnsBasePath, os.ModePerm); err != nil {
+	if err := os.MkdirAll(yColumnsPath, os.ModePerm); err != nil {
 		return err
 	}
 
@@ -91,7 +86,6 @@ func StoreCache(name string, tree *staticfire.CacheTree) error {
 
 	// Store the preview metadata
 	{
-		previewMetadataPath := path.Join(cacheBasePath, previewMetadataFileName)
 		wg.Add(1)
 
 		go func() {
@@ -105,7 +99,7 @@ func StoreCache(name string, tree *staticfire.CacheTree) error {
 
 	// Store the X column data
 	for i, xCol := range tree.XColumnNodes {
-		xColPath := path.Join(xColumnsBasePath, tree.PreviewMetadata.XColumnNames[i])
+		xColPath := ctx.GetXColumnsPath(tree.PreviewMetadata.XColumnNames[i])
 		wg.Add(1)
 
 		go func() {
@@ -119,7 +113,7 @@ func StoreCache(name string, tree *staticfire.CacheTree) error {
 
 	// Store the Y column data
 	for j, yCol := range tree.YColumnNodes {
-		yColPath := path.Join(yColumnsBasePath, tree.PreviewMetadata.YColumnNames[j])
+		yColPath := ctx.GetYColumnsPath(tree.PreviewMetadata.YColumnNames[j])
 		wg.Add(1)
 
 		go func() {
@@ -157,15 +151,14 @@ func StoreCache(name string, tree *staticfire.CacheTree) error {
 // Returns:
 //   - metadata: A map of cache names to their respective preview metadata.
 //   - error: An error if the metadata could not be read, or nil if the operation was successful.
-func ReadAllCacheMetadata() (map[string]staticfire.PreviewMetadata, error) {
+func (ctx *CacheStorageContext) ReadAllMetadata() (map[string]staticfire.PreviewMetadata, error) {
 	type MetadataKV struct {
 		name     string
 		metadata staticfire.PreviewMetadata
 	}
 
 	// Look at all subdirectories in the cache directory
-	cacheDirPath := path.Join(StorageDirPath, cacheSubdirName)
-	entries, err := os.ReadDir(cacheDirPath)
+	entries, err := os.ReadDir(ctx.BasePath)
 
 	if err != nil {
 		return nil, err
@@ -185,7 +178,7 @@ func ReadAllCacheMetadata() (map[string]staticfire.PreviewMetadata, error) {
 		cacheName := entry.Name()
 
 		// Read the preview metadata
-		previewMetadataPath := path.Join(cacheDirPath, cacheName, previewMetadataFileName)
+		previewMetadataPath := ctx.GetPreviewMetadataPath(cacheName)
 		wg.Add(1)
 
 		go func() {
@@ -241,14 +234,11 @@ func ReadAllCacheMetadata() (map[string]staticfire.PreviewMetadata, error) {
 //   - xColumnNodes: A map of X column names to their respective column nodes.
 //   - yColumnNodes: A map of Y column names to their respective column nodes.
 //   - error: An error if the columns could not be retrieved, or nil if the operation was successful.
-func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.XColumnNode, map[string]staticfire.YColumnNode, error) {
+func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.XColumnNode, map[string]staticfire.YColumnNode, error) {
 	type ColumnKV[T any] struct {
 		name   string
 		column T
 	}
-
-	xColumnsBasePath := path.Join(StorageDirPath, cacheSubdirName, name, xColumnsSubdirName)
-	yColumnsBasePath := path.Join(StorageDirPath, cacheSubdirName, name, yColumnsSubdirName)
 
 	// Retrieve columns concurrently
 	errorChan := make(chan error)
@@ -258,7 +248,7 @@ func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string)
 	xColumnChan := make(chan ColumnKV[staticfire.XColumnNode], len(xColumnNames))
 
 	for _, xColName := range xColumnNames {
-		xColPath := path.Join(xColumnsBasePath, xColName)
+		xColPath := ctx.GetXColumnFilePath(name, xColName)
 		wg.Add(1)
 
 		go func() {
@@ -277,7 +267,7 @@ func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string)
 	yColumnChan := make(chan ColumnKV[staticfire.YColumnNode], len(yColumnNames))
 
 	for _, yColName := range yColumnNames {
-		yColPath := path.Join(yColumnsBasePath, yColName)
+		yColPath := ctx.GetYColumnFilePath(name, yColName)
 		wg.Add(1)
 
 		go func() {
@@ -331,15 +321,15 @@ func GetCachedColumns(name string, xColumnNames []string, yColumnNames []string)
 	return xColumnNodes, yColumnNodes, nil
 }
 
-// Removes the cache directory specified by the given name.
+// Removes the cache tree directory specified by the given name.
 //
 // Parameters:
 //   - name: The name of the cache directory to be deleted.
 //
 // Returns:
 //   - error: An error if the directory could not be removed, or nil if the operation was successful.
-func DeleteCache(name string) error {
-	cacheDirPath := path.Join(StorageDirPath, cacheSubdirName, name)
+func (ctx *CacheStorageContext) DeleteTree(name string) error {
+	cacheDirPath := ctx.GetCachePath(name)
 
 	if err := os.RemoveAll(cacheDirPath); err != nil {
 		return err

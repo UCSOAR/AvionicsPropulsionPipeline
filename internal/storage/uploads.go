@@ -3,12 +3,9 @@ package storage
 import (
 	"mime/multipart"
 	"os"
-	"path"
 )
 
-const uploadsSubdirName = "uploads"
-
-// Store an uploaded file.
+// Store a file.
 //
 // Parameters:
 //   - name: The name of the file to store.
@@ -16,8 +13,8 @@ const uploadsSubdirName = "uploads"
 //
 // Returns:
 //   - error: An error if the file could not be stored, or nil if the operation was successful.
-func StoreUpload(name string, file multipart.File) error {
-	uploadPath := path.Join(StorageDirPath, uploadsSubdirName, name)
+func (ctx *StorageContext) Store(name string, file multipart.File) error {
+	uploadPath := ctx.GetFilePath(name)
 	uploadFile, err := os.Create(uploadPath)
 
 	if err != nil {
@@ -33,15 +30,15 @@ func StoreUpload(name string, file multipart.File) error {
 	return nil
 }
 
-// Delete an uploaded file.
+// Delete a file.
 //
 // Parameters:
 //   - name: The name of the file to delete.
 //
 // Returns:
 //   - error: An error if the file could not be deleted, or nil if the operation was successful.
-func DeleteUpload(name string) error {
-	uploadPath := path.Join(StorageDirPath, uploadsSubdirName, name)
+func (ctx *StorageContext) Delete(name string) error {
+	uploadPath := ctx.GetFilePath(name)
 
 	if err := os.Remove(uploadPath); err != nil {
 		return err
