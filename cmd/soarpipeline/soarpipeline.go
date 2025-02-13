@@ -19,7 +19,7 @@ func main() {
 		r.Route("/staticfire", func(r chi.Router) {
 			r.Get("/metadata", controllers.GetStaticFireMetadata)
 			r.Post("/columns", controllers.PostStaticFireColumns)
-			r.Post("/", controllers.PostStaticFire)
+			r.Post("/upload", controllers.PostStaticFire)
 		})
 	})
 

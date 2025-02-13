@@ -1,24 +1,18 @@
 export const devPort = 8080;
 
 const devEndpointMapping = {
-  uploadStaticFireUrl: new URL(`http://localhost:${devPort}/UploadStaticFire`),
+  uploadStaticFireUrl: new URL(
+    `http://localhost:${devPort}/api/staticfire/upload`
+  ),
   getStaticFireMetadataUrl: new URL(
-    `http://localhost:${devPort}/GetStaticFireMetadata`
+    `http://localhost:${devPort}/api/staticfire/metadata`
   ),
   getStaticFireColumnsUrl: new URL(
-    `http://localhost:${devPort}/GetStaticFireColumns`
+    `http://localhost:${devPort}/api/staticfire/columns`
   ),
 };
 
-const prodEndpointMapping: typeof devEndpointMapping = {
-  uploadStaticFireUrl: new URL(`http://localhost:${devPort}/UploadStaticFire`),
-  getStaticFireMetadataUrl: new URL(
-    `http://localhost:${devPort}/GetStaticFireMetadata`
-  ),
-  getStaticFireColumnsUrl: new URL(
-    `http://localhost:${devPort}/GetStaticFireColumns`
-  ),
-};
+const prodEndpointMapping: typeof devEndpointMapping = devEndpointMapping; // For now...
 
 // Freeze the objects to prevent accidental modification
 Object.freeze(devEndpointMapping);
