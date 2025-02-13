@@ -17,8 +17,8 @@ func main() {
 	router.Route("/api", func(r chi.Router) {
 		// Subrouter for static fire data
 		r.Route("/staticfire", func(r chi.Router) {
-			r.Get("/columns", controllers.GetStaticFireColumns)
 			r.Get("/metadata", controllers.GetStaticFireMetadata)
+			r.Post("/columns", controllers.PostStaticFireColumns)
 			r.Post("/", controllers.PostStaticFire)
 		})
 	})

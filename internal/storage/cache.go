@@ -128,7 +128,6 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 	// Ensure error channel gets closed
 	go func() {
 		wg.Wait()
-
 		close(errorChan)
 	}()
 
