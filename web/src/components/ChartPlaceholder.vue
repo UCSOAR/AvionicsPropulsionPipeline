@@ -2,7 +2,6 @@
 import { computed, ref, inject, watch } from "vue";
 import { useMetadataStore } from "../stores/metadataStore";
 import { endpointMapping } from "../utils/constants";
-import VueApexCharts from "vue3-apexcharts";
 
 // Inject dark mode from the parent component
 const isDarkMode = inject("isDarkMode", ref(false));
@@ -103,9 +102,9 @@ async function fetchChartData() {
     console.log("This is the fetched data", data);
 
     // Ensure the fetched data structure matches the expected format
-    if (data.xColumns && data.yColumns && data.xColumns[0] && data.yColumns[0]) {
-      const xValues = data.xColumns[0].rows;
-      const yValues = data.yColumns[0].rows;
+    if (data.xColumns && data.yColumns && data.xColumns[colX] && data.yColumns[colY]) {
+      const xValues = data.xColumns[colX].rows;
+      const yValues = data.yColumns[colY].rows;
 
       if (xValues.length !== yValues.length) {
         throw new Error("Mismatch in lengths of xColumns and yColumns data.");
@@ -140,13 +139,7 @@ watch(
 
 <template>
   <div :class="['chart-container', { dark: isDarkMode }]">
-    <apexchart
-      :options="chartOptions"
-      :series="series"
-      type="line"
-      height="350"
-      width="1000"
-    />
+    <apexchart :options="chartOptions" :series="series" type="line" height="350" width="1000" />
   </div>
 </template>
 
@@ -166,4 +159,3 @@ watch(
   color: #fff;
 }
 </style>
-    

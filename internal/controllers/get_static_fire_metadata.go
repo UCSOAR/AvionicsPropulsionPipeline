@@ -8,7 +8,7 @@ import (
 
 func GetStaticFireMetadata(w http.ResponseWriter, r *http.Request) {
 	// Retrieve static fire metadata
-	metadata, err := storage.DefaultCacheStorageContext.ReadAllMetadata()
+	metadata, err := storage.DefaultCacheContext.ReadAllMetadata()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -3,8 +3,8 @@ package storage
 import "os"
 
 var storageDirs = [...]string{
-	DefaultUploadStorageContext.BasePath,
-	DefaultCacheStorageContext.BasePath,
+	DefaultUploadContext.BasePath,
+	DefaultCacheContext.BasePath,
 }
 
 func InitStorageDirectories() error {

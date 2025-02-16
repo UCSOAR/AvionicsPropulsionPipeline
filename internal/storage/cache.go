@@ -71,6 +71,11 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 	yColumnsPath := ctx.GetYColumnsPath(name)
 	previewMetadataPath := ctx.GetPreviewMetadataPath(name)
 
+	// Check if the cache directory already exists
+	if _, err := os.Stat(ctx.GetCachePath(name)); err == nil {
+		return os.ErrExist
+	}
+
 	// Create the cache directory and subdirectories
 	if err := os.MkdirAll(xColumnsPath, os.ModePerm); err != nil {
 		return err
@@ -99,7 +104,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 
 	// Store the X column data
 	for i, xCol := range tree.XColumnNodes {
-		xColPath := ctx.GetXColumnsPath(tree.PreviewMetadata.XColumnNames[i])
+		xColPath := ctx.GetXColumnFilePath(name, tree.PreviewMetadata.XColumnNames[i])
 		wg.Add(1)
 
 		go func() {
@@ -113,7 +118,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 
 	// Store the Y column data
 	for j, yCol := range tree.YColumnNodes {
-		yColPath := ctx.GetYColumnsPath(tree.PreviewMetadata.YColumnNames[j])
+		yColPath := ctx.GetYColumnFilePath(name, tree.PreviewMetadata.YColumnNames[j])
 		wg.Add(1)
 
 		go func() {
@@ -160,7 +165,8 @@ func (ctx *CacheStorageContext) ReadAllMetadata() (map[string]staticfire.Preview
 	entries, err := os.ReadDir(ctx.BasePath)
 
 	if err != nil {
-		return nil, err
+		// Treat the cache directory as empty if it does not exist
+		return make(map[string]staticfire.PreviewMetadata), nil
 	}
 
 	// Read the preview metadata for each cache

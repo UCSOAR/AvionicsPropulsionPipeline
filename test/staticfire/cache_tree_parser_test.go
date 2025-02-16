@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"bufio"
 	"os"
 	"reflect"
 	"testing"
@@ -59,9 +58,7 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 	}
 
 	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	parsedCacheTree, err := staticfire.ParseIntoCacheTree(scanner)
+	parsedCacheTree, err := staticfire.ParseIntoCacheTree(file)
 
 	if err != nil {
 		t.Errorf("ParseIntoCacheTree() error = %v", err)
@@ -84,8 +81,7 @@ func TestTimeTakenToParseLongLvm(t *testing.T) {
 	defer file.Close()
 
 	start := time.Now()
-	scanner := bufio.NewScanner(file)
-	_, err = staticfire.ParseIntoCacheTree(scanner)
+	_, err = staticfire.ParseIntoCacheTree(file)
 	duration := time.Since(start)
 
 	if err != nil {
@@ -141,9 +137,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 	}
 
 	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	parsedCacheTree, err := staticfire.ParseIntoCacheTree(scanner)
+	parsedCacheTree, err := staticfire.ParseIntoCacheTree(file)
 
 	if err != nil {
 		t.Errorf("ParseIntoCacheTree() error = %v", err)
@@ -164,9 +158,7 @@ func TestInvalidLvmFailsToParse(t *testing.T) {
 	}
 
 	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	_, err = staticfire.ParseIntoCacheTree(scanner)
+	_, err = staticfire.ParseIntoCacheTree(file)
 
 	if err == nil {
 		t.Error("ParseIntoCacheTree() error = nil, want error")

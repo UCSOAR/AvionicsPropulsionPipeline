@@ -34,7 +34,7 @@ func PostStaticFireColumns(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get columns
-	xColumns, yColumns, err := storage.DefaultCacheStorageContext.ReadColumns(req.Name, req.XColumnNames, req.YColumnNames)
+	xColumns, yColumns, err := storage.DefaultCacheContext.ReadColumns(req.Name, req.XColumnNames, req.YColumnNames)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

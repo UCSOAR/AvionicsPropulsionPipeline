@@ -1,12 +1,10 @@
 package controllers
 
 import (
-	"bufio"
 	"net/http"
 	storage "soarpipeline/internal/storage"
 	staticfire "soarpipeline/pkg/staticfire"
 	"strings"
-	"sync"
 )
 
 const maxFileSize = 10 << 26 // 671 MegaBytes
@@ -43,43 +41,27 @@ func PostUploadStaticFire(w http.ResponseWriter, r *http.Request) {
 
 	// Create cache tree
 	name := header.Filename[:len(header.Filename)-len(extension)]
-
-	scanner := bufio.NewScanner(file)
-	tree, err := staticfire.ParseIntoCacheTree(scanner)
+	tree, err := staticfire.ParseIntoCacheTree(file)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Store files
-	errorChan := make(chan error, 2)
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	// Store cache tree
+	if err = storage.DefaultCacheContext.StoreTree(name, &tree); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	go func() {
-		defer wg.Done()
+	// Reset file reader
+	if _, err = file.Seek(0, 0); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		// Store cache tree
-		if err = storage.DefaultCacheStorageContext.StoreTree(name, &tree); err != nil {
-			errorChan <- err
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		// Store uploaded file
-		if err = storage.DefaultUploadStorageContext.Store(header.Filename, file); err != nil {
-			errorChan <- err
-		}
-	}()
-
-	wg.Wait()
-	close(errorChan)
-
-	// Check for errors
-	for err := range errorChan {
+	// Store uploaded file
+	if err = storage.DefaultUploadContext.Store(header.Filename, file); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -27,7 +27,7 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 	// Ensure all required keys are present
 	for _, key := range requiredEntryHeaderKeys {
 		if _, ok := parsedHeader.Kv[key]; !ok {
-			return ParsedEntryHeader{}, fmt.Errorf("Missing key: %s", key)
+			return ParsedEntryHeader{}, fmt.Errorf("missing key: %s", key)
 		}
 	}
 

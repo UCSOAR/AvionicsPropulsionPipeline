@@ -3,6 +3,7 @@ package staticfire
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -53,19 +54,21 @@ func filterCommentColumn(columnNames []string) []string {
 // Parses an LVM file into a cache tree.
 //
 // Parameters:
-//   - lvmScanner: The scanner to read the LVM content from.
+//   - reader: The reader to read the LVM content from.
 //
 // Returns:
 //   - CacheTree: The cache tree parsed from the LVM content.
 //   - error: An error if the LVM content could not be parsed, or nil if the operation was successful.
-func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
+func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
+	lvmScanner := bufio.NewScanner(reader)
+
 	// Assert first line
 	if !lvmScanner.Scan() {
 		return CacheTree{}, nil
 	}
 
 	if line := strings.TrimSpace(lvmScanner.Text()); line != AssertedFirstLine {
-		return CacheTree{}, fmt.Errorf("First line %s does not match expected %s", line, AssertedFirstLine)
+		return CacheTree{}, fmt.Errorf("first line %s does not match expected %s", line, AssertedFirstLine)
 	}
 
 	// Read forward to the end of the first header (entry header)
@@ -109,7 +112,7 @@ func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
 
 	// Read column names
 	if !lvmScanner.Scan() {
-		return CacheTree{}, fmt.Errorf("No columns found")
+		return CacheTree{}, fmt.Errorf("no columns found")
 	}
 
 	columnNames := filterCommentColumn(strings.Split(lvmScanner.Text(), string(entryHeader.Seperator)))
@@ -118,7 +121,7 @@ func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
 	totalColumnCount := xColumnCount + yColumnCount
 
 	if len(columnNames) != xColumnCount+yColumnCount {
-		return CacheTree{}, fmt.Errorf("Expected %d columns, got %d", totalColumnCount, len(columnNames))
+		return CacheTree{}, fmt.Errorf("expected %d columns, got %d", totalColumnCount, len(columnNames))
 	}
 
 	// Read until end of file
@@ -131,7 +134,7 @@ func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
 			// Drop the comment column
 			values = values[:totalColumnCount]
 		} else if len(values) < totalColumnCount {
-			return CacheTree{}, fmt.Errorf("Too few values in line: %s", line)
+			return CacheTree{}, fmt.Errorf("too few values in line: %s", line)
 		}
 
 		// For each column, parse the value and add it as a new row
@@ -141,7 +144,7 @@ func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
 			floatValue, err := strconv.ParseFloat(value, 64)
 
 			if err != nil {
-				return CacheTree{}, fmt.Errorf("Failed to parse value: %s", value)
+				return CacheTree{}, fmt.Errorf("failed to parse value: %s", value)
 			}
 
 			// A column is an X column if:
@@ -169,7 +172,7 @@ func ParseIntoCacheTree(lvmScanner *bufio.Scanner) (CacheTree, error) {
 				xColumnNames = append(xColumnNames, columnName)
 			} else {
 				if i == len(columnNames)-1 {
-					return CacheTree{}, fmt.Errorf("X column name %s is the last column", columnName)
+					return CacheTree{}, fmt.Errorf("the X column name %s is the last column", columnName)
 				}
 
 				// The X column associated with the Y column after it
