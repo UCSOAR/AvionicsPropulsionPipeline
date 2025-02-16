@@ -12,7 +12,7 @@ import (
 const maxFileSize = 10 << 26 // 671 MegaBytes
 const extension = ".lvm"
 
-func PostStaticFire(w http.ResponseWriter, r *http.Request) {
+func PostUploadStaticFire(w http.ResponseWriter, r *http.Request) {
 	// Limit size of uploaded file
 	if r.ContentLength > maxFileSize {
 		http.Error(w, "Uploaded file is too large", http.StatusRequestEntityTooLarge)
@@ -36,7 +36,7 @@ func PostStaticFire(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Assert file extension
-	if strings.HasSuffix(header.Filename, extension) {
+	if !strings.HasSuffix(header.Filename, extension) {
 		http.Error(w, "Invalid file extension", http.StatusBadRequest)
 		return
 	}

@@ -3,7 +3,7 @@ package storage
 import "path"
 
 // Path to where this project will store its data.
-const storageDirPath = "../../storage"
+const storageDirPath = "./storage"
 
 // The storage context for LVM file uploads.
 var DefaultUploadStorageContext = StorageContext{
