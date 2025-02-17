@@ -97,12 +97,13 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 		xColumnCount = channelHeader.ChannelCount
 	}
 
-	xColumns := make([]XColumnNode, xColumnCount)
-	yColumns := make([]YColumnNode, yColumnCount)
+	yColumnMetadata := make([]YColumnMetadata, yColumnCount)
+	xColumns := make([]ColumnNode, xColumnCount)
+	yColumns := make([]ColumnNode, yColumnCount)
 
 	// Initialize Y column metadata
 	for i := 0; i < yColumnCount; i++ {
-		yColumns[i] = YColumnNode{
+		yColumnMetadata[i] = YColumnMetadata{
 			Samples:    channelHeader.Samples[i],
 			Date:       channelHeader.Dates[i],
 			UnitLabel:  channelHeader.YUnitLabels[i],
@@ -193,8 +194,9 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 			XColumnNames: xColumnNames,
 			YColumnNames: yColumnNames,
 		},
-		XColumnNodes: xColumns,
-		YColumnNodes: yColumns,
+		YColumnMetadata: yColumnMetadata,
+		XColumnNodes:    xColumns,
+		YColumnNodes:    yColumns,
 	}
 
 	return tree, nil

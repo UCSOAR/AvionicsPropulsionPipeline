@@ -20,32 +20,40 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 			XColumnNames: []string{"X_Value"},
 			YColumnNames: []string{"Pressure", "Temp", "Volume"},
 		},
-		XColumnNodes: []staticfire.XColumnNode{
-			{
-				Rows: []float64{0, 0.328878},
-			},
-		},
-		YColumnNodes: []staticfire.YColumnNode{
+		YColumnMetadata: []staticfire.YColumnMetadata{
 			{
 				Samples:    1,
 				Date:       "2020/08/07",
 				UnitLabel:  "MPa",
 				XDimension: "Time1",
-				Rows:       []float64{1.833787, 1.522167},
 			},
 			{
 				Samples:    2,
 				Date:       "2020/08/08",
 				UnitLabel:  "degC",
 				XDimension: "Time2",
-				Rows:       []float64{5.479238, 5.310735},
 			},
 			{
 				Samples:    4,
 				Date:       "2020/08/09",
 				UnitLabel:  "ml",
 				XDimension: "Time3",
-				Rows:       []float64{0, 89.821400},
+			},
+		},
+		XColumnNodes: []staticfire.ColumnNode{
+			{
+				Rows: []float64{0, 0.328878},
+			},
+		},
+		YColumnNodes: []staticfire.ColumnNode{
+			{
+				Rows: []float64{1.833787, 1.522167},
+			},
+			{
+				Rows: []float64{5.479238, 5.310735},
+			},
+			{
+				Rows: []float64{0, 89.821400},
 			},
 		},
 	}
@@ -103,7 +111,21 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 			XColumnNames: []string{"(X) Voltage", "(X) Acceleration"},
 			YColumnNames: []string{"Voltage", "Acceleration"},
 		},
-		XColumnNodes: []staticfire.XColumnNode{
+		YColumnMetadata: []staticfire.YColumnMetadata{
+			{
+				Samples:    51200,
+				Date:       "2016/08/23",
+				UnitLabel:  "Volts",
+				XDimension: "Time1",
+			},
+			{
+				Samples:    51300,
+				Date:       "2016/09/23",
+				UnitLabel:  "g",
+				XDimension: "Time2",
+			},
+		},
+		XColumnNodes: []staticfire.ColumnNode{
 			{
 				Rows: []float64{0, 1.953125e-5, 3.906250e-5},
 			},
@@ -111,20 +133,12 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 				Rows: []float64{0, 1.953125e-5, 3.906250e-5},
 			},
 		},
-		YColumnNodes: []staticfire.YColumnNode{
+		YColumnNodes: []staticfire.ColumnNode{
 			{
-				Samples:    51200,
-				Date:       "2016/08/23",
-				UnitLabel:  "Volts",
-				XDimension: "Time1",
-				Rows:       []float64{-0.035229, -0.034882, -0.034191},
+				Rows: []float64{-0.035229, -0.034882, -0.034191},
 			},
 			{
-				Samples:    51300,
-				Date:       "2016/09/23",
-				UnitLabel:  "g",
-				XDimension: "Time2",
-				Rows:       []float64{0.532608, 0.502991, 0.467541},
+				Rows: []float64{0.532608, 0.502991, 0.467541},
 			},
 		},
 	}

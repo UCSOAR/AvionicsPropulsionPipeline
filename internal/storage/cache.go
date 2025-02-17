@@ -67,9 +67,10 @@ func decodeGobObject[T any](path string, emptyObj *T) error {
 // Returns:
 //   - error: An error if the cache tree data could not be stored, or nil if the operation was successful.
 func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTree) error {
+	yColumnsMetadataPath := ctx.GetYColumnsMetadataPath(name)
 	xColumnsPath := ctx.GetXColumnsPath(name)
 	yColumnsPath := ctx.GetYColumnsPath(name)
-	previewMetadataPath := ctx.GetPreviewMetadataPath(name)
+	previewMetadataFile := ctx.GetPreviewMetadataFilePath(name)
 
 	// Check if the cache directory already exists
 	if _, err := os.Stat(ctx.GetCachePath(name)); err == nil {
@@ -77,12 +78,18 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 	}
 
 	// Create the cache directory and subdirectories
-	if err := os.MkdirAll(xColumnsPath, os.ModePerm); err != nil {
-		return err
-	}
+	{
+		paths := [...]string{
+			yColumnsMetadataPath,
+			xColumnsPath,
+			yColumnsPath,
+		}
 
-	if err := os.MkdirAll(yColumnsPath, os.ModePerm); err != nil {
-		return err
+		for _, path := range paths {
+			if err := os.MkdirAll(path, os.ModePerm); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Start storing the cache tree data
@@ -96,7 +103,21 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 		go func() {
 			defer wg.Done()
 
-			if err := storeGobObject(previewMetadataPath, &tree.PreviewMetadata); err != nil {
+			if err := storeGobObject(previewMetadataFile, &tree.PreviewMetadata); err != nil {
+				errorChan <- err
+			}
+		}()
+	}
+
+	// Store the Y column metadata
+	for k, yColMeta := range tree.YColumnMetadata {
+		yColMetaPath := ctx.GetYColumnMetadataFilePath(name, tree.PreviewMetadata.YColumnNames[k])
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			if err := storeGobObject(yColMetaPath, &yColMeta); err != nil {
 				errorChan <- err
 			}
 		}()
@@ -155,7 +176,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 // Returns:
 //   - metadata: A map of cache names to their respective preview metadata.
 //   - error: An error if the metadata could not be read, or nil if the operation was successful.
-func (ctx *CacheStorageContext) ReadAllMetadata() (map[string]staticfire.PreviewMetadata, error) {
+func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]staticfire.PreviewMetadata, error) {
 	type MetadataKV struct {
 		name     string
 		metadata staticfire.PreviewMetadata
@@ -183,7 +204,7 @@ func (ctx *CacheStorageContext) ReadAllMetadata() (map[string]staticfire.Preview
 		cacheName := entry.Name()
 
 		// Read the preview metadata
-		previewMetadataPath := ctx.GetPreviewMetadataPath(cacheName)
+		previewMetadataPath := ctx.GetPreviewMetadataFilePath(cacheName)
 		wg.Add(1)
 
 		go func() {
@@ -236,21 +257,41 @@ func (ctx *CacheStorageContext) ReadAllMetadata() (map[string]staticfire.Preview
 //   - yColumnNames: The names of the Y columns to retrieve.
 //
 // Returns:
+//   - yColumnMetadata: A map of Y column names to their respective metadata.
 //   - xColumnNodes: A map of X column names to their respective column nodes.
 //   - yColumnNodes: A map of Y column names to their respective column nodes.
 //   - error: An error if the columns could not be retrieved, or nil if the operation was successful.
-func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.XColumnNode, map[string]staticfire.YColumnNode, error) {
-	type ColumnKV[T any] struct {
-		name   string
-		column T
+func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.YColumnMetadata, map[string]staticfire.ColumnNode, map[string]staticfire.ColumnNode, error) {
+	type Kv[T any] struct {
+		key   string
+		value T
 	}
 
-	// Retrieve columns concurrently
+	// Retrieve columns and metadata concurrently
 	errorChan := make(chan error)
 	wg := sync.WaitGroup{}
 
+	// Retrieve Y column metadata
+	yColumnMetadataChan := make(chan Kv[staticfire.YColumnMetadata], len(yColumnNames))
+
+	for _, yColName := range yColumnNames {
+		yColMetaPath := ctx.GetYColumnMetadataFilePath(name, yColName)
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			var yColMeta staticfire.YColumnMetadata
+
+			if err := decodeGobObject(yColMetaPath, &yColMeta); err != nil {
+				errorChan <- err
+			} else {
+				yColumnMetadataChan <- Kv[staticfire.YColumnMetadata]{yColName, yColMeta}
+			}
+		}()
+	}
+
 	// Retrieve the X columns
-	xColumnChan := make(chan ColumnKV[staticfire.XColumnNode], len(xColumnNames))
+	xColumnChan := make(chan Kv[staticfire.ColumnNode], len(xColumnNames))
 
 	for _, xColName := range xColumnNames {
 		xColPath := ctx.GetXColumnFilePath(name, xColName)
@@ -258,18 +299,18 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 
 		go func() {
 			defer wg.Done()
-			var xCol staticfire.XColumnNode
+			var xCol staticfire.ColumnNode
 
 			if err := decodeGobObject(xColPath, &xCol); err != nil {
 				errorChan <- err
 			} else {
-				xColumnChan <- ColumnKV[staticfire.XColumnNode]{xColName, xCol}
+				xColumnChan <- Kv[staticfire.ColumnNode]{xColName, xCol}
 			}
 		}()
 	}
 
 	// Retrieve the Y columns
-	yColumnChan := make(chan ColumnKV[staticfire.YColumnNode], len(yColumnNames))
+	yColumnChan := make(chan Kv[staticfire.ColumnNode], len(yColumnNames))
 
 	for _, yColName := range yColumnNames {
 		yColPath := ctx.GetYColumnFilePath(name, yColName)
@@ -277,12 +318,12 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 
 		go func() {
 			defer wg.Done()
-			var yCol staticfire.YColumnNode
+			var yCol staticfire.ColumnNode
 
 			if err := decodeGobObject(yColPath, &yCol); err != nil {
 				errorChan <- err
 			} else {
-				yColumnChan <- ColumnKV[staticfire.YColumnNode]{yColName, yCol}
+				yColumnChan <- Kv[staticfire.ColumnNode]{yColName, yCol}
 			}
 		}()
 	}
@@ -297,33 +338,40 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 	}()
 
 	// Check for errors and collect columns
-	xColumnNodes := make(map[string]staticfire.XColumnNode, len(xColumnNames))
-	yColumnNodes := make(map[string]staticfire.YColumnNode, len(yColumnNames))
+	yColumnMetadata := make(map[string]staticfire.YColumnMetadata, len(yColumnNames))
+	xColumnNodes := make(map[string]staticfire.ColumnNode, len(xColumnNames))
+	yColumnNodes := make(map[string]staticfire.ColumnNode, len(yColumnNames))
 
-	for xColumnChan != nil || yColumnChan != nil || errorChan != nil {
+	for yColumnMetadataChan != nil || xColumnChan != nil || yColumnChan != nil || errorChan != nil {
 		select {
+		case yColMetaKv, ok := <-yColumnMetadataChan:
+			if !ok {
+				yColumnMetadataChan = nil
+			} else {
+				yColumnMetadata[yColMetaKv.key] = yColMetaKv.value
+			}
 		case xKv, ok := <-xColumnChan:
 			if !ok {
 				xColumnChan = nil
 			} else {
-				xColumnNodes[xKv.name] = xKv.column
+				xColumnNodes[xKv.key] = xKv.value
 			}
 		case yKv, ok := <-yColumnChan:
 			if !ok {
 				yColumnChan = nil
 			} else {
-				yColumnNodes[yKv.name] = yKv.column
+				yColumnNodes[yKv.key] = yKv.value
 			}
 		case err, ok := <-errorChan:
 			if !ok {
 				errorChan = nil
 			} else {
-				return nil, nil, err
+				return nil, nil, nil, err
 			}
 		}
 	}
 
-	return xColumnNodes, yColumnNodes, nil
+	return yColumnMetadata, xColumnNodes, yColumnNodes, nil
 }
 
 // Removes the cache tree directory specified by the given name.

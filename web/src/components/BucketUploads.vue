@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, inject } from "vue";
-import { PreviewMetadata } from "../models/BucketObject";
+import { PreviewMetadata } from "../models/PreviewMetadata";
 import { endpointMapping } from "../utils/constants";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faTrash, faFile } from "@fortawesome/free-solid-svg-icons";
