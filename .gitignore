@@ -27,7 +27,6 @@
 *.dylib
 
 # Executables
-build/
 Debug/*
 *.exe
 *.out
