@@ -332,6 +332,7 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 	go func() {
 		wg.Wait()
 
+		close(yColumnMetadataChan)
 		close(xColumnChan)
 		close(yColumnChan)
 		close(errorChan)
