@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import ChartPlaceholder from './components/ChartPlaceholder.vue';
 import ColumnTray from './components/ColumnTray.vue';
+import FileItem from './components/FileItem.vue';
 
 const isDarkMode = ref(true);
 
@@ -54,7 +55,10 @@ const toggleTheme = () => {
         <ColumnTray />
         <ChartPlaceholder class="chart-container"/>
       </div>
+      
     </div>
+
+    
   </main>
 </template>
 
@@ -139,6 +143,7 @@ header {
   padding-top: 14px;
   gap: 1px;
   display: flex;
+  margin: 10;
   flex-direction: column;
   align-items: flex-start;
   flex: 1;
@@ -147,8 +152,8 @@ header {
 
 /* Chart Container (Right Panel) */
 .chart-container {
-  width: 50%; /* Reduced width for alignment */
-  height: 50%; /* Halved the height */
+  width: 90%; /* Reduced width for alignment */
+  height: 60%; /* Halved the height */
   min-height: 200px; /* Ensures responsiveness */
   display: flex;
   justify-content: flex-start;

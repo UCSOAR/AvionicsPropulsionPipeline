@@ -1,169 +1,164 @@
-<script setup lang="ts">
-import { computed, ref, inject, watch } from "vue";
-import { useMetadataStore } from "../stores/metadataStore";
-import { endpointMapping } from "../utils/constants";
-import VueApexCharts from "vue3-apexcharts";
+<template>
+  <!-- The chart container (dark mode classes applied dynamically) -->
+  <div :class="['chart-container', { dark: isDarkMode }]" ref="chartContainer"></div>
+</template>
 
-// Inject dark mode from the parent component
-const isDarkMode = inject("isDarkMode", ref(false));
+<script setup lang="ts">
+import { ref, watch, onMounted, inject } from 'vue';
+import Plotly from 'plotly.js-dist-min';
+import { useMetadataStore } from '../stores/metadataStore';
+import { endpointMapping } from '../utils/constants';
+
+// Inject dark mode from parent (defaulting to false if not provided)
+const isDarkMode = inject('isDarkMode', false);
+
+// Access the metadata store (assumed to be set up already)
 const metadataStore = useMetadataStore();
 
-// This will hold our fetched data for the chart
-const series = ref<Array<{ name: string; data: [number, number][] }>>([]);
+// A reference to the chart container DOM element
+const chartContainer = ref<HTMLDivElement | null>(null);
 
-// Chart options with annotations
-const chartOptions = computed(() => ({
-  chart: {
-    height: 350,
-    type: "line",
-    background: "transparent",
-    toolbar: { show: false },
-  },
-  annotations: {
-    yaxis: [
-      {
-        y: 8200,
-        borderColor: "#00E396",
-        label: {
-          borderColor: "#00E396",
-          style: {
-            color: "#fff",
-            background: "#00E396",
-          },
-          text: "Support",
-        },
-      },
-    ],
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  stroke: {
-    curve: "smooth",
-    width: 2,
-  },
-  grid: {
-    borderColor: isDarkMode.value ? "#555" : "#ddd",
-    padding: { right: 30, left: 20 },
-  },
-  xaxis: {
-    type: "datetime",
-    labels: {
-      style: {
-        colors: isDarkMode.value ? "#ccc" : "#333",
-      },
-    },
-  },
-  yaxis: {
-    labels: {
-      style: {
-        colors: isDarkMode.value ? "#ccc" : "#333",
-      },
-    },
-  },
-  tooltip: {
-    theme: isDarkMode.value ? "dark" : "light",
-  },
-}));
+// This will hold the full data set from your API call
+const allData = ref<{ x: number[]; y: number[] }>({ x: [], y: [] });
 
-// Fetch chart data via POST request
+/**
+ * Fetch dynamic chart data using a POST request.
+ * Expects the API to return a structure with:
+ *   data.xColumns[0].rows and data.yColumns[0].rows
+ */
 async function fetchChartData() {
   const name = metadataStore.name;
   const colX = metadataStore.colX;
   const colY = metadataStore.colY;
 
-  // Check if file name and columns are set
   if (!name || !colX || !colY) {
-    console.warn("No file name / colX / colY selected yet.");
+    console.warn('No file name / colX / colY selected yet.');
     return;
   }
-
+  
   try {
     const payload = {
       name: name,
       xColumnNames: [colX],
       yColumnNames: [colY],
     };
-
-    console.log("This is the payload", payload);
-
-    const result = await fetch(endpointMapping.getStaticFireColumnsUrl.toString(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    
+    const response = await fetch(endpointMapping.getStaticFireColumnsUrl.toString(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-
-    if (!result.ok) {
-      throw new Error(`Failed to fetch columns. Status: ${result.status} ${result.statusText}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch columns. Status: ${response.status}`);
     }
-
-    const data = await result.json();
-    console.log("This is the fetched data", data);
-
-    // Ensure the fetched data structure matches the expected format
+    
+    const data = await response.json();
+    
+    // Validate data structure
     if (data.xColumns && data.yColumns && data.xColumns[0] && data.yColumns[0]) {
-      const xValues = data.xColumns[0].rows;
-      const yValues = data.yColumns[0].rows;
-
+      const xValues: number[] = data.xColumns[0].rows;
+      const yValues: number[] = data.yColumns[0].rows;
+      
       if (xValues.length !== yValues.length) {
-        throw new Error("Mismatch in lengths of xColumns and yColumns data.");
+        throw new Error('Mismatch in lengths of xColumns and yColumns data.');
       }
-
-      // Map data to the format expected by ApexCharts
-      const chartData = xValues.map((x: number, index: number) => [x, yValues[index]]);
-      series.value = [
-        {
-          name: `${name} - (${colX} vs. ${colY})`,
-          data: chartData,
-        },
-      ];
-      console.log("Fetched chart data:", series.value);
+      
+      // Combine and sort data by x-value
+      let chartData: [number, number][] = xValues.map((x, i) => [x, yValues[i]]);
+      chartData.sort((a, b) => a[0] - b[0]);
+      
+      // Update allData with sorted arrays
+      allData.value.x = chartData.map(([x]) => x);
+      allData.value.y = chartData.map(([_, y]) => y);
+      
+      // Render the chart with the updated data
+      renderChart();
     } else {
-      throw new Error("Invalid data structure received from API.");
+      throw new Error('Invalid data structure received from API.');
     }
   } catch (err) {
-    console.error("Error fetching chart data:", err);
+    console.error('Error fetching chart data:', err);
   }
 }
 
-// Watch for changes in metadata and columns
+/**
+ * Renders (or re-renders) the Plotly chart.
+ * The initial view shows only the last 20 data points.
+ */
+function renderChart() {
+  if (!chartContainer.value) return;
+  
+  const xData = allData.value.x;
+  const yData = allData.value.y;
+  
+  if (xData.length === 0 || yData.length === 0) return;
+  
+  const totalPoints = xData.length;
+  let initialRange: [number, number];
+  if (totalPoints >= 20) {
+    initialRange = [xData[totalPoints - 20], xData[totalPoints - 1]];
+  } else {
+    initialRange = [xData[0], xData[totalPoints - 1]];
+  }
+  
+  const trace = {
+    x: xData,
+    y: yData,
+    mode: 'lines+markers',
+    type: 'scattergl', // Use WebGL for better performance with large datasets
+    marker: { size: 6 },
+    line: {size: 5},
+    curve: "smooth",
+  };
+  
+  const layout = {
+    dragmode: 'pan', // Default drag mode enables panning with the mouse
+    xaxis: {
+      range: initialRange,
+      title: 'X Axis'
+    },
+    yaxis: {
+      title: 'Y Axis'
+    },
+    // Adapt background and font colors based on dark mode
+    plot_bgcolor: isDarkMode ? '#222' : '#fff',
+    paper_bgcolor: isDarkMode ? '#222' : '#fff',
+    font: {
+      color: isDarkMode ? '#ccc' : '#333'
+    }
+  };
+  
+  // Create or update the Plotly chart
+  Plotly.newPlot(chartContainer.value, [trace], layout, { responsive: true });
+}
+
+// Re-fetch and re-render the chart when metadata changes
 watch(
   () => [metadataStore.metadata, metadataStore.colX, metadataStore.colY],
   () => {
-    void fetchChartData();
+    fetchChartData();
   },
   { immediate: true }
 );
+
+onMounted(() => {
+  fetchChartData();
+});
 </script>
 
-<template>
-  <div :class="['chart-container', { dark: isDarkMode }]">
-    <apexchart
-      :options="chartOptions"
-      :series="series"
-      type="line"
-      height="350"
-      width="1000"
-    />
-  </div>
-</template>
-
 <style scoped>
-.chart-container {
-  width: 96%;
+/* .chart-container {
+  width: auto;
+  height: 350px;
   padding: 20px;
-  background: var(--chart-bg, #fff);
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Dark Mode */
 .chart-container.dark {
   background: #222;
   color: #fff;
-}
+} */
 </style>
-    
