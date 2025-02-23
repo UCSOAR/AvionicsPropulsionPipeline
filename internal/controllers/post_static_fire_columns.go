@@ -3,13 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	storage "soarpipeline/internal/storage"
-	staticfire "soarpipeline/pkg/staticfire"
+	"soarpipeline/internal/storage"
+	"soarpipeline/pkg/staticfire"
 )
 
 // Represents the expected JSON structure of the request body
 type PostStaticFireColumnsRequest struct {
 	Name         string   `json:"name"`
+	StartRow     int      `json:"startRow"`
+	NumRows      int      `json:"numRows"`
 	XColumnNames []string `json:"xColumnNames"`
 	YColumnNames []string `json:"yColumnNames"`
 }
@@ -35,7 +37,7 @@ func PostStaticFireColumns(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get columns
-	yColumnMetadata, xColumns, yColumns, err := storage.DefaultCacheContext.ReadColumns(req.Name, req.XColumnNames, req.YColumnNames)
+	yColumnMetadata, xColumns, yColumns, err := storage.DefaultCacheContext.ReadColumns(req.Name, req.StartRow, req.NumRows, req.XColumnNames, req.YColumnNames)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

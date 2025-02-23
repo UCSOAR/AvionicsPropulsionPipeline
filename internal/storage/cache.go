@@ -1,62 +1,11 @@
 package storage
 
 import (
-	"encoding/gob"
 	"os"
 
-	staticfire "soarpipeline/pkg/staticfire"
+	"soarpipeline/pkg/staticfire"
 	"sync"
 )
-
-// Helper function to store a gob object to a file.
-//
-// Parameters:
-//   - path: The path to the file to store the gob object in.
-//   - obj: The gob object to store.
-//
-// Returns:
-//   - error: An error if the gob object could not be stored, or nil if the operation was successful.
-func storeGobObject[T any](path string, obj *T) error {
-	file, err := os.Create(path)
-
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-	encoder := gob.NewEncoder(file)
-
-	if err := encoder.Encode(obj); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Helper function to decode a gob object from a file.
-//
-// Parameters:
-//   - path: The path to the file containing the gob object.
-//   - emptyObj: A pointer to an empty object of the type to decode.
-//
-// Returns:
-//   - error: An error if the gob object could not be decoded, or nil if the operation was successful.
-func decodeGobObject[T any](path string, emptyObj *T) error {
-	file, err := os.Open(path)
-
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-	decoder := gob.NewDecoder(file)
-
-	if err := decoder.Decode(emptyObj); err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // Stores the cache tree data in the cache directory.
 //
@@ -103,7 +52,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 		go func() {
 			defer wg.Done()
 
-			if err := storeGobObject(previewMetadataFile, &tree.PreviewMetadata); err != nil {
+			if err := EncodeGobObject(previewMetadataFile, &tree.PreviewMetadata); err != nil {
 				errorChan <- err
 			}
 		}()
@@ -117,7 +66,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 		go func() {
 			defer wg.Done()
 
-			if err := storeGobObject(yColMetaPath, &yColMeta); err != nil {
+			if err := EncodeGobObject(yColMetaPath, &yColMeta); err != nil {
 				errorChan <- err
 			}
 		}()
@@ -131,7 +80,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 		go func() {
 			defer wg.Done()
 
-			if err := storeGobObject(xColPath, &xCol); err != nil {
+			if err := EncodeColumnNode(xColPath, &xCol); err != nil {
 				errorChan <- err
 			}
 		}()
@@ -145,7 +94,7 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 		go func() {
 			defer wg.Done()
 
-			if err := storeGobObject(yColPath, &yCol); err != nil {
+			if err := EncodeColumnNode(yColPath, &yCol); err != nil {
 				errorChan <- err
 			}
 		}()
@@ -211,7 +160,7 @@ func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]staticfire.
 			defer wg.Done()
 			var metadata staticfire.PreviewMetadata
 
-			if err := decodeGobObject(previewMetadataPath, &metadata); err != nil {
+			if err := DecodeGobObject(previewMetadataPath, &metadata); err != nil {
 				errorChan <- err
 			} else {
 				metadataChan <- MetadataKV{cacheName, metadata}
@@ -253,6 +202,8 @@ func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]staticfire.
 //
 // Parameters:
 //   - name: The name of the cache directory to retrieve columns from.
+//   - startRow: The index of the first row to retrieve.
+//   - numRows: The number of rows to retrieve after the start row.
 //   - xColumnNames: The names of the X columns to retrieve.
 //   - yColumnNames: The names of the Y columns to retrieve.
 //
@@ -261,7 +212,7 @@ func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]staticfire.
 //   - xColumnNodes: A map of X column names to their respective column nodes.
 //   - yColumnNodes: A map of Y column names to their respective column nodes.
 //   - error: An error if the columns could not be retrieved, or nil if the operation was successful.
-func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, yColumnNames []string) (map[string]staticfire.YColumnMetadata, map[string]staticfire.ColumnNode, map[string]staticfire.ColumnNode, error) {
+func (ctx *CacheStorageContext) ReadColumns(name string, startRow int, numRows int, xColumnNames []string, yColumnNames []string) (map[string]staticfire.YColumnMetadata, map[string]staticfire.ColumnNode, map[string]staticfire.ColumnNode, error) {
 	type Kv[T any] struct {
 		key   string
 		value T
@@ -282,7 +233,7 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 			defer wg.Done()
 			var yColMeta staticfire.YColumnMetadata
 
-			if err := decodeGobObject(yColMetaPath, &yColMeta); err != nil {
+			if err := DecodeGobObject(yColMetaPath, &yColMeta); err != nil {
 				errorChan <- err
 			} else {
 				yColumnMetadataChan <- Kv[staticfire.YColumnMetadata]{yColName, yColMeta}
@@ -299,9 +250,8 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 
 		go func() {
 			defer wg.Done()
-			var xCol staticfire.ColumnNode
 
-			if err := decodeGobObject(xColPath, &xCol); err != nil {
+			if xCol, err := DecodeColumnNode(xColPath, startRow, numRows); err != nil {
 				errorChan <- err
 			} else {
 				xColumnChan <- Kv[staticfire.ColumnNode]{xColName, xCol}
@@ -318,9 +268,8 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 
 		go func() {
 			defer wg.Done()
-			var yCol staticfire.ColumnNode
 
-			if err := decodeGobObject(yColPath, &yCol); err != nil {
+			if yCol, err := DecodeColumnNode(yColPath, startRow, numRows); err != nil {
 				errorChan <- err
 			} else {
 				yColumnChan <- Kv[staticfire.ColumnNode]{yColName, yCol}
