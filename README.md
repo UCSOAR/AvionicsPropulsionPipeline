@@ -4,45 +4,23 @@
 
 ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/vuejs-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
-![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-## Development environment
+## Running with Docker
 
-To sign into GCP use the CLI command:
-
-```bash
-gcloud auth login
-```
-
-Enable API:
+Simply run the following command to start the application.
 
 ```bash
-gcloud services enable cloudfunctions.googleapis.com
+docker-compose up
 ```
 
-Set the project:
+or
 
 ```bash
-gcloud config set project avionics-propulsion-pipeline
+docker-compose up --build
 ```
 
-Before testing the functions, you need to set the environment variables for the functions:
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/storage-admin.json"
-```
-
-Deploying a function:
-
-```bash
-gcloud functions deploy <FunctionName> \
-  --runtime go123 \
-  --trigger-http \
-  --allow-unauthenticated \
-  --region us-west1
-```
-
-It is important that `<FunctionName>` is the name of the function you want to deploy and must be part of a package called `function` in a file called `main.go`.
+to rebuild the containers from scratch.
 
 ## LabVIEW Measurement to Cache Tree Diagram
 
