@@ -28,7 +28,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	// Ensure all required keys are present
 	for _, key := range requiredChannelHeaderKeys {
 		if _, ok := parsedHeader.Kv[key]; !ok {
-			return ParsedChannelHeader{}, fmt.Errorf("Missing key: %s", key)
+			return ParsedChannelHeader{}, fmt.Errorf("missing key: %s", key)
 		}
 	}
 
@@ -36,13 +36,13 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	channelCount, err := strconv.Atoi(parsedHeader.Kv["Channels"][0])
 
 	if err != nil {
-		return ParsedChannelHeader{}, fmt.Errorf("Failed to parse Channels: %s", parsedHeader.Kv["Channels"][0])
+		return ParsedChannelHeader{}, fmt.Errorf("failed to parse Channels: %s", parsedHeader.Kv["Channels"][0])
 	}
 
 	// Ensure all arrays have the length of the channel count
 	for i := 1; i < len(requiredChannelHeaderKeys); i++ {
 		if len(parsedHeader.Kv[requiredChannelHeaderKeys[i]]) != channelCount {
-			return ParsedChannelHeader{}, fmt.Errorf("Length of %s does not match channel count", requiredChannelHeaderKeys[i])
+			return ParsedChannelHeader{}, fmt.Errorf("length of %s does not match channel count", requiredChannelHeaderKeys[i])
 		}
 	}
 
@@ -53,7 +53,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 		sampleCount, err := strconv.Atoi(parsedHeader.Kv["Samples"][i])
 
 		if err != nil {
-			return ParsedChannelHeader{}, fmt.Errorf("Failed to parse Samples: %s", parsedHeader.Kv["Samples"][i])
+			return ParsedChannelHeader{}, fmt.Errorf("failed to parse Samples: %s", parsedHeader.Kv["Samples"][i])
 		}
 
 		samples[i] = sampleCount
@@ -74,7 +74,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 		initialX, err := strconv.ParseFloat(parsedHeader.Kv["X0"][i], 64)
 
 		if err != nil {
-			return ParsedChannelHeader{}, fmt.Errorf("Failed to parse X0: %s", parsedHeader.Kv["X0"][i])
+			return ParsedChannelHeader{}, fmt.Errorf("failed to parse X0: %s", parsedHeader.Kv["X0"][i])
 		}
 
 		initialXs[i] = initialX
@@ -87,7 +87,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 		deltaX, err := strconv.ParseFloat(parsedHeader.Kv["Delta_X"][i], 64)
 
 		if err != nil {
-			return ParsedChannelHeader{}, fmt.Errorf("Failed to parse Delta_X: %s", parsedHeader.Kv["Delta_X"][i])
+			return ParsedChannelHeader{}, fmt.Errorf("failed to parse Delta_X: %s", parsedHeader.Kv["Delta_X"][i])
 		}
 
 		deltaXs[i] = deltaX

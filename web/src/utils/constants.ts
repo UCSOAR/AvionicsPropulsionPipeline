@@ -1,14 +1,14 @@
-export const devPort = 8080;
+export const backendDevPort = 8080;
 
 const devEndpointMapping = {
   uploadStaticFireUrl: new URL(
-    `http://localhost:${devPort}/api/staticfire/upload`
+    `http://localhost:${backendDevPort}/api/staticfire/upload`
   ),
   getStaticFireMetadataUrl: new URL(
-    `http://localhost:${devPort}/api/staticfire/metadata`
+    `http://localhost:${backendDevPort}/api/staticfire/metadata`
   ),
   getStaticFireColumnsUrl: new URL(
-    `http://localhost:${devPort}/api/staticfire/columns`
+    `http://localhost:${backendDevPort}/api/staticfire/columns`
   ),
 };
 

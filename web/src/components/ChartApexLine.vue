@@ -1,3 +1,9 @@
+<template>
+  <div :class="['chart-container', { dark: isDarkMode }]">
+    <apexchart :options="chartOptions" :series="series" type="line" height="350" width="1000" />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, ref, inject, watch } from "vue";
 import { useMetadataStore } from "../stores/metadataStore";
@@ -12,11 +18,31 @@ const series = ref<Array<{ name: string; data: [number, number][] }>>([]);
 
 // Chart options with annotations
 const chartOptions = computed(() => ({
-  chart: {
+  chart:
+  {
     height: 350,
     type: "line",
-    background: "transparent",
-    toolbar: { show: false },
+    background: "",
+    renderer: "canvas",
+    toolbar: {
+      show: true,
+      tools: {
+        zoom: true,
+        zoomin: true,
+        zoomout: true,
+        pan: true,
+        reset: true,
+      },
+      autoSelected: "pan",
+    },
+    zoom: {
+      enabled: true,
+      type: "x",
+    }
+  },
+  animations: {
+    enabled: false,
+    speed: 800,
   },
   annotations: {
     yaxis: [
@@ -39,14 +65,15 @@ const chartOptions = computed(() => ({
   },
   stroke: {
     curve: "smooth",
-    width: 2,
+    width: 3,
   },
   grid: {
     borderColor: isDarkMode.value ? "#555" : "#ddd",
     padding: { right: 30, left: 20 },
   },
   xaxis: {
-    type: "datetime",
+    type: "numeric",
+    floating: true,
     labels: {
       style: {
         colors: isDarkMode.value ? "#ccc" : "#333",
@@ -71,6 +98,8 @@ async function fetchChartData() {
   const colX = metadataStore.colX;
   const colY = metadataStore.colY;
 
+  console.log(colY);
+
   // Check if file name and columns are set
   if (!name || !colX || !colY) {
     console.warn("No file name / colX / colY selected yet.");
@@ -80,8 +109,6 @@ async function fetchChartData() {
   try {
     const payload = {
       name: name,
-      startRow: 0, // FOR NOW...
-      numRows: 100000, // FOR NOW...
       xColumnNames: [colX],
       yColumnNames: [colY],
     };
@@ -104,16 +131,20 @@ async function fetchChartData() {
     console.log("This is the fetched data", data);
 
     // Ensure the fetched data structure matches the expected format
-    if (data.xColumns && data.yColumns && data.xColumns[colX] && data.yColumns[colY]) {
-      const xValues = data.xColumns[colX].rows;
-      const yValues = data.yColumns[colY].rows;
+    if (data.xColumns && data.yColumns && data.xColumns[0] && data.yColumns[0]) {
+      const xValues = data.xColumns[0].rows;
+      const yValues = data.yColumns[0].rows;
 
       if (xValues.length !== yValues.length) {
         throw new Error("Mismatch in lengths of xColumns and yColumns data.");
       }
 
       // Map data to the format expected by ApexCharts
-      const chartData = xValues.map((x: number, index: number) => [x, yValues[index]]);
+      let chartData = xValues.map((x: number, index: number) => [x, yValues[index]]);
+
+      // FIX 2: Sort by x-value to ensure a proper left-to-right line
+      chartData.sort((a: any, b: any) => a[0] - b[0]);
+
       series.value = [
         {
           name: `${name} - (${colX} vs. ${colY})`,
@@ -138,12 +169,6 @@ watch(
   { immediate: true }
 );
 </script>
-
-<template>
-  <div :class="['chart-container', { dark: isDarkMode }]">
-    <apexchart :options="chartOptions" :series="series" type="line" height="350" width="1000" />
-  </div>
-</template>
 
 <style scoped>
 .chart-container {

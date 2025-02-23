@@ -60,7 +60,7 @@ func ParseMultiHeadingsValue(multiHeadingsText string) (MultiHeadingsValue, erro
 	case "No":
 		return MultiHeadingsNo, nil
 	default:
-		return MultiHeadingsUnknown, fmt.Errorf("Invalid multi headings value: %s", multiHeadingsText)
+		return MultiHeadingsUnknown, fmt.Errorf("invalid multi headings value: %s", multiHeadingsText)
 	}
 }
 
@@ -82,7 +82,7 @@ func ParseXColumnsValue(xColumnsText string) (XColumnsValue, error) {
 	case "Multi":
 		return XColumnsMulti, nil
 	default:
-		return XColumnsUnknown, fmt.Errorf("Invalid X columns value: %s", xColumnsText)
+		return XColumnsUnknown, fmt.Errorf("invalid X columns value: %s", xColumnsText)
 	}
 }
 
@@ -104,6 +104,6 @@ func ParseFieldSeperator(seperatorText string) (FieldSeperator, error) {
 	case "Space":
 		return FieldSeperatorTab, nil
 	default:
-		return FieldSeperatorUnknown, fmt.Errorf("Invalid seperator: %s", seperatorText)
+		return FieldSeperatorUnknown, fmt.Errorf("invalid seperator: %s", seperatorText)
 	}
 }
