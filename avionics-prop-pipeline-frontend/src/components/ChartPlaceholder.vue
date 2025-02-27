@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, inject } from 'vue';
-import Plotly, { Data } from 'plotly.js-dist-min';
+import Plotly from 'plotly.js-dist-min';
 import { useMetadataStore } from '../stores/metadataStore';
 import { endpointMapping } from '../utils/constants';
 
@@ -35,48 +35,43 @@ async function fetchChartData() {
     console.warn('No file name / colX / colY selected yet.');
     return;
   }
-
+  
   try {
     const payload = {
       name: name,
-      startRow: 0, // FOR NOW...
-      numRows: 100000, // FOR NOW...
       xColumnNames: [colX],
       yColumnNames: [colY],
     };
-
+    
     const response = await fetch(endpointMapping.getStaticFireColumnsUrl.toString(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch columns. Status: ${response.status}`);
     }
-
-
+    
     const data = await response.json();
-    console.log("This is the fetched data: ", data);
-
+    
     // Validate data structure
-    if (data.xColumns && data.yColumns && data.xColumns[colX] && data.yColumns[colY]) {
-      const xValues: number[] = data.xColumns[colX].rows;
-      const yValues: number[] = data.yColumns[colY].rows;
-
-
+    if (data.xColumns && data.yColumns && data.xColumns[0] && data.yColumns[0]) {
+      const xValues: number[] = data.xColumns[0].rows;
+      const yValues: number[] = data.yColumns[0].rows;
+      
       if (xValues.length !== yValues.length) {
         throw new Error('Mismatch in lengths of xColumns and yColumns data.');
       }
-
+      
       // Combine and sort data by x-value
       let chartData: [number, number][] = xValues.map((x, i) => [x, yValues[i]]);
       chartData.sort((a, b) => a[0] - b[0]);
-
+      
       // Update allData with sorted arrays
       allData.value.x = chartData.map(([x]) => x);
       allData.value.y = chartData.map(([_, y]) => y);
-
+      
       // Render the chart with the updated data
       renderChart();
     } else {
@@ -93,12 +88,12 @@ async function fetchChartData() {
  */
 function renderChart() {
   if (!chartContainer.value) return;
-
+  
   const xData = allData.value.x;
   const yData = allData.value.y;
-
+  
   if (xData.length === 0 || yData.length === 0) return;
-
+  
   const totalPoints = xData.length;
   let initialRange: [number, number];
   if (totalPoints >= 20) {
@@ -106,16 +101,18 @@ function renderChart() {
   } else {
     initialRange = [xData[0], xData[totalPoints - 1]];
   }
-
-  const trace: Data = {
+  
+  const trace = {
     x: xData,
     y: yData,
     mode: 'lines+markers',
     type: 'scattergl', // Use WebGL for better performance with large datasets
     marker: { size: 6 },
+    line: {size: 5},
+    curve: "smooth",
   };
-
-  const layout: Partial<Plotly.Layout> = {
+  
+  const layout = {
     dragmode: 'pan', // Default drag mode enables panning with the mouse
     xaxis: {
       range: initialRange,
@@ -131,7 +128,7 @@ function renderChart() {
       color: isDarkMode ? '#ccc' : '#333'
     }
   };
-
+  
   // Create or update the Plotly chart
   Plotly.newPlot(chartContainer.value, [trace], layout, { responsive: true });
 }

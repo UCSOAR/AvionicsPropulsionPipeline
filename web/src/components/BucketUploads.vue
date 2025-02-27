@@ -65,7 +65,6 @@ onMounted(() => {
         <button type="button" class="file-info-button"
           style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;"
           @click="handleFileClick(metadata, name)">
-
           <div class="file-info">
             <div class="file-icon">
               <font-awesome-icon :icon="faFile" />
