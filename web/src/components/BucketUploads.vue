@@ -64,12 +64,7 @@ onMounted(() => {
       <div v-for="(metadata, name) in objects" :key="name" class="file-item">
         <button type="button" class="file-info-button"
           style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;"
-<<<<<<< HEAD:avionics-prop-pipeline-frontend/src/components/BucketUploads.vue
-          @click="handleFileClick(metadata, name)"
-        >
-=======
           @click="handleFileClick(metadata, name)">
->>>>>>> 5da09c96aba7be59ec2b1f617bb94fa1454bb4fc:web/src/components/BucketUploads.vue
           <div class="file-info">
             <div class="file-icon">
               <font-awesome-icon :icon="faFile" />

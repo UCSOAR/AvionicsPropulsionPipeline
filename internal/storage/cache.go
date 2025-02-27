@@ -335,6 +335,7 @@ func (ctx *CacheStorageContext) ReadColumns(name string, xColumnNames []string, 
 		close(xColumnChan)
 		close(yColumnChan)
 		close(errorChan)
+		close(yColumnMetadataChan) // Add this line on line 338 of cache.go
 	}()
 
 	// Check for errors and collect columns
