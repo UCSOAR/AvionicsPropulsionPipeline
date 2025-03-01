@@ -11,13 +11,13 @@
 Simply run the following command to start the application.
 
 ```bash
-docker-compose up
+docker-compose -f docker-compose.<dev | prod>.yaml up
 ```
 
 or
 
 ```bash
-docker-compose up --build
+docker-compose -f docker-compose.<dev | prod>.yaml up --build
 ```
 
 to rebuild the containers from scratch.
