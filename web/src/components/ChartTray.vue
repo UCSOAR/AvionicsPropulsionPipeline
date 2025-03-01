@@ -16,10 +16,14 @@ const isDarkMode = inject('isDarkMode', false);
 const metadataStore = useMetadataStore();
 
 // A reference to the chart container DOM element
-const chartContainer = ref<HTMLDivElement | null>(null);
+const chartContainer = ref<Plotly.PlotlyHTMLElement | null>(null);
 
 // This will hold the full data set from your API call
 const allData = ref<{ x: number[]; y: number[] }>({ x: [], y: [] });
+
+// Track the start and end of the visible range
+let xStart = 0;
+let xEnd = 0;
 
 /**
  * Fetch dynamic chart data using a POST request.
@@ -40,7 +44,7 @@ async function fetchChartData() {
     const payload = {
       name: name,
       startRow: 0, // FOR NOW...
-      numRows: 10000, // FOR NOW...
+      numRows: 15000, // FOR NOW...
       xColumnNames: [colX],
       yColumnNames: [colY],
     };
@@ -55,27 +59,20 @@ async function fetchChartData() {
       throw new Error(`Failed to fetch columns. Status: ${response.status}`);
     }
 
-
     const data = await response.json();
-    console.log("This is the fetched data: ", data);
 
     // Validate data structure
     if (data.xColumns && data.yColumns && data.xColumns[colX] && data.yColumns[colY]) {
       const xValues: number[] = data.xColumns[colX].rows;
       const yValues: number[] = data.yColumns[colY].rows;
 
-
       if (xValues.length !== yValues.length) {
         throw new Error('Mismatch in lengths of xColumns and yColumns data.');
       }
 
-      // Combine and sort data by x-value
-      let chartData: [number, number][] = xValues.map((x, i) => [x, yValues[i]]);
-      chartData.sort((a, b) => a[0] - b[0]);
-
-      // Update allData with sorted arrays
-      allData.value.x = chartData.map(([x]) => x);
-      allData.value.y = chartData.map(([_, y]) => y);
+      // Update allData
+      allData.value.x = xValues;
+      allData.value.y = yValues;
 
       // Render the chart with the updated data
       renderChart();
@@ -101,6 +98,7 @@ function renderChart() {
 
   const totalPoints = xData.length;
   let initialRange: [number, number];
+
   if (totalPoints >= 20) {
     initialRange = [xData[totalPoints - 20], xData[totalPoints - 1]];
   } else {
@@ -134,14 +132,24 @@ function renderChart() {
 
   // Create or update the Plotly chart
   Plotly.newPlot(chartContainer.value, [trace], layout, { responsive: true });
+
+  // Update the visible range when the user pans the chart
+  chartContainer.value.on('plotly_relayout', (eventData: any) => {
+    const rangeStart = eventData["xaxis.range[0]"];
+    const rangeEnd = eventData["xaxis.range[1]"];
+
+    // Update the visible range
+    if (rangeStart && rangeEnd) {
+      xStart = rangeStart;
+      xEnd = rangeEnd;
+    }
+  });
 }
 
 // Re-fetch and re-render the chart when metadata changes
 watch(
   () => [metadataStore.metadata, metadataStore.colX, metadataStore.colY],
-  () => {
-    fetchChartData();
-  },
+  () => fetchChartData(),
   { immediate: true }
 );
 
@@ -149,19 +157,3 @@ onMounted(() => {
   fetchChartData();
 });
 </script>
-
-<style scoped>
-/* .chart-container {
-  width: auto;
-  height: 350px;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-.chart-container.dark {
-  background: #222;
-  color: #fff;
-} */
-</style>
