@@ -91,7 +91,10 @@ const confirmOptions = () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../styles/variables.scss';
+
+
 /* Column Tray Styling */
 .column-tray {
   display: flex;
@@ -100,7 +103,7 @@ const confirmOptions = () => {
   gap: 1rem;
   padding: 10px;
   background: #f9f9f9;
-  border: 2px solid #007bff;
+  border: 2px solid $soar-red-color;
   border-radius: 8px;
   margin-bottom: 10px;
 }
@@ -143,7 +146,7 @@ const confirmOptions = () => {
 
 /* Confirm Button */
 .confirm-button {
-  background: #007bff;
+  background: $soar-red-color;
   color: #fff;
   border: none;
   padding: 8px 16px;

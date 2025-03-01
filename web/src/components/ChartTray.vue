@@ -110,7 +110,7 @@ function renderChart() {
   const trace: Data = {
     x: xData,
     y: yData,
-    mode: 'lines+markers',
+    mode: 'lines',
     type: 'scattergl', // Use WebGL for better performance with large datasets
     marker: { size: 6 },
   };

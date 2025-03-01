@@ -4,8 +4,9 @@ import BucketUploadForm from './components/BucketUploadForm.vue';
 import BucketUploads from './components/BucketUploads.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
-import ChartPlaceholder from './components/ChartPlaceholder.vue';
+import ChartPlaceholder from './components/ChartTray.vue';
 import ColumnTray from './components/ColumnTray.vue';
+
 
 const isDarkMode = ref(true);
 
@@ -51,7 +52,9 @@ const toggleTheme = () => {
   </main>
 </template>
 
-<style>
+<style lang="scss">
+@import './styles/variables.scss';
+
 /* Reset Styles */
 html,
 body {
@@ -163,7 +166,7 @@ header {
 
 /* Theme Toggle Button */
 .theme-toggle-button {
-  background: #007bff;
+  background: $soar-red-color;
   color: white;
   border: none;
   border-radius: 50%;
@@ -178,7 +181,7 @@ header {
 }
 
 .theme-toggle-button:hover {
-  background: #0056b3;
+  background: $soar-red-color;
   transform: scale(1.05);
 }
 

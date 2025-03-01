@@ -102,7 +102,8 @@ const uploadFiles = async () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../styles/variables.scss';
 /* Base Light Theme */
 .upload-button-wrapper {
   display: flex;
@@ -111,7 +112,7 @@ const uploadFiles = async () => {
 }
 
 .upload-button {
-  background: #007bff;
+  background: $soar-red-color;
   color: #fff;
   padding: 10px;
   border: none;
@@ -123,7 +124,7 @@ const uploadFiles = async () => {
 }
 
 .upload-button:hover {
-  background: #005dc1;
+  background: $soar-red-color;
 }
 
 .upload-button input {

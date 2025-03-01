@@ -2,9 +2,8 @@
 import { onMounted, reactive, ref, inject } from "vue";
 import { PreviewMetadata } from "../models/PreviewMetadata";
 import { endpointMapping } from "../utils/constants";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faTrash, faFile } from "@fortawesome/free-solid-svg-icons";
 import { useMetadataStore } from "../stores/metadataStore";
+import FileButton from "./FileButton.vue";
 
 // Inject and initialize state
 const isDarkMode = inject("isDarkMode", ref(false));
@@ -44,12 +43,6 @@ const deleteCache = async (cacheName: string) => {
   }
 };
 
-// Helper function to remove the extension from a file name
-const removeExtension = (fileName: string): string => {
-  const lastDotIndex = fileName.lastIndexOf(".");
-  return lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
-};
-
 onMounted(() => {
   fetchObjects();
 });
@@ -61,23 +54,15 @@ onMounted(() => {
     <!-- <button @click="fetchObjects" class="refresh-button"></button> -->
 
     <div v-if="objects && Object.keys(objects).length > 0" class="file-list">
-      <div v-for="(metadata, name) in objects" :key="name" class="file-item">
-        <button type="button" class="file-info-button"
-          style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;"
-          @click="handleFileClick(metadata, name)">
-          <div class="file-info">
-            <div class="file-icon">
-              <font-awesome-icon :icon="faFile" />
-            </div>
-            <div class="button-name">
-              <p class="file-name">{{ removeExtension(name) }}</p>
-            </div>
-          </div>
-        </button>
-        <button type="button" @click="deleteCache(name)" class="delete-button">
-          <font-awesome-icon :icon="faTrash" />
-        </button>
-      </div>
+      <FileButton 
+        v-for="(metadata, name) in objects" 
+        :key="name"
+        :metadata="metadata"
+        :fileName="name"
+        :isDarkMode="isDarkMode"
+        @file-click="handleFileClick"
+        @delete-click="deleteCache"
+      />
     </div>
 
     <p v-else>No uploaded files yet.</p>
@@ -129,20 +114,6 @@ onMounted(() => {
 }
 
 /* Refresh Button (if used) */
-/*
-.refresh-button {
-  background: #007bff;
-  color: white;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-bottom: 10px;
-  display: block;
-}
-*/
-
 .refresh-button:hover {
   background: #005dc1;
 }
@@ -160,75 +131,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-/* File Item */
-.file-item {
-  gap: 10px;
-  justify-content: space-between;
-  display: flex;
-  height: 30px;
-  align-items: center;
-  padding: 10px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s ease;
-}
-
-.uploaded-files-box.dark .file-item {
-  background: #333;
-  color: #fff;
-}
-
-/* File Info */
-.file-info {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-/* File Icon */
-.file-icon {
-  color: #007bff;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.uploaded-files-box.dark .file-icon {
-  color: #66b2ff;
-}
-
-/* File Name */
-.file-name {
-  font-weight: 500;
-  color: #333;
-}
-
-.uploaded-files-box.dark .file-name {
-  color: #fff;
-}
-
-/* Delete Button */
-.delete-button {
-  background: none;
-  border: none;
-  color: #ff4d4f;
-  font-size: 1.2em;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.delete-button:hover {
-  color: #d63031;
-}
-
-.uploaded-files-box.dark .delete-button {
-  color: #ff7777;
-}
-
-.uploaded-files-box.dark .delete-button:hover {
-  color: #ff9999;
 }
 
 /* Error Message */
