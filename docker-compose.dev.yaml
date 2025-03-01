@@ -10,8 +10,6 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-    networks:
-      - app-network
 
   backend:
     build:
@@ -21,10 +19,3 @@ services:
       - "8080:8080"
     environment:
       - GO_ENV=development
-    networks:
-      - app-network
-
-# Define the custom network
-networks:
-  app-network:
-    driver: bridge
