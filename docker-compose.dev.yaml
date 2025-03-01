@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ./build/package/dev.frontend.dockerfile
+      dockerfile: ./build/package/dev/frontend.dev.dockerfile
     volumes:
       - ./web:/app # Mount the source code directory to allow for hot-reloading
       - /app/node_modules  # Don't overwrite node_modules
@@ -10,21 +10,12 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-    networks:
-      - app-network
 
   backend:
     build:
       context: .
-      dockerfile: ./build/package/dev.backend.dockerfile
+      dockerfile: ./build/package/dev/backend.dev.dockerfile
     ports:
       - "8080:8080"
     environment:
       - GO_ENV=development
-    networks:
-      - app-network
-
-# Define the custom network
-networks:
-  app-network:
-    driver: bridge

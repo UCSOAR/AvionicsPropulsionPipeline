@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: ./build/package/prod/frontend.prod.dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./build/package/prod/backend.prod.dockerfile
+    ports:
+      - "8080:8080"
