@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, inject } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { PreviewMetadata } from "../models/PreviewMetadata";
 import { endpointMapping } from "../utils/constants";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -7,7 +7,6 @@ import { faTrash, faFile } from "@fortawesome/free-solid-svg-icons";
 import { useMetadataStore } from "../stores/metadataStore";
 
 // Inject and initialize state
-const isDarkMode = inject("isDarkMode", ref(false));
 const cachePreviews = reactive<Record<string, PreviewMetadata>>({});
 const metadataStore = useMetadataStore();
 const error = ref<string | null>(null);
@@ -56,34 +55,28 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :class="['uploaded-files-box', { dark: isDarkMode }]">
-    <!-- Uncomment below to add a refresh button -->
-    <!-- <button @click="fetchObjects" class="refresh-button"></button> -->
-
-    <div v-if="objects && Object.keys(objects).length > 0" class="file-list">
-      <div v-for="(metadata, name) in objects" :key="name" class="file-item">
-        <button type="button" class="file-info-button"
-          style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;"
-          @click="handleFileClick(metadata, name)">
-          <div class="file-info">
-            <div class="file-icon">
-              <font-awesome-icon :icon="faFile" />
-            </div>
-            <div class="button-name">
-              <p class="file-name">{{ removeExtension(name) }}</p>
-            </div>
+  <div v-if="objects && Object.keys(objects).length > 0" class="file-list">
+    <div v-for="(metadata, name) in objects" :key="name" class="file-item">
+      <button type="button" class="file-info-button"
+        style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;"
+        @click="handleFileClick(metadata, name)">
+        <div class="file-info">
+          <div class="file-icon">
+            <font-awesome-icon :icon="faFile" />
           </div>
-        </button>
-        <button type="button" @click="deleteCache(name)" class="delete-button">
-          <font-awesome-icon :icon="faTrash" />
-        </button>
-      </div>
+          <div class="button-name">
+            <p class="file-name">{{ removeExtension(name) }}</p>
+            <p>yes</p>
+          </div>
+        </div>
+      </button>
+      <button type="button" @click="deleteCache(name)" class="delete-button">
+        <font-awesome-icon :icon="faTrash" />
+      </button>
     </div>
-
-    <p v-else>No uploaded files yet.</p>
-    <p v-if="error" class="error-message">{{ error }}</p>
   </div>
 </template>
+
 
 <style scoped>
 /* Box Container */

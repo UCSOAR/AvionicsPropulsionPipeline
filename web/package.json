@@ -11,11 +11,15 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
+    "highcharts": "^12.1.2",
+    "highcharts-vue": "^2.0.1",
     "pinia": "^2.3.1",
+    "plotly.js-dist-min": "^3.0.1",
     "vue": "^3.5.13",
     "vue3-apexcharts": "^1.8.0"
   },
   "devDependencies": {
+    "@types/plotly.js-dist-min": "^2.3.4",
     "@vitejs/plugin-vue": "^5.2.1",
     "sass": "^1.83.4",
     "typescript": "~5.6.2",

@@ -1,7 +1,8 @@
 package storage
 
 import (
-	"mime/multipart"
+	"fmt"
+	"io"
 	"os"
 )
 
@@ -9,22 +10,30 @@ import (
 //
 // Parameters:
 //   - name: The name of the file to store.
-//   - file: The file to store.
+//   - reader: A reader for the contents of the file to store.
 //
 // Returns:
 //   - error: An error if the file could not be stored, or nil if the operation was successful.
-func (ctx *StorageContext) Store(name string, file multipart.File) error {
+func (ctx *StorageContext) Store(name string, reader io.Reader) error {
 	uploadPath := ctx.GetFilePath(name)
-	uploadFile, err := os.Create(uploadPath)
+
+	// Check if the file already exists
+	if _, err := os.Stat(uploadPath); err == nil {
+		return os.ErrExist
+	}
+
+	dest, err := os.Create(uploadPath)
 
 	if err != nil {
 		return err
 	}
 
-	defer uploadFile.Close()
+	defer dest.Close()
 
-	if _, err := uploadFile.ReadFrom(file); err != nil {
+	if len, err := io.Copy(dest, reader); err != nil {
 		return err
+	} else {
+		fmt.Printf("Stored %s (%d bytes)\n", name, len)
 	}
 
 	return nil
