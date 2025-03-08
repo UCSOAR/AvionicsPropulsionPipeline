@@ -71,7 +71,6 @@ async function fetchChartData() {
 
       // Combine and sort data by x-value
       let chartData: [number, number][] = xValues.map((x, i) => [x, yValues[i]]);
-      chartData.sort((a, b) => a[0] - b[0]);
 
       // Update allData with sorted arrays
       allData.value.x = chartData.map(([x]) => x);
@@ -113,32 +112,55 @@ function renderChart() {
     mode: 'lines',
     type: 'scattergl', // Use WebGL for better performance with large datasets
     marker: { size: 6 },
-  };
-
-  const layout: Partial<Plotly.Layout> = {
-    dragmode: 'pan', // Default drag mode enables panning with the mouse
-    xaxis: {
-      range: initialRange,
-      title: 'X Axis'
-    },
-    yaxis: {
-      title: 'Y Axis'
-    },
-    // Adapt background and font colors based on dark mode
-    plot_bgcolor: isDarkMode ? '#222' : '#fff',
-    paper_bgcolor: isDarkMode ? '#222' : '#fff',
-    font: {
-      color: isDarkMode ? '#ccc' : '#333'
+    line: { 
+      color: '#da0000', // Blue line that works in both themes
+      width: 2 
     }
   };
 
+  // Set light/dark mode colors directly in the layout
+  const isDark = isDarkMode.value; 
+  const layout: Partial<Plotly.Layout> = {
+    autosize: true,
+    margin: { l: 50, r: 50, t: 30, b: 50 }, // Adjust margins to fit better
+    dragmode: 'pan',
+    xaxis: {
+      range: initialRange,
+      title: 'X Axis',
+      color: isDark ? '#ccc' : '#333',
+      gridcolor: isDark ? '#333' : '#eee',
+      zerolinecolor: isDark ? '#444' : '#ddd'
+    },
+    yaxis: {
+      title: 'Y Axis',
+      color: isDark ? '#ccc' : '#333',
+      gridcolor: isDark ? '#333' : '#eee',
+      zerolinecolor: isDark ? '#444' : '#ddd'
+    },
+    plot_bgcolor: isDark ? '#222' : '#fff',
+    paper_bgcolor: isDark ? '#222' : '#fff',
+    font: {
+      color: isDark ? '#ccc' : '#333'
+    }
+  };
+
+  const config = {
+    responsive: true,
+    displayModeBar: true, // Re-enable the mode bar
+    modeBarButtonsToRemove: ['lasso2d', 'select2d'], // Remove less commonly used buttons
+    displaylogo: false // Remove the plotly logo
+  };
+
+  // Destroy existing chart before rendering a new one
+  Plotly.purge(chartContainer.value);
+
   // Create or update the Plotly chart
-  Plotly.newPlot(chartContainer.value, [trace], layout, { responsive: true });
+  Plotly.newPlot(chartContainer.value, [trace], layout, config);
 }
 
 // Re-fetch and re-render the chart when metadata changes
 watch(
-  () => [metadataStore.metadata, metadataStore.colX, metadataStore.colY],
+  () => [metadataStore.metadata, metadataStore.colX, metadataStore.colY, isDarkMode.value],
   () => {
     fetchChartData();
   },
@@ -150,18 +172,44 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-/* .chart-container {
-  width: auto;
+<style scoped lang="scss">
+@import '../styles/variables.scss';
+
+
+.chart-container {
+  width: 100%;
   height: 350px;
-  padding: 20px;
+  padding: 0;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 2px solid $soar-red-color;
   transition: background 0.3s ease, color 0.3s ease;
+  background-color: #fff;
+  overflow: hidden;
+  position: relative;
 }
 
 .chart-container.dark {
-  background: #222;
+  background-color: #222;
   color: #fff;
-} */
+  border: 2px solid #444;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Make sure all Plotly elements take full width/height */
+.chart-container :deep(.js-plotly-plot),
+.chart-container :deep(.plot-container),
+.chart-container :deep(.svg-container) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Style the mode bar to better match the theme */
+.chart-container.dark :deep(.modebar) {
+  background: rgba(30, 30, 30, 0.7) !important;
+}
+
+.chart-container.dark :deep(.modebar-btn path) {
+  fill: #ccc !important;
+}
 </style>

@@ -34,7 +34,7 @@ const handleFileClick = (obj: PreviewMetadata, name: string) => {
   console.log("Tis the name", name);
   // Store metadata with the first x and y column names
   metadataStore.setMetadata(obj, obj.xColumnNames[0], obj.yColumnNames[0], name);
-  console.log("Metadata stored", obj);
+
 };
 
 const deleteCache = async (cacheName: string) => {
@@ -70,11 +70,13 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../styles/variables.scss';
 /* Box Container */
 .uploaded-files-box {
   width: 100%;
   height: 65vh;
+  border: 2px solid $soar-red-color;
   max-width: 200px;
   padding: 20px;
   background: #ffffff;
@@ -89,8 +91,10 @@ onMounted(() => {
 .uploaded-files-box.dark {
   background: #222;
   color: #ffffff;
+  border: 0px;
   box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
   scrollbar-color: #666 #444;
+  border: 2px solid #444;
 }
 
 .uploaded-files-box::-webkit-scrollbar {

@@ -111,6 +111,7 @@ const confirmOptions = () => {
 .column-tray.dark {
   background: #333;
   border: 2px solid #555;
+  border: 2px solid #444;
 }
 
 /* Dropdown Group */
