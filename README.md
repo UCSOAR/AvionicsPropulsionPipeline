@@ -68,3 +68,4 @@ test.lvm
 ```
 
 Where each of these files that is not a directory is a binary data containing the data for the corresponding column or metadata. With this structure, only the necessary data is loaded into memory, and the data is only loaded when it is requested.
+cd 
