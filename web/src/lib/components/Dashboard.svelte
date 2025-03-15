@@ -1,11 +1,18 @@
 <script lang="ts">
+  import type { PreviewMetadata } from "$lib/models/cacheTreeModels";
+
+  export let metadata: PreviewMetadata | null = null;
 </script>
 
 <div class="container">
   <h1>Dashboard</h1>
-  <div class="content">
-    <p>Select a file from the sidebar to view its data.</p>
-  </div>
+  {#if metadata}
+    <pre>{JSON.stringify(metadata, null, 2)}</pre>
+  {:else}
+    <div class="message-container">
+      <p>Select a file from the sidebar to view its data.</p>
+    </div>
+  {/if}
 </div>
 
 <style scoped lang="scss">
@@ -22,7 +29,7 @@
       margin: 0;
     }
 
-    div.content {
+    div.message-container {
       display: flex;
       justify-content: center;
       align-items: center;

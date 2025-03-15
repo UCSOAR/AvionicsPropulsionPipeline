@@ -1,5 +1,5 @@
 export type TimestampMetadata = {
-  data: string;
+  date: string;
   time: string;
 };
 
