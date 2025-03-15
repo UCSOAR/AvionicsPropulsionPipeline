@@ -4,6 +4,7 @@
   export let id: string;
   export let label: string | null = null;
   export let options: string[];
+  export let onChange: (optionIndex: number) => void;
 
   if (!options) {
     throw new Error("At least one option must be provided.");

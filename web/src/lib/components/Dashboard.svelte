@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import type { PreviewMetadata } from "$lib/models/cacheTreeModels";
+  import type { Config, Data, Layout } from "plotly.js";
   import Dropdown from "./Dropdown.svelte";
 
   type SelectedFile = {
@@ -8,6 +10,42 @@
   };
 
   export let selectedFile: SelectedFile | null = null;
+
+  let selectedXColumnIndex = 0;
+  let selectedYColumnIndex = 0;
+
+  let data: Data[] = [];
+
+  const style = {
+    margin: 50,
+    bgColor: "#1f1f1f",
+    txtColor: "#e1e1e1",
+  };
+  const config: Partial<Config> = { responsive: true };
+  const layout: Partial<Layout> = {
+    autosize: true,
+    margin: {
+      l: style.margin,
+      r: style.margin,
+      t: style.margin,
+      b: style.margin,
+    },
+    paper_bgcolor: style.bgColor,
+    plot_bgcolor: style.bgColor,
+    font: {
+      family: "Inter",
+      color: "white",
+    },
+    xaxis: { color: style.txtColor },
+    yaxis: { color: style.txtColor },
+  };
+
+  let plotlyChartDiv: HTMLDivElement;
+
+  onMount(async () => {
+    const Plotly = await import("plotly.js-dist-min");
+    Plotly.newPlot(plotlyChartDiv, data, layout, config);
+  });
 </script>
 
 <div class="container">
@@ -16,18 +54,22 @@
       <div class="title">
         <h1>Dashboard for <i>{selectedFile.name}</i></h1>
         <p>
-          Visualizing data for <i>{selectedFile.metadata.xColumnNames[0]}</i>
+          Visualizing data for <i
+            >{selectedFile.metadata.xColumnNames[selectedXColumnIndex]}</i
+          >
           and
-          <i>{selectedFile.metadata.yColumnNames[0]}</i>
+          <i>{selectedFile.metadata.yColumnNames[selectedYColumnIndex]}</i>
         </p>
       </div>
       <div class="column-select">
         <Dropdown
+          onChange={(index) => (selectedXColumnIndex = index)}
           label="X Column"
           id="x-column"
           options={selectedFile.metadata.xColumnNames}
         />
         <Dropdown
+          onChange={(index) => (selectedYColumnIndex = index)}
           label="Y Column"
           id="y-column"
           options={selectedFile.metadata.yColumnNames}
@@ -37,7 +79,9 @@
     <div class="content-container">
       <div class="chart-pod pod">
         <h2>Static Fire Chart</h2>
-        <div class="chart"></div>
+        <div class="chart-wrapper">
+          <div bind:this={plotlyChartDiv} class="chart"></div>
+        </div>
       </div>
       <div class="value-pods">
         <div class="min-val-pod pod">
@@ -80,7 +124,7 @@
   }
 
   div.pod {
-    background-color: $bg-color-5;
+    background-color: $bg-color-4;
     border: 1px solid $outline-color-1;
     border-radius: $border-radius-1;
     padding: 1rem;
@@ -101,6 +145,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    padding-bottom: 1rem;
 
     div.value-pods {
       display: flex;
@@ -115,11 +160,9 @@
     div.chart-pod {
       flex-grow: 1;
 
-      // Placeholder for chart
-      div.chart {
-        width: 100%;
-        height: 10rem;
-        background-color: transparent;
+      div.chart-wrapper {
+        border-radius: $border-radius-1;
+        overflow: hidden;
       }
     }
   }
