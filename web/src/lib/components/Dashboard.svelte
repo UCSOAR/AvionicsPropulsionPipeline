@@ -34,6 +34,26 @@
         />
       </div>
     </div>
+    <div class="content-container">
+      <div class="chart-pod pod">
+        <h2>Static Fire Chart</h2>
+        <div class="chart"></div>
+      </div>
+      <div class="value-pods">
+        <div class="min-val-pod pod">
+          <label for="min-val">Minimum Value</label>
+          <div class="value" id="min-val">0.00</div>
+        </div>
+        <div class="max-val-pod pod">
+          <label for="max-val">Maximum Value</label>
+          <div class="value" id="max-val">0.00</div>
+        </div>
+        <div class="avg-val-pod pod">
+          <label for="avg-val">Average Value</label>
+          <div class="value" id="avg-val">0.00</div>
+        </div>
+      </div>
+    </div>
   {:else}
     <h1>Dashboard</h1>
     <div class="message-container">
@@ -56,7 +76,51 @@
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      margin-right: 1rem;
+    }
+  }
+
+  div.pod {
+    background-color: $bg-color-5;
+    border: 1px solid $outline-color-1;
+    border-radius: $border-radius-1;
+    padding: 1rem;
+
+    h2 {
+      margin: 0;
+      margin-bottom: 0.5em;
+    }
+
+    div.value {
+      margin-top: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  }
+
+  div.content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    div.value-pods {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+
+      div.pod {
+        flex-grow: 1;
+      }
+    }
+
+    div.chart-pod {
+      flex-grow: 1;
+
+      // Placeholder for chart
+      div.chart {
+        width: 100%;
+        height: 10rem;
+        background-color: transparent;
+      }
     }
   }
 
@@ -65,7 +129,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
+    gap: 1rem;
 
     h1 {
       margin: 0;
