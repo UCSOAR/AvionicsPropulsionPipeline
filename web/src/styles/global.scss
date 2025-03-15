@@ -1,1 +1,19 @@
 @use "./variables.scss" as *;
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Quicksand:wght@300..700&display=swap");
+
+input,
+textarea,
+button {
+  cursor: pointer;
+  outline: none;
+  border: none;
+}
+
+body {
+  background-color: $bg-color-3;
+
+  * {
+    font-family: $main-font;
+    color: $txt-color-1;
+  }
+}
