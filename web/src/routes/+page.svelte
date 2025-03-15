@@ -1,8 +1,9 @@
 <script lang="ts">
-  import "../styles/global.scss";
-  import "$lib/IconButton.svelte";
-  import IconButton from "$lib/IconButton.svelte";
-  import { UploadCloudIcon } from "@lucide/svelte";
+  import "$lib/styles/global.scss";
+  import "$lib/components/IconButton.svelte";
+  import Dashboard from "$lib/components/Dashboard.svelte";
 </script>
 
-<IconButton icon={UploadCloudIcon} label="Upload File" />
+<main>
+  <Dashboard />
+</main>

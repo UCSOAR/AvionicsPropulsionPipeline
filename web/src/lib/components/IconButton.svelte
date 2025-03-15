@@ -2,14 +2,16 @@
   import type { Component } from "svelte";
 
   export let icon: Component | null = null;
-  export let label: string;
+  export let label: string | null = null;
 </script>
 
 <button>
   {#if icon}
     <svelte:component this={icon} />
   {/if}
-  <span class="label">{label}</span>
+  {#if label}
+    <span class="label">{label}</span>
+  {/if}
 </button>
 
 <style scoped lang="scss">
@@ -23,11 +25,18 @@
     justify-content: center;
     gap: 0.4rem;
     border-radius: $border-radius-1;
-    padding: 0.7rem;
+    padding: 0.6rem;
 
     $trans: all 0.12s ease;
 
     transition: $trans;
+
+    :global(.lucide-icon) {
+      $size: 1.1rem;
+
+      width: $size;
+      height: $size;
+    }
 
     :global(.lucide-icon),
     * {
