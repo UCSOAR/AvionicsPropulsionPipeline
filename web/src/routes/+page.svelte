@@ -1,8 +1,8 @@
-<script lang="ts">
+ <script lang="ts">
   import "../styles/global.scss";
-  import "$lib/IconButton.svelte";
-  import IconButton from "$lib/IconButton.svelte";
-  import { UploadCloudIcon } from "@lucide/svelte";
+  import "$lib/TopBar.svelte";
+  import TopBar from "$lib/TopBar.svelte";
+
 </script>
 
-<IconButton icon={UploadCloudIcon} label="Upload File" />
+<TopBar />
