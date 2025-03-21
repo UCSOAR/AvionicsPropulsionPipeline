@@ -1,8 +1,9 @@
+<script lang="ts"></script>
+
 <header class="top-bar">
   <div class="logo">
-    <img src="/soar-logo.svg" alt="" />
+    <img draggable={false} src="/soar-logo.svg" alt="SOAR Logo" />
   </div>
-
   <nav class="nav-links">
     <a href="#">pyTac</a>
     <a href="#">pyHac</a>
@@ -16,9 +17,11 @@
   .top-bar {
     display: flex;
     align-items: center;
-    padding: 0 1rem;
-    height: 3.75rem;
-    background-color: black;
+    gap: 1.3rem;
+    padding: 0.7rem;
+    height: auto;
+    background-color: $bg-color-2;
+    border-bottom: 1px solid $outline-color-1;
   }
 
   .logo {
@@ -34,9 +37,8 @@
 
   .nav-links a {
     text-decoration: none;
-    color: white; /* Light text */
-    font-size: 1.2rem;
-    font-weight: 500;
+    color: $txt-color-2; /* Light text */
+    font-size: 1.1rem;
     transition: color 0.2s ease;
   }
 
@@ -46,6 +48,6 @@
   }
 
   .nav-links a:hover {
-    color: red; /* Change color on hover */
+    color: $txt-color-highlighted; /* Change color on hover */
   }
 </style>
