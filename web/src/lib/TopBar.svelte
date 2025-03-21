@@ -1,9 +1,3 @@
-<script lang="ts">
-  import type { Component } from "svelte";
-
- 
-</script>
-
 <header class="top-bar">
   <div class="logo">
     <img src="/soar-logo.svg" alt="" />
@@ -16,27 +10,25 @@
   </nav>
 </header>
 
-  
-
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
-    
-  .top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Keep the navigation centered */
-  padding: 0 1rem;
-  height: 60px;
-  background-color: black;
-  position: relative; /* Allows absolute positioning for the logo */
-}
 
-.logo {
-  position: absolute;
-  left: 1rem; /* Move logo to the left */
-}
+  .top-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    height: 3.75rem;
+    background-color: black;
+  }
+
+  .logo {
+    margin-right: auto; /* Moves logo to the left */
+  }
+
   .nav-links {
     display: flex;
+    justify-content: center; /* Centers links inside */
+    flex-grow: 1; /* Allows nav-links to take available space */
     gap: 2rem;
   }
 
@@ -49,12 +41,11 @@
   }
 
   .logo img {
-  height: 50px; /* Restores original size */
-  width: auto; /* Keeps aspect ratio */
-}
+    height: 3rem; /* Restores original size */
+    width: auto; /* Keeps aspect ratio */
+  }
 
   .nav-links a:hover {
     color: red; /* Change color on hover */
   }
-  
-</style> 
+</style>
