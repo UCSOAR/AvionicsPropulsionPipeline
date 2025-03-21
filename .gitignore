@@ -1,6 +1,9 @@
 # Ignore .pre-commit-config.yaml
 .pre-commit-config.yaml
 
+**/node_modules
+**/.svelte-kit
+
 **/vendor/
 
 # ----- Avionics Embedded Gitignore ----- #
@@ -77,6 +80,7 @@ STM32L152-Discovery.elf.launch
 **/*.sum
 
 # Files in storage directories
+cmd/soarpipeline/storage/
 /storage/
 
 # Logs

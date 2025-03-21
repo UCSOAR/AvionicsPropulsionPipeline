@@ -3,7 +3,7 @@
 > Automation of the post-processing of propulsion test data and the online archive for test results.
 
 ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
-![Vue.js](https://img.shields.io/badge/vuejs-%2335495e.svg?style=for-the-badge&logo=vuedotjs&logoColor=%234FC08D)
+![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=for-the-badge&logo=svelte&logoColor=white)
 ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
@@ -68,3 +68,4 @@ test.lvm
 ```
 
 Where each of these files that is not a directory is a binary data containing the data for the corresponding column or metadata. With this structure, only the necessary data is loaded into memory, and the data is only loaded when it is requested.
+cd
