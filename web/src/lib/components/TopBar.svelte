@@ -5,9 +5,9 @@
     <img draggable={false} src="/soar-logo.svg" alt="SOAR Logo" />
   </div>
   <nav class="nav-links">
-    <a href="#">pyTac</a>
-    <a href="#">pyHac</a>
-    <a href="#">mapleleaf</a>
+    <a href="#">TAC</a>
+    <a href="#">HAC</a>
+    <a href="#">Mapleleaf</a>
   </nav>
 </header>
 
@@ -40,6 +40,7 @@
     color: $txt-color-2; /* Light text */
     font-size: 1.1rem;
     transition: color 0.2s ease;
+    outline: none;
   }
 
   .logo img {
