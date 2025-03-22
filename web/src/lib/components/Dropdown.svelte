@@ -64,7 +64,7 @@
           class:selected={index === selectedOptionIndex}
           on:click={() => handleSelect(index)}
         >
-          {option}
+          <span>{option}</span>
           {#if index === selectedOptionIndex}
             <Check />
           {/if}
@@ -76,6 +76,14 @@
 
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
+
+  button {
+    & > span {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
 
   div.container {
     display: flex;
@@ -160,7 +168,10 @@
 
           &:hover {
             background-color: $bg-color-highlighted;
-            color: $txt-color-highlighted;
+
+            & > span {
+              color: $txt-color-highlighted;
+            }
 
             :global(.lucide-icon) {
               stroke: $txt-color-highlighted;
