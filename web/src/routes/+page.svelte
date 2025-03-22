@@ -2,9 +2,11 @@
   import "$lib/styles/global.scss";
   import "$lib/components/IconButton.svelte";
   import Dashboard from "$lib/components/Dashboard.svelte";
+  import TopBar from "$lib/components/TopBar.svelte";
 </script>
 
 <main>
+  <TopBar />
   <Dashboard
     selectedFile={{
       name: "RHD324u9",
