@@ -10,7 +10,7 @@ import (
 
 // StorageSizeResponse represents the expected JSON structure of the response body
 type StorageSizeResponse struct {
-	StorageSizeBytes int64 `json:"storage_size_bytes"`
+	StorageSizeBytes int64 `json:"storageSizeBytes"`
 }
 
 // CalculateStorageUsage calculates the total size of the storage directory
