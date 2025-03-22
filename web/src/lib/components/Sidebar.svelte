@@ -9,19 +9,14 @@
     isExpanded = !isExpanded;
   };
 
-  const fetchFiles = async () => {
-    files = [
-      { name: 'RHT_2023-07-14-12-40_PM_shortened' },
-      { name: 'RHT_2023-07-15-09-10_PM_shortened' }
-    ];
-  };
+
 
   const handleFileClick = (fileName: string) => {
     console.log(`File clicked: ${fileName}`);
   };
 
   onMount(() => {
-    fetchFiles();
+
   });
 </script>
 
@@ -41,7 +36,7 @@
 
   <div class="files-header">
     {#if isExpanded}
-      <h3>Files</h3>
+      <h3>Uploaded Files</h3>
     {/if}
     <button class="layout-button" on:click={toggleSidebar}>
       {#if isExpanded}
