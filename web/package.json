@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.482.0",
+		"sass": "^1.85.1",
 		"plotly.js-dist-min": "^3.0.1"
 	}
 }
