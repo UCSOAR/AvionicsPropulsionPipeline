@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-
+	"fmt"
 	"github.com/go-chi/chi"
 
 	controllers "soarpipeline/internal/controllers"
@@ -24,6 +24,8 @@ func main() {
 
 	// Subrouter for API
 	router.Route("/api", func(r chi.Router) {
+		r.Get("/usage", controllers.GetStorageSizeHandler)
+
 		// Subrouter for static fire data
 		r.Route("/staticfire", func(r chi.Router) {
 			r.Get("/metadata", controllers.GetStaticFireMetadata)
@@ -31,11 +33,15 @@ func main() {
 			r.Post("/upload", controllers.PostUploadStaticFire)
 		})
 	})
+	// Register the new GET endpoint for storage size
+	router.Get("/storage-size", controllers.GetStorageSizeHandler)
 
-	println("Starting server on", devAddr)
+	devAddr := ":8080"
+	fmt.Println("Server running on http://localhost" + devAddr)
 
 	// Start the server
 	if err := http.ListenAndServe(devAddr, router); err != nil {
 		panic(err)
 	}
 }
+

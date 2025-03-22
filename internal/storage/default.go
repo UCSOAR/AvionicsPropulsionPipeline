@@ -3,18 +3,18 @@ package storage
 import "path"
 
 // Path to where this project will store its data.
-const storageDirPath = "./storage"
+const StorageDirPath = "./storage"
 
 // The storage context for LVM file uploads.
 // SHOULD NOT BE MODIFIED AT RUNTIME.
 var DefaultUploadContext = StorageContext{
-	BasePath: path.Join(storageDirPath, "uploads"),
+	BasePath: path.Join(StorageDirPath, "uploads"),
 }
 
 // The storage context for cache trees generated from LVM files.
 // SHOULD NOT BE MODIFIED AT RUNTIME.
 var DefaultCacheContext = CacheStorageContext{
-	StorageContext:             StorageContext{BasePath: path.Join(storageDirPath, "cache")},
+	StorageContext:             StorageContext{BasePath: path.Join(StorageDirPath, "cache")},
 	YColumnsMetadataSubdirName: "y_metadata",
 	XColumnsSubdirName:         "x_columns",
 	YColumnsSubdirName:         "y_columns",
