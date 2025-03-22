@@ -81,6 +81,7 @@ STM32L152-Discovery.elf.launch
 
 # Files in storage directories
 cmd/soarpipeline/storage/
+/storage/
 
 # Logs
 **/logs
