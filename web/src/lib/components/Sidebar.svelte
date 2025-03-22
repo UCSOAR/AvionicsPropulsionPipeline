@@ -1,42 +1,55 @@
 <script lang="ts">
-  import { ArrowUpToLine, PanelLeftClose, PanelLeftOpen } from 'lucide-svelte';
   import { onMount } from 'svelte';
+  import { ArrowUpToLine, PanelLeftClose, PanelLeftOpen, File } from 'lucide-svelte';
+  import FileUploader from '$lib/components/UploadFile.svelte';
+  import { endpointMapping } from "$lib/utils/constants";
 
   let isExpanded = true;
-  let files: Array<{ name: string }> = [];
+  let files: Record<string, any> = {};
+  let error: string | null = null;
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
   };
 
+  const handleFileClick = (fileName: string, metadata: any) => {
+    // Implementation depends on your routing/store solution in Svelte
+    console.log(`File clicked: ${fileName}`, metadata);
+    // You might want to use Svelte's stores to save metadata
+    // And use svelte-navigator or other routing solution to navigate
+  };
 
-
-  const handleFileClick = (fileName: string) => {
-    console.log(`File clicked: ${fileName}`);
+  const fetchFiles = async () => {
+    try {
+      const response = await fetch(endpointMapping.getStaticFireMetadataUrl);
+      if (!response.ok) throw new Error("Failed to fetch files");
+      files = await response.json();
+      error = null;
+    } catch (err) {
+      error = err instanceof Error ? err.message : "An error occurred.";
+    }
   };
 
   onMount(() => {
-
+    fetchFiles();
   });
+
+  const handleUploadComplete = () => {
+    // Refetch the files after upload completes
+    fetchFiles();
+  };
 </script>
 
 <aside class="side-bar {isExpanded ? 'expanded' : 'collapsed'}">
+  <!-- Upload Section -->
   <div class="upload-container">
-    {#if isExpanded}
-      <button class="upload-button" on:click={() => console.log('Upload file')}>
-        <ArrowUpToLine size={20} />
-        <span class="label">Upload File</span>
-      </button>
-    {:else}
-      <button class="upload-button icon-only" on:click={() => console.log('Upload file')}>
-        <ArrowUpToLine size={20} />
-      </button>
-    {/if}
+    <FileUploader onUploadComplete={handleUploadComplete} />
   </div>
 
+  <!-- Files Header -->
   <div class="files-header">
     {#if isExpanded}
-      <h3>Uploaded Files</h3>
+      <h3>Files</h3>
     {/if}
     <button class="layout-button" on:click={toggleSidebar}>
       {#if isExpanded}
@@ -47,20 +60,22 @@
     </button>
   </div>
 
+  <!-- File List -->
   <div class="file-list">
-    {#if files.length > 0}
-      {#each files as file}
-        <button class="file-item" on:click={() => handleFileClick(file.name)}>
+    {#if Object.keys(files).length > 0}
+      {#each Object.entries(files) as [name, metadata]}
+        <button 
+          class="file-item" 
+          on:click={() => handleFileClick(name, metadata)}
+        >
+          <File size={16} class="icon" />
           {#if isExpanded}
-            <ArrowUpToLine size={16} class="icon" />
-            <span class="file-name">{file.name}</span>
-          {:else}
-            <ArrowUpToLine size={16} class="icon" />
+            <span class="file-name">{name.replace(/\.[^.]+$/, "")}</span>
           {/if}
         </button>
       {/each}
     {:else}
-      <p class="empty">No uploaded files yet.</p>
+      <p class="empty">{error || "No uploaded files yet."}</p>
     {/if}
   </div>
 </aside>
@@ -76,6 +91,7 @@
     transition: width 0.3s ease;
     height: 100vh;
     overflow: hidden;
+    border-right: 1px solid $outline-color-1;
 
     &.expanded {
       width: 280px;
@@ -87,30 +103,11 @@
   }
 
   .upload-container {
+    width: 16rem;
     padding: 1rem;
     display: flex;
     justify-content: center;
-  }
 
-  .upload-button {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #333;
-    border-radius: 8px;
-    background-color: transparent;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-
-    &.icon-only {
-      width: 40px;
-      height: 35px;
-      padding: 0;
-      border-radius: 5px;
-    }
   }
 
   .files-header {
