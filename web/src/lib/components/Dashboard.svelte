@@ -120,6 +120,9 @@
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+      width: 25%;
+      min-width: 9rem;
+      max-width: 13rem;
     }
   }
 
