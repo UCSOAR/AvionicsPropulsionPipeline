@@ -19,3 +19,20 @@ export async function getStorageUsage() {
         console.error("Error fetching storage usage:", error);
     }
 }
+
+
+function formatBytes(bytes: number, decimals = 2): string {
+    if (bytes === 0) return "0 Bytes";
+
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+    const value = bytes / Math.pow(1024, i);
+    if (value >= 1) {
+        return `${value.toFixed(decimals)} ${sizes[i]}`;
+    }
+
+    return `${bytes} Bytes`;
+}
+
+
