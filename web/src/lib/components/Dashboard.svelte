@@ -1,12 +1,12 @@
 <script lang="ts">
   import Dropdown from "./Dropdown.svelte";
+  import { browser } from "$app/environment";
   import { onMount } from "svelte";
+  import { Loader2 } from "@lucide/svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
   import type { PreviewMetadata } from "$lib/models/cacheTreeModels";
   import type { Config, Data, Layout } from "plotly.js";
   import type { PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
-  import { browser } from "$app/environment";
-  import { Loader2 } from "@lucide/svelte";
 
   type SelectedFile = {
     name: string;
@@ -72,9 +72,9 @@
 
         // Test request for now
         const req: PostStaticFireColumnsRequest = {
-          name: "RHT_2023-07-14-12-40_PM_shortened",
+          name: selectedFile.name,
           startRow: 0,
-          numRows: 10000,
+          numRows: 40000,
           xColumnNames: [xColumnName],
           yColumnNames: [yColumnName],
         };
@@ -85,6 +85,7 @@
           if (!res) {
             return [];
           }
+          console.log(res.yColumns[yColumnName].rows.length);
 
           const data: Partial<Data> = {
             x: res.xColumns[xColumnName].rows,
@@ -172,13 +173,16 @@
   div.content-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    flex-direction: row;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 2rem;
+
+    div.title {
+      margin-right: auto;
+    }
 
     div.column-select {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 1.5rem;
       width: 25%;
       min-width: 9rem;
@@ -254,7 +258,7 @@
   }
 
   div.container {
-    padding: 1rem;
+    padding: 1.3rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;

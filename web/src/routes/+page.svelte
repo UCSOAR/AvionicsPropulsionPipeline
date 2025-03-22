@@ -9,7 +9,7 @@
   <TopBar />
   <Dashboard
     selectedFile={{
-      name: "RHT_2023-07-14-12-40_PM_shortened",
+      name: "RHT_2023-09-21-2-33_PM (1)(1)",
       metadata: {
         operator: "Test Operator",
         resultTimestamp: {
@@ -23,6 +23,7 @@
           "Light Sensor",
           "Nitrous Bottle",
           "NOX Pressure",
+          "Ox Tank Load Cell",
         ],
       },
     }}
