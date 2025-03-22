@@ -109,6 +109,14 @@
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
 
+  .container {
+    flex-grow: 1; // This makes the dashboard expand to fill the remaining space
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
   div.content-header {
     display: flex;
     justify-content: space-between;
