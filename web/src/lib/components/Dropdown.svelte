@@ -115,7 +115,6 @@
       }
 
       &:disabled {
-        background-color: $bg-color-4;
         cursor: not-allowed;
 
         * {

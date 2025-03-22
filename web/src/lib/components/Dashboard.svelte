@@ -45,20 +45,21 @@
   let plotlyChartDiv: HTMLDivElement;
   let isLoadingPlotly = false;
 
-  const loadPlotly = async (data: Partial<Data>[]) => {
+  const loadPlotly = async (fetchData?: () => Promise<Partial<Data>[]>) => {
     if (isLoadingPlotly) {
       return;
     }
 
     isLoadingPlotly = true;
 
+    const data = fetchData !== undefined ? await fetchData() : [];
     const Plotly = await import("plotly.js-dist-min");
     await Plotly.newPlot(plotlyChartDiv, data, layout, config);
 
     isLoadingPlotly = false;
   };
 
-  onMount(() => loadPlotly([]));
+  onMount(loadPlotly);
 
   // Update chart data when selected columns change
   $: {
@@ -78,22 +79,23 @@
           yColumnNames: [yColumnName],
         };
 
-        const res = await fetchStaticFireColumns(req);
+        await loadPlotly(async () => {
+          const res = await fetchStaticFireColumns(req);
 
-        if (!res) {
-          return;
-        }
+          if (!res) {
+            return [];
+          }
 
-        // Show on the chart
-        const data: Partial<Data> = {
-          x: res.xColumns[xColumnName].rows,
-          y: res.yColumns[yColumnName].rows,
-          type: "scattergl",
-          mode: "lines",
-          line: { color: style.themeColor },
-        };
+          const data: Partial<Data> = {
+            x: res.xColumns[xColumnName].rows,
+            y: res.yColumns[yColumnName].rows,
+            type: "scattergl",
+            mode: "lines",
+            line: { color: style.themeColor },
+          };
 
-        await loadPlotly([data]);
+          return [data];
+        });
       };
 
       updatePlotly();
