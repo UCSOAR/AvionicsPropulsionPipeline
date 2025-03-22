@@ -3,11 +3,14 @@
   import "$lib/components/IconButton.svelte";
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
+  import Sidebar from "$lib/components/Sidebar.svelte";
 </script>
 
 <main>
   <TopBar />
+  <Sidebar />
   <Dashboard
+
     selectedFile={{
       name: "RHD324u9",
       metadata: {
