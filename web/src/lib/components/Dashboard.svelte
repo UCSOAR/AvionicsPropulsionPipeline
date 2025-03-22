@@ -1,8 +1,12 @@
 <script lang="ts">
+  import Dropdown from "./Dropdown.svelte";
   import { onMount } from "svelte";
+  import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
   import type { PreviewMetadata } from "$lib/models/cacheTreeModels";
   import type { Config, Data, Layout } from "plotly.js";
-  import Dropdown from "./Dropdown.svelte";
+  import type { PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
+  import { browser } from "$app/environment";
+  import { Loader2 } from "@lucide/svelte";
 
   type SelectedFile = {
     name: string;
@@ -11,15 +15,11 @@
 
   export let selectedFile: SelectedFile | null = null;
 
-  let selectedXColumnIndex = 0;
-  let selectedYColumnIndex = 0;
-
-  let data: Data[] = [];
-
   const style = {
     margin: 50,
     bgColor: "#1f1f1f",
     txtColor: "#e1e1e1",
+    themeColor: "#dc2626",
   };
   const config: Partial<Config> = { responsive: true };
   const layout: Partial<Layout> = {
@@ -40,12 +40,65 @@
     yaxis: { color: style.txtColor },
   };
 
+  let selectedXColumnIndex = 0;
+  let selectedYColumnIndex = 0;
   let plotlyChartDiv: HTMLDivElement;
+  let isLoadingPlotly = false;
 
-  onMount(async () => {
+  const loadPlotly = async (data: Partial<Data>[]) => {
+    if (isLoadingPlotly) {
+      return;
+    }
+
+    isLoadingPlotly = true;
+
     const Plotly = await import("plotly.js-dist-min");
-    Plotly.newPlot(plotlyChartDiv, data, layout, config);
-  });
+    await Plotly.newPlot(plotlyChartDiv, data, layout, config);
+
+    isLoadingPlotly = false;
+  };
+
+  onMount(() => loadPlotly([]));
+
+  // Update chart data when selected columns change
+  $: {
+    if (selectedFile && browser) {
+      const updatePlotly = async () => {
+        const xColumnName =
+          selectedFile.metadata.xColumnNames[selectedXColumnIndex];
+        const yColumnName =
+          selectedFile.metadata.yColumnNames[selectedYColumnIndex];
+
+        // Test request for now
+        const req: PostStaticFireColumnsRequest = {
+          name: "RHT_2023-07-14-12-40_PM_shortened",
+          startRow: 0,
+          numRows: 10000,
+          xColumnNames: [xColumnName],
+          yColumnNames: [yColumnName],
+        };
+
+        const res = await fetchStaticFireColumns(req);
+
+        if (!res) {
+          return;
+        }
+
+        // Show on the chart
+        const data: Partial<Data> = {
+          x: res.xColumns[xColumnName].rows,
+          y: res.yColumns[yColumnName].rows,
+          type: "scattergl",
+          mode: "lines",
+          line: { color: style.themeColor },
+        };
+
+        await loadPlotly([data]);
+      };
+
+      updatePlotly();
+    }
+  }
 </script>
 
 <div class="container">
@@ -64,12 +117,14 @@
       <div class="column-select">
         <Dropdown
           onChange={(index) => (selectedXColumnIndex = index)}
+          isDisabled={isLoadingPlotly}
           label="X Column"
           id="x-column"
           options={selectedFile.metadata.xColumnNames}
         />
         <Dropdown
           onChange={(index) => (selectedYColumnIndex = index)}
+          isDisabled={isLoadingPlotly}
           label="Y Column"
           id="y-column"
           options={selectedFile.metadata.yColumnNames}
@@ -80,6 +135,9 @@
       <div class="chart-pod pod">
         <h2>Static Fire Chart</h2>
         <div class="chart-wrapper">
+          <div class="loading-overlay" class:hidden={!isLoadingPlotly}>
+            <Loader2 class="spinner" />
+          </div>
           <div bind:this={plotlyChartDiv} class="chart"></div>
         </div>
       </div>
@@ -166,6 +224,29 @@
       div.chart-wrapper {
         border-radius: $border-radius-1;
         overflow: hidden;
+        position: relative;
+
+        div.loading-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 1;
+
+          :global(.lucide-icon) {
+            width: 3.3rem;
+            height: auto;
+          }
+
+          &.hidden {
+            display: none;
+          }
+        }
       }
     }
   }

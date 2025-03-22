@@ -9,15 +9,21 @@
   <TopBar />
   <Dashboard
     selectedFile={{
-      name: "RHD324u9",
+      name: "RHT_2023-07-14-12-40_PM_shortened",
       metadata: {
         operator: "Test Operator",
         resultTimestamp: {
           date: "2021-09-01",
           time: "12:00:00",
         },
-        xColumnNames: ["ewffgtrg", "x2", "x3"],
-        yColumnNames: ["rthtrthrhtr", "y2", "y3"],
+        xColumnNames: ["X_Value"],
+        yColumnNames: [
+          "Chamber Pressure",
+          "Injector Temp",
+          "Light Sensor",
+          "Nitrous Bottle",
+          "NOX Pressure",
+        ],
       },
     }}
   />

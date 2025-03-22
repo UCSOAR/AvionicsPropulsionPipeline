@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
 
   export let id: string;
+  export let isDisabled: boolean = false;
   export let label: string | null = null;
   export let options: string[];
   export let onChange: (optionIndex: number) => void;
@@ -43,7 +44,11 @@
   {#if label}
     <label for={id}>{label}</label>
   {/if}
-  <button class="dropdown-button" on:click={toggleOptions}>
+  <button
+    disabled={isDisabled}
+    class="dropdown-button"
+    on:click={toggleOptions}
+  >
     <span>{options[selectedOptionIndex]}</span>
     {#if !isOptionsVisible}
       <ChevronDown />
@@ -90,6 +95,7 @@
       display: flex;
       align-items: center;
       gap: 0.8rem;
+      transition: all 0.06s ease;
 
       :global(.lucide-icon) {
         $size: 1rem;
@@ -105,6 +111,15 @@
       &:hover {
         :global(.lucide-icon) {
           opacity: 1;
+        }
+      }
+
+      &:disabled {
+        background-color: $bg-color-4;
+        cursor: not-allowed;
+
+        * {
+          color: $txt-color-2;
         }
       }
     }
