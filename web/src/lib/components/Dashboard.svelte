@@ -2,7 +2,7 @@
   import Dropdown from "./Dropdown.svelte";
   import { browser } from "$app/environment";
   import { onMount } from "svelte";
-  import { Loader2 } from "@lucide/svelte";
+  import { Loader2, MessageCircleWarningIcon } from "@lucide/svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
   import type { PreviewMetadata } from "$lib/models/cacheTreeModels";
   import type { Config, Data, Layout } from "plotly.js";
@@ -44,8 +44,11 @@
   let selectedYColumnIndex = 0;
   let plotlyChartDiv: HTMLDivElement;
   let isLoadingPlotly = false;
+  let plotError = "";
 
-  const loadPlotly = async (fetchData?: () => Promise<Partial<Data>[]>) => {
+  const loadPlotly = async (
+    fetchData?: () => Promise<Partial<Data>[] | null>
+  ) => {
     if (isLoadingPlotly) {
       return;
     }
@@ -53,8 +56,13 @@
     isLoadingPlotly = true;
 
     const data = fetchData !== undefined ? await fetchData() : [];
+
+    if (!data) {
+      plotError = "Failed to fetch data.";
+    }
+
     const Plotly = await import("plotly.js-dist-min");
-    await Plotly.newPlot(plotlyChartDiv, data, layout, config);
+    await Plotly.newPlot(plotlyChartDiv, data ?? [], layout, config);
 
     isLoadingPlotly = false;
   };
@@ -65,6 +73,8 @@
   $: {
     if (selectedFile && browser) {
       const updatePlotly = async () => {
+        plotError = "";
+
         const xColumnName =
           selectedFile.metadata.xColumnNames[selectedXColumnIndex];
         const yColumnName =
@@ -83,9 +93,8 @@
           const res = await fetchStaticFireColumns(req);
 
           if (!res) {
-            return [];
+            return null;
           }
-          console.log(res.yColumns[yColumnName].rows.length);
 
           const data: Partial<Data> = {
             x: res.xColumns[xColumnName].rows,
@@ -138,8 +147,18 @@
       <div class="chart-pod pod">
         <h2>Static Fire Chart</h2>
         <div class="chart-wrapper">
-          <div class="loading-overlay" class:hidden={!isLoadingPlotly}>
-            <Loader2 class="spinner" />
+          <div
+            class="loading-overlay"
+            class:hidden={!isLoadingPlotly && !plotError}
+          >
+            {#if plotError}
+              <div>
+                <MessageCircleWarningIcon />
+                <b>{plotError}</b>
+              </div>
+            {:else}
+              <Loader2 />
+            {/if}
           </div>
           <div bind:this={plotlyChartDiv} class="chart"></div>
         </div>
@@ -251,6 +270,25 @@
 
           &.hidden {
             display: none;
+          }
+
+          & > div {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            justify-content: center;
+            align-items: center;
+
+            b {
+              color: $txt-color-highlighted;
+              font-size: 1.2rem;
+            }
+
+            :global(.lucide-icon) {
+              width: 3rem;
+              height: auto;
+              stroke: $txt-color-highlighted;
+            }
           }
         }
       }

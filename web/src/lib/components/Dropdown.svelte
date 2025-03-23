@@ -104,6 +104,7 @@
       align-items: center;
       gap: 0.8rem;
       transition: all 0.06s ease;
+      min-width: 8rem;
 
       :global(.lucide-icon) {
         $size: 1rem;
@@ -157,6 +158,7 @@
           border-radius: $border-radius-1 * 0.7;
           background: none;
           padding: 0.6rem;
+          gap: 0.4rem;
           width: 100%;
 
           :global(.lucide-icon) {
