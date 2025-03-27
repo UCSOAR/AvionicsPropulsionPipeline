@@ -1,9 +1,9 @@
 package main
 
 import (
-	"net/http"
-
+	"fmt"
 	"github.com/go-chi/chi"
+	"net/http"
 
 	controllers "soarpipeline/internal/controllers"
 	middlewares "soarpipeline/internal/middlewares"
@@ -24,6 +24,8 @@ func main() {
 
 	// Subrouter for API
 	router.Route("/api", func(r chi.Router) {
+		r.Get("/usage", controllers.GetStorageUsage)
+
 		// Subrouter for static fire data
 		r.Route("/staticfire", func(r chi.Router) {
 			r.Get("/metadata", controllers.GetStaticFireMetadata)
@@ -32,7 +34,7 @@ func main() {
 		})
 	})
 
-	println("Starting server on", devAddr)
+	fmt.Println("Server running on http://localhost" + devAddr)
 
 	// Start the server
 	if err := http.ListenAndServe(devAddr, router); err != nil {
