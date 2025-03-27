@@ -8,11 +8,13 @@
 <header class="side-bar">
   <div class="logo"></div>
 
-  <button aria-label={label}>
+  <button>
     {#if icon}
       <svelte:component this={icon} />
     {/if}
-    <span class="label">{label}</span>
+    {#if label}
+      <span class="label">{label}</span>
+    {/if}
   </button>
 
   <div class="divider"></div>
@@ -29,6 +31,7 @@
   .side-bar {
     width: 250px;
     background-color: #121212;
+    z-index: 1000;
     height: 100vh;
     padding: 1rem;
     box-sizing: border-box;
@@ -37,6 +40,7 @@
     position: fixed;
     top: 0;
     left: 0;
+  
   }
 
 
@@ -44,7 +48,7 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    padding: 0.6rem;
+    padding: 1.2rem;
     background-color: transparent;
     border: 1px solid $outline-color-1;
     border-radius: $border-radius-1;
@@ -52,7 +56,6 @@
 
     span.label {
       font-size: 0.95rem;
-      transition: color 0.12s ease;
     }
 
     &:hover {

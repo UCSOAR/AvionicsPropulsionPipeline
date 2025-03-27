@@ -3,9 +3,13 @@
   import "$lib/components/IconButton.svelte";
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
+  import Sidebar from "$lib/components/Sidebar.svelte";
+  import IconButton from "$lib/components/IconButton.svelte";
 </script>
 
 <main>
+  <Sidebar />
+  <IconButton />
   <TopBar />
   <Dashboard
     selectedFile={{
