@@ -71,21 +71,32 @@
   />
 
   <!-- Upload Button -->
-  <IconButton
-    class="upload-btn"
-    icon={UploadCloud}
-    label={uploading ? "Uploading..." : "Upload File"}
-    onclick={handleClick}
-    disabled={uploading}
-  />
+   <div class="upload-btn">
+    <IconButton
+      icon={UploadCloud}
+      label={uploading ? "Uploading..." : "Upload File"}
+      onclick={handleClick}
+      disabled={uploading}
+    />
+   </div>
+
 </div>
 
 <style lang="scss">
   .uploader-container {
     width: 100%;
+    display:flex;
+    justify-content: center;
   }
-  
+
   .upload-btn{
-    width:15rem;
+    width: 15rem;
+    display: flex;
+    justify-content: center;
   }
+
+  .upload-btn button{
+    width: 15rem;
+  }
+
 </style>
