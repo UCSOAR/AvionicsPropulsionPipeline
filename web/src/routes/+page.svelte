@@ -4,28 +4,34 @@
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
+
+  let data: Record<string, any>;
+  console.log("This is from parent: ");
+
 </script>
 
 <main class="app-container">
   <TopBar />
 
   <div class="main-layout">
-    <Sidebar />
+    <Sidebar bind:data={data}/>
 
-    <Dashboard
-      selectedFile={{
-        name: "RHD324u9",
-        metadata: {
-          operator: "Test Operator",
-          resultTimestamp: {
-            date: "2021-09-01",
-            time: "12:00:00",
+    {#if data?.metadata}
+      <Dashboard
+        selectedFile={{
+          name: data.fileName,
+          metadata: {
+            operator: data.metadata.operator,
+            resultTimestamp: {
+              date: data.metadata.resultTimestamp.date,
+              time: data.metadata.resultTimestamp.time,
+            },
+            xColumnNames: data.metadata.xColumnNames,
+            yColumnNames: data.metadata.yColumnNames,
           },
-          xColumnNames: ["ewffgtrg", "x2", "x3"],
-          yColumnNames: ["rthtrthrhtr", "y2", "y3"],
-        },
-      }}
-    />
+        }}
+      />
+      {/if}
   </div>
 </main>
 

@@ -1,22 +1,32 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount} from 'svelte';
   import { ArrowUpToLine, PanelLeftClose, PanelLeftOpen, File } from 'lucide-svelte';
+  import { useMetadataStore } from '../../stores/metadataStore';
   import FileUploader from '$lib/components/UploadFile.svelte';
   import { endpointMapping } from "$lib/utils/constants";
+
+  export let data = {};
 
   let isExpanded = true;
   let files: Record<string, any> = {};
   let error: string | null = null;
+  let xCol: string | null = null;
+  let yCol: string | null = null;
+  let metadata: Record<string, any> = {};
+  let fileName: string | null = null;
+
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
   };
 
   const handleFileClick = (fileName: string, metadata: any) => {
-    // Implementation depends on your routing/store solution in Svelte
     console.log(`File clicked: ${fileName}`, metadata);
-    // You might want to use Svelte's stores to save metadata
-    // And use svelte-navigator or other routing solution to navigate
+    data.fileName = fileName;
+    data.metadata = metadata;
+
+    
+
   };
 
   const fetchFiles = async () => {
