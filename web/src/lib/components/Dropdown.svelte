@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, CheckCheck, ChevronDown, ChevronUp } from "@lucide/svelte";
+  import { Check, ChevronDown, ChevronUp } from "@lucide/svelte";
   import { onMount } from "svelte";
 
   export let id: string;
@@ -104,7 +104,7 @@
       align-items: center;
       gap: 0.8rem;
       transition: all 0.06s ease;
-      min-width: 8rem;
+      min-width: 7rem;
 
       :global(.lucide-icon) {
         $size: 1rem;

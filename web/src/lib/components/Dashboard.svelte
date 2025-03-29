@@ -1,12 +1,19 @@
 <script lang="ts">
   import Dropdown from "./Dropdown.svelte";
+  import Input from "./Input.svelte";
+  import IconButton from "./IconButton.svelte";
   import { browser } from "$app/environment";
   import { onMount } from "svelte";
-  import { Loader2, MessageCircleWarningIcon } from "@lucide/svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
+  import { numericRegex } from "$lib/utils/regexps";
   import type { PreviewMetadata } from "$lib/models/cacheTreeModels";
   import type { Config, Data, Layout } from "plotly.js";
   import type { PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
+  import {
+    Loader2,
+    MessageCircleWarningIcon,
+    RefreshCcw,
+  } from "@lucide/svelte";
 
   type SelectedFile = {
     name: string;
@@ -42,9 +49,16 @@
 
   let selectedXColumnIndex = 0;
   let selectedYColumnIndex = 0;
+  let startRow = 0;
+  let numRows = 0;
   let plotlyChartDiv: HTMLDivElement;
   let isLoadingPlotly = false;
   let plotError = "";
+
+  const safeParseInt = (value: string) => {
+    const parsedValue = parseInt(value, 10);
+    return isNaN(parsedValue) ? 0 : parsedValue;
+  };
 
   const loadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
@@ -67,50 +81,54 @@
     isLoadingPlotly = false;
   };
 
-  onMount(loadPlotly);
+  const refreshPlotly = async () => {
+    if (!selectedFile) {
+      return;
+    }
 
-  // Update chart data when selected columns change
-  $: {
-    if (selectedFile && browser) {
-      const updatePlotly = async () => {
-        plotError = "";
+    plotError = "";
 
-        const xColumnName =
-          selectedFile.metadata.xColumnNames[selectedXColumnIndex];
-        const yColumnName =
-          selectedFile.metadata.yColumnNames[selectedYColumnIndex];
+    const xColumnName =
+      selectedFile.metadata.xColumnNames[selectedXColumnIndex];
+    const yColumnName =
+      selectedFile.metadata.yColumnNames[selectedYColumnIndex];
 
-        // Test request for now
-        const req: PostStaticFireColumnsRequest = {
-          name: selectedFile.name,
-          startRow: 0,
-          numRows: 40000,
-          xColumnNames: [xColumnName],
-          yColumnNames: [yColumnName],
-        };
+    // Test request for now
+    const req: PostStaticFireColumnsRequest = {
+      name: selectedFile.name,
+      startRow,
+      numRows,
+      xColumnNames: [xColumnName],
+      yColumnNames: [yColumnName],
+    };
 
-        await loadPlotly(async () => {
-          const res = await fetchStaticFireColumns(req);
+    await loadPlotly(async () => {
+      const res = await fetchStaticFireColumns(req);
 
-          if (!res) {
-            return null;
-          }
+      if (!res) {
+        return null;
+      }
 
-          const data: Partial<Data> = {
-            x: res.xColumns[xColumnName].rows,
-            y: res.yColumns[yColumnName].rows,
-            type: "scattergl",
-            mode: "lines",
-            line: { color: style.themeColor },
-          };
-
-          return [data];
-        });
+      const data: Partial<Data> = {
+        x: res.xColumns[xColumnName].rows,
+        y: res.yColumns[yColumnName].rows,
+        type: "scattergl",
+        mode: "lines",
+        line: { color: style.themeColor },
       };
 
-      updatePlotly();
+      return [data];
+    });
+  };
+
+  $: {
+    // Refresh chart data when selected columns change
+    if (browser) {
+      refreshPlotly();
     }
   }
+
+  onMount(loadPlotly);
 </script>
 
 <div class="container">
@@ -126,26 +144,49 @@
           <i>{selectedFile.metadata.yColumnNames[selectedYColumnIndex]}</i>
         </p>
       </div>
-      <div class="column-select">
-        <Dropdown
-          onChange={(index) => (selectedXColumnIndex = index)}
-          isDisabled={isLoadingPlotly}
-          label="X Column"
-          id="x-column"
-          options={selectedFile.metadata.xColumnNames}
-        />
-        <Dropdown
-          onChange={(index) => (selectedYColumnIndex = index)}
-          isDisabled={isLoadingPlotly}
-          label="Y Column"
-          id="y-column"
-          options={selectedFile.metadata.yColumnNames}
-        />
+      <div class="data-select">
+        <div class="column-select">
+          <Dropdown
+            onChange={(index) => (selectedXColumnIndex = index)}
+            isDisabled={isLoadingPlotly}
+            label="X Column"
+            id="x-column"
+            options={selectedFile.metadata.xColumnNames}
+          />
+          <Dropdown
+            onChange={(index) => (selectedYColumnIndex = index)}
+            isDisabled={isLoadingPlotly}
+            label="Y Column"
+            id="y-column"
+            options={selectedFile.metadata.yColumnNames}
+          />
+        </div>
+        <div class="row-select">
+          <Input
+            id="start-row"
+            placeholder="0"
+            isDisabled={isLoadingPlotly}
+            label="Start Row"
+            regex={numericRegex}
+            onChange={(value) => (startRow = safeParseInt(value))}
+          />
+          <Input
+            id="num-rows"
+            placeholder="0"
+            isDisabled={isLoadingPlotly}
+            label="Row Count"
+            regex={numericRegex}
+            onChange={(value) => (numRows = safeParseInt(value))}
+          />
+        </div>
       </div>
     </div>
     <div class="content-container">
       <div class="chart-pod pod">
-        <h2>Static Fire Chart</h2>
+        <div class="title-container">
+          <h2>Static Fire Chart</h2>
+          <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
+        </div>
         <div class="chart-wrapper">
           <div
             class="loading-overlay"
@@ -199,13 +240,24 @@
       margin-right: auto;
     }
 
-    div.column-select {
+    div.data-select {
       display: flex;
       flex-direction: row;
-      gap: 1.5rem;
-      width: 25%;
-      min-width: 9rem;
-      max-width: 13rem;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 1rem;
+
+      & > div {
+        gap: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: row;
+      }
+
+      & > div.row-select {
+        justify-content: flex-end;
+      }
     }
   }
 
@@ -245,6 +297,17 @@
 
     div.chart-pod {
       flex-grow: 1;
+
+      div.title-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.7rem;
+
+        h2 {
+          margin: 0;
+        }
+      }
 
       div.chart-wrapper {
         border-radius: $border-radius-1;

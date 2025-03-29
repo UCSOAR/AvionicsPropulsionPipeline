@@ -3,9 +3,10 @@
 
   export let icon: Component | null = null;
   export let label: string | null = null;
+  export let onClick: () => void;
 </script>
 
-<button>
+<button onclick={onClick}>
   {#if icon}
     <svelte:component this={icon} />
   {/if}
