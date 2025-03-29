@@ -7,7 +7,7 @@ export const endpointMapping = Object.freeze({
   getStaticFireMetadataUrl: new URL(
     `http://localhost:${backendDevPort}/api/staticfire/metadata`
   ),
-  getStaticFireColumnsUrl: new URL(
+  postStaticFireColumnsUrl: new URL(
     `http://localhost:${backendDevPort}/api/staticfire/columns`
   ),
 });

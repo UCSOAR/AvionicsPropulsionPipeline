@@ -1,32 +1,38 @@
 <script lang="ts">
-  import { onMount} from 'svelte';
-  import { ArrowUpToLine, PanelLeftClose, PanelLeftOpen, File } from 'lucide-svelte';
-  import { useMetadataStore } from '../../stores/metadataStore';
-  import FileUploader from '$lib/components/UploadFile.svelte';
+  import FileUploader from "$lib/components/UploadFile.svelte";
+  import type { SelectedFile } from "$lib/models/selectedFile";
+  import { onMount } from "svelte";
+  import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
 
-  export let data = {};
+  export let selectedFile: SelectedFile | undefined = undefined;
 
   let isExpanded = true;
   let files: Record<string, any> = {};
   let error: string | null = null;
-  let xCol: string | null = null;
-  let yCol: string | null = null;
-  let metadata: Record<string, any> = {};
-  let fileName: string | null = null;
-
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
   };
 
   const handleFileClick = (fileName: string, metadata: any) => {
-    console.log(`File clicked: ${fileName}`, metadata);
-    data.fileName = fileName;
-    data.metadata = metadata;
+    if (!selectedFile) {
+      selectedFile = {
+        name: "",
+        metadata: {
+          operator: "",
+          resultTimestamp: {
+            date: "",
+            time: "",
+          },
+          xColumnNames: [],
+          yColumnNames: [],
+        },
+      };
+    }
 
-    
-
+    selectedFile.name = fileName;
+    selectedFile.metadata = metadata;
   };
 
   const fetchFiles = async () => {
@@ -45,7 +51,6 @@
   });
 
   const handleUploadComplete = () => {
-    // Refetch the files after upload completes
     fetchFiles();
   };
 </script>
@@ -74,8 +79,8 @@
   <div class="file-list">
     {#if Object.keys(files).length > 0}
       {#each Object.entries(files) as [name, metadata]}
-        <button 
-          class="file-item" 
+        <button
+          class="file-item"
           on:click={() => handleFileClick(name, metadata)}
         >
           <File size={16} class="icon" />
@@ -117,7 +122,6 @@
     padding: 1rem;
     display: flex;
     justify-content: center;
-
   }
 
   .files-header {

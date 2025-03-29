@@ -5,9 +5,9 @@
     <img draggable={false} src="/soar-logo.svg" alt="SOAR Logo" />
   </div>
   <nav class="nav-links">
-    <a href="#">TAC</a>
-    <a href="#">HAC</a>
-    <a href="#">Mapleleaf</a>
+    <a href="/">TAC</a>
+    <a href="/">HAC</a>
+    <a href="/">Mapleleaf</a>
   </nav>
 </header>
 
