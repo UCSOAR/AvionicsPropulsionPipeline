@@ -1,47 +1,20 @@
 <script lang="ts">
-<<<<<<< HEAD
-  import { onMount} from 'svelte';
-  import { ArrowUpToLine, PanelLeftClose, PanelLeftOpen, File } from 'lucide-svelte';
-  import { useMetadataStore } from '../../stores/metadataStore';
-  import FileUploader from '$lib/components/UploadFile.svelte';
-  import { endpointMapping } from "$lib/utils/constants";
-
-  export let data = {};
-=======
   import FileUploader from "$lib/components/UploadFile.svelte";
   import type { SelectedFile } from "$lib/models/selectedFile";
-  import { onMount } from "svelte";
-  import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
+  import { onMount } from "svelte"; 
+  import { PanelLeftClose, PanelLeftOpen, File,  RefreshCcw} from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
-
   export let selectedFile: SelectedFile | undefined = undefined;
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
 
   let isExpanded = true;
   let files: Record<string, any> = {};
   let error: string | null = null;
-<<<<<<< HEAD
-  let xCol: string | null = null;
-  let yCol: string | null = null;
-  let metadata: Record<string, any> = {};
-  let fileName: string | null = null;
-
-=======
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
   };
 
   const handleFileClick = (fileName: string, metadata: any) => {
-<<<<<<< HEAD
-    console.log(`File clicked: ${fileName}`, metadata);
-    data.fileName = fileName;
-    data.metadata = metadata;
-
-    
-
-=======
     if (!selectedFile) {
       selectedFile = {
         name: "",
@@ -53,19 +26,19 @@
           },
           xColumnNames: [],
           yColumnNames: [],
+          totalRows: 0,
         },
       };
     }
 
     selectedFile.name = fileName;
     selectedFile.metadata = metadata;
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
   };
 
   const fetchFiles = async () => {
     try {
       const response = await fetch(endpointMapping.getStaticFireMetadataUrl);
-      if (!response.ok) throw new Error("Failed to fetch files");
+      if (!response.ok && isExpanded  ) throw new Error("Failed to fetch files");
       files = await response.json();
       error = null;
     } catch (err) {
@@ -78,10 +51,6 @@
   });
 
   const handleUploadComplete = () => {
-<<<<<<< HEAD
-    // Refetch the files after upload completes
-=======
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
     fetchFiles();
   };
 </script>
@@ -110,23 +79,21 @@
   <div class="file-list">
     {#if Object.keys(files).length > 0}
       {#each Object.entries(files) as [name, metadata]}
-<<<<<<< HEAD
-        <button 
-          class="file-item" 
-=======
         <button
-          class="file-item"
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
+          class={`${isExpanded ?"file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
           on:click={() => handleFileClick(name, metadata)}
         >
-          <File size={16} class="icon" />
+          <File size={16} color={selectedFile?.name === name ? "#e64d4d" : "white"}/>
           {#if isExpanded}
             <span class="file-name">{name.replace(/\.[^.]+$/, "")}</span>
-          {/if}
+          {/if}  
         </button>
       {/each}
     {:else}
+
+    {#if isExpanded}
       <p class="empty">{error || "No uploaded files yet."}</p>
+    {/if}
     {/if}
   </div>
 </aside>
@@ -158,10 +125,6 @@
     padding: 1rem;
     display: flex;
     justify-content: center;
-<<<<<<< HEAD
-
-=======
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
   }
 
   .files-header {
@@ -207,16 +170,48 @@
     background: transparent;
     cursor: pointer;
 
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
     .file-name {
       font-size: 0.9rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+    .side-bar.expanded .file-name {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    &:hover {
+      background-color: $bg-color-highlighted;
+    }
+
+    &:hover .file-name{
+      color: $txt-color-highlighted
+    }
+    
+  }
+
+  .icon-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $bg-color-highlighted;
+    }
+
+    &:hover .icon{
+      color: $txt-color-highlighted
+    }
+
   }
 
   .empty {
@@ -224,8 +219,17 @@
     font-size: 0.9rem;
     padding: 1rem;
   }
-<<<<<<< HEAD
+
+  .selected {
+  background-color: $bg-color-highlighted;
+  color: $txt-color-highlighted;
+
+  .file-name,
+  .icon {
+    color: $txt-color-highlighted;
+  }
+}
+
+
 </style>
-=======
-</style>
->>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
+
