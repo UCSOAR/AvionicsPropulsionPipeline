@@ -1,4 +1,5 @@
 <script lang="ts">
+<<<<<<< HEAD
   import { onMount} from 'svelte';
   import { ArrowUpToLine, PanelLeftClose, PanelLeftOpen, File } from 'lucide-svelte';
   import { useMetadataStore } from '../../stores/metadataStore';
@@ -6,27 +7,59 @@
   import { endpointMapping } from "$lib/utils/constants";
 
   export let data = {};
+=======
+  import FileUploader from "$lib/components/UploadFile.svelte";
+  import type { SelectedFile } from "$lib/models/selectedFile";
+  import { onMount } from "svelte";
+  import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
+  import { endpointMapping } from "$lib/utils/constants";
+
+  export let selectedFile: SelectedFile | undefined = undefined;
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
 
   let isExpanded = true;
   let files: Record<string, any> = {};
   let error: string | null = null;
+<<<<<<< HEAD
   let xCol: string | null = null;
   let yCol: string | null = null;
   let metadata: Record<string, any> = {};
   let fileName: string | null = null;
 
+=======
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
   };
 
   const handleFileClick = (fileName: string, metadata: any) => {
+<<<<<<< HEAD
     console.log(`File clicked: ${fileName}`, metadata);
     data.fileName = fileName;
     data.metadata = metadata;
 
     
 
+=======
+    if (!selectedFile) {
+      selectedFile = {
+        name: "",
+        metadata: {
+          operator: "",
+          resultTimestamp: {
+            date: "",
+            time: "",
+          },
+          xColumnNames: [],
+          yColumnNames: [],
+        },
+      };
+    }
+
+    selectedFile.name = fileName;
+    selectedFile.metadata = metadata;
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
   };
 
   const fetchFiles = async () => {
@@ -45,7 +78,10 @@
   });
 
   const handleUploadComplete = () => {
+<<<<<<< HEAD
     // Refetch the files after upload completes
+=======
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
     fetchFiles();
   };
 </script>
@@ -74,8 +110,13 @@
   <div class="file-list">
     {#if Object.keys(files).length > 0}
       {#each Object.entries(files) as [name, metadata]}
+<<<<<<< HEAD
         <button 
           class="file-item" 
+=======
+        <button
+          class="file-item"
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
           on:click={() => handleFileClick(name, metadata)}
         >
           <File size={16} class="icon" />
@@ -117,7 +158,10 @@
     padding: 1rem;
     display: flex;
     justify-content: center;
+<<<<<<< HEAD
 
+=======
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b
   }
 
   .files-header {
@@ -180,4 +224,8 @@
     font-size: 0.9rem;
     padding: 1rem;
   }
+<<<<<<< HEAD
 </style>
+=======
+</style>
+>>>>>>> c0f757bf2cf4000fa6d7e28c302761699b53fb7b

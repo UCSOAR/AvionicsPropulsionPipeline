@@ -1,42 +1,28 @@
 <script lang="ts">
   import "$lib/styles/global.scss";
   import "$lib/components/IconButton.svelte";
+  import type { SelectedFile } from "$lib/models/selectedFile";
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
 
-  let data: Record<string, any>;
-  console.log("This is from parent: ");
-
+  let selectedFile: SelectedFile | undefined = undefined;
 </script>
 
 <main class="app-container">
   <TopBar />
 
   <div class="main-layout">
-    <Sidebar bind:data={data}/>
+    <Sidebar bind:selectedFile />
 
-    {#if data?.metadata}
-      <Dashboard
-        selectedFile={{
-          name: data.fileName,
-          metadata: {
-            operator: data.metadata.operator,
-            resultTimestamp: {
-              date: data.metadata.resultTimestamp.date,
-              time: data.metadata.resultTimestamp.time,
-            },
-            xColumnNames: data.metadata.xColumnNames,
-            yColumnNames: data.metadata.yColumnNames,
-          },
-        }}
-      />
-      {/if}
+    {#if selectedFile}
+      <Dashboard {selectedFile} />
+    {/if}
   </div>
 </main>
 
 <style lang="scss">
-  @use "$lib/styles/variables.scss" as *;
+  @use "../lib/styles/variables.scss" as *;
 
   main.app-container {
     display: flex;
