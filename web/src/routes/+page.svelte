@@ -3,6 +3,12 @@
   import "$lib/components/IconButton.svelte";
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
+    import { onMount } from "svelte";
+    import { getStorageUsage } from "$lib/utils/fetchUsage";
+
+  onMount(() => {
+    getStorageUsage()
+  })
 </script>
 
 <main>
