@@ -3,10 +3,11 @@
 
   export let icon: Component | null = null;
   export let label: string | null = null;
+  export let isDisabled: boolean = false;
   export let onClick: () => void;
 </script>
 
-<button onclick={onClick}>
+<button onclick={onClick} disabled={isDisabled}>
   {#if icon}
     <svelte:component this={icon} />
   {/if}
