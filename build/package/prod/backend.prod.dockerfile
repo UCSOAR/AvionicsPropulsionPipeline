@@ -1,4 +1,3 @@
-# Stage 1: Build the Go application
 FROM golang:latest AS build
 
 # Set the working directory in the container
@@ -14,7 +13,7 @@ COPY . .
 # Build the Go application
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/soarpipeline ./cmd/soarpipeline
 
-# Stage 2: Create a minimal image to run the Go application
+# Create a minimal image to run the Go application
 FROM alpine:latest
 
 # Install necessary CA certificates

@@ -1,0 +1,86 @@
+name: Formatter CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  format-frontend:
+    name: Format Frontend Code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Fix formatting for TypeScript, JavaScript, CSS, SCSS, and Markdown with Prettier
+        id: prettier-fix
+        run: prettier --write "**/*.{ts,tsx,mjs,md,css,scss}"
+
+      - name: Check for changes after Prettier
+        id: check_prettier_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changes=true" >> $GITHUB_ENV
+          else
+            echo "changes=false" >> $GITHUB_ENV
+          fi
+
+      - name: Commit and push changes (if any)
+        if: env.changes == 'true'
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: "github-actions[bot]"
+          author_email: "github-actions[bot]@users.noreply.github.com"
+          message: "fix: apply frontend code formatting fixes"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  format-backend:
+    name: Format Backend Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Fix formatting for Go files with gofmt
+        id: gofmt-fix
+        run: find . -name '*.go' -exec gofmt -w {} +
+
+      - name: Check for changes after gofmt
+        id: check_gofmt_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changes=true" >> $GITHUB_ENV
+          else
+            echo "changes=false" >> $GITHUB_ENV
+          fi
+
+      - name: Commit and push changes (if any)
+        if: env.changes == 'true'
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: "github-actions[bot]"
+          author_email: "github-actions[bot]@users.noreply.github.com"
+          message: "fix: apply backend code formatting fixes"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
