@@ -34,20 +34,9 @@ jobs:
         id: check_prettier_changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "changes=true" >> $GITHUB_ENV
-          else
-            echo "changes=false" >> $GITHUB_ENV
+            echo "Formatting issues detected. Please run Prettier locally and commit the changes."
+            exit 1
           fi
-
-      - name: Commit and push changes (if any)
-        if: env.changes == 'true'
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: "github-actions[bot]"
-          author_email: "github-actions[bot]@users.noreply.github.com"
-          message: "fix: apply frontend code formatting fixes"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   format-backend:
     name: Format Backend Code
@@ -70,17 +59,6 @@ jobs:
         id: check_gofmt_changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "changes=true" >> $GITHUB_ENV
-          else
-            echo "changes=false" >> $GITHUB_ENV
+            echo "Formatting issues detected. Please run gofmt locally and commit the changes."
+            exit 1
           fi
-
-      - name: Commit and push changes (if any)
-        if: env.changes == 'true'
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: "github-actions[bot]"
-          author_email: "github-actions[bot]@users.noreply.github.com"
-          message: "fix: apply backend code formatting fixes"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

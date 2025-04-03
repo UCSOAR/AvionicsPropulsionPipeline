@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-chi/chi"
 	"net/http"
+	"time"
+
+	"github.com/go-chi/chi"
 
 	controllers "soarpipeline/internal/controllers"
 	middlewares "soarpipeline/internal/middlewares"
@@ -37,7 +39,15 @@ func main() {
 	fmt.Println("Server running on http://localhost" + devAddr)
 
 	// Start the server
-	if err := http.ListenAndServe(devAddr, router); err != nil {
+	server := &http.Server{
+		Addr:         devAddr,
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  10 * time.Second,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
 		panic(err)
 	}
 }

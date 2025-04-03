@@ -1,4 +1,4 @@
-package tests
+package staticfire_test
 
 import (
 	"reflect"
@@ -34,7 +34,7 @@ Time 10:45:47.0352557312499836422`
 	}
 
 	expected := staticfire.ParsedEntryHeader{
-		Seperator:     '\t',
+		Separator:     '\t',
 		MultiHeadings: multiHeadings,
 		XColumns:      xColumns,
 		Operator:      "TestOperator",

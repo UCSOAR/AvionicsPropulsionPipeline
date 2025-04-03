@@ -20,18 +20,18 @@ const (
 	XColumnsMulti   XColumnsValue = iota
 )
 
-// Enumerates the possible field seperators in an LVM file.
-type FieldSeperator rune
+// Enumerates the possible field separators in an LVM file.
+type Fieldseparator rune
 
 const (
-	FieldSeperatorUnknown FieldSeperator = 0
-	FieldSeperatorTab     FieldSeperator = '\t'
-	FieldSeperatorSpace   FieldSeperator = ' '
+	FieldseparatorUnknown Fieldseparator = 0
+	FieldseparatorTab     Fieldseparator = '\t'
+	FieldseparatorSpace   Fieldseparator = ' '
 )
 
 // Represents a parsed LVM entry header.
 type ParsedEntryHeader struct {
-	Seperator     FieldSeperator     `json:"seperator"`
+	Separator     Fieldseparator     `json:"separator"`
 	MultiHeadings MultiHeadingsValue `json:"multiHeadings"`
 	XColumns      XColumnsValue      `json:"xColumns"`
 	Operator      string             `json:"operator"`
@@ -97,13 +97,13 @@ func (x XColumnsValue) String() string {
 	}
 }
 
-func ParseFieldSeperator(seperatorText string) (FieldSeperator, error) {
-	switch seperatorText {
+func ParseFieldseparator(separatorText string) (Fieldseparator, error) {
+	switch separatorText {
 	case "Tab":
-		return FieldSeperatorTab, nil
+		return FieldseparatorTab, nil
 	case "Space":
-		return FieldSeperatorTab, nil
+		return FieldseparatorTab, nil
 	default:
-		return FieldSeperatorUnknown, fmt.Errorf("invalid seperator: %s", seperatorText)
+		return FieldseparatorUnknown, fmt.Errorf("invalid separator: %s", separatorText)
 	}
 }

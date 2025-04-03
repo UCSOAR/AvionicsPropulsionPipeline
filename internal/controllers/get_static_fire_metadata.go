@@ -15,15 +15,11 @@ func GetStaticFireMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Encode metadata
-	metadataJson, err := json.Marshal(metadata)
+	// Write response
+	w.Header().Set("Content-Type", "application/json")
 
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(metadata); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// Write response
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(metadataJson)
 }

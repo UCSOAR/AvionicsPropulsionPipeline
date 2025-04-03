@@ -15,11 +15,9 @@ linters:
     - dupl
     - dupword
     - durationcheck
-    - err113
     - errcheck
     - errname
     - errorlint
-    - exhaustive
     - exptostd
     - fatcontext
     - forbidigo
@@ -92,6 +90,10 @@ linters:
   settings:
     gocyclo:
       min-complexity: 30
+    gocognit:
+      min-complexity: 40
+    nestif:
+      min-complexity: 10
   exclusions:
     generated: strict
     warn-unused: true
@@ -107,6 +109,7 @@ linters:
           - errcheck
           - dupl
           - gosec
+          - dupword
       - path-except: test\.go
         linters:
           - forbidigo

@@ -7,7 +7,7 @@ import (
 	"soarpipeline/pkg/staticfire"
 )
 
-// Represents the expected JSON structure of the request body
+// Represents the expected JSON structure of the request body.
 type PostStaticFireColumnsRequest struct {
 	Name         string   `json:"name"`
 	StartRow     int      `json:"startRow"`
@@ -16,7 +16,7 @@ type PostStaticFireColumnsRequest struct {
 	YColumnNames []string `json:"yColumnNames"`
 }
 
-// Represents the expected JSON structure of the response body
+// Represents the expected JSON structure of the response body.
 type PostStaticFireColumnsResponse struct {
 	YColumnMetadata map[string]staticfire.YColumnMetadata `json:"yColumnMetadata"`
 	XColumns        map[string]staticfire.ColumnNode      `json:"xColumns"`
@@ -24,7 +24,7 @@ type PostStaticFireColumnsResponse struct {
 }
 
 func PostStaticFireColumns(w http.ResponseWriter, r *http.Request) {
-	// Parse request body
+	// Parse request body.
 	var req PostStaticFireColumnsRequest
 
 	{
@@ -36,7 +36,7 @@ func PostStaticFireColumns(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Get columns
+	// Get columns.
 	yColumnMetadata, xColumns, yColumns, err := storage.DefaultCacheContext.ReadColumns(req.Name, req.StartRow, req.NumRows, req.XColumnNames, req.YColumnNames)
 
 	if err != nil {
@@ -44,21 +44,17 @@ func PostStaticFireColumns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create response
+	// Create response.
 	res := PostStaticFireColumnsResponse{
 		YColumnMetadata: yColumnMetadata,
 		XColumns:        xColumns,
 		YColumns:        yColumns,
 	}
 
-	// Write response
-	resJson, err := json.Marshal(res)
+	w.Header().Set("Content-Type", "application/json")
 
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(res); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(resJson)
 }
