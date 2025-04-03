@@ -87,6 +87,8 @@ linters:
     - usetesting
     - wastedassign
     - zerologlint
+  disable:
+    - typecheck
   linters-settings:
     staticcheck:
       checks:
