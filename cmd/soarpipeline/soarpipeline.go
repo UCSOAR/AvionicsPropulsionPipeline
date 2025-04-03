@@ -12,7 +12,7 @@ import (
 	storage "soarpipeline/internal/storage"
 )
 
-const devAddr = ":8080"
+const addr = ":8080"
 
 func main() {
 	// Ensure storage directories are initialized
@@ -36,11 +36,11 @@ func main() {
 		})
 	})
 
-	fmt.Println("Server running on http://localhost" + devAddr)
+	fmt.Println("Server running on http://localhost" + addr)
 
 	// Start the server
 	server := &http.Server{
-		Addr:         devAddr,
+		Addr:         addr,
 		Handler:      router,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 15 * time.Second,
