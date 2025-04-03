@@ -87,13 +87,6 @@ linters:
     - usetesting
     - wastedassign
     - zerologlint
-  disable:
-    - typecheck
-  linters-settings:
-    staticcheck:
-      checks:
-        # Disable SSA checks for third-party packages
-        - "-SA9003"
   settings:
     gocyclo:
       min-complexity: 30
