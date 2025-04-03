@@ -2,12 +2,12 @@ export const backendDevPort = 8080;
 
 export const endpointMapping = Object.freeze({
   uploadStaticFireUrl: new URL(
-    `http://localhost:${backendDevPort}/api/staticfire/upload`
+    `http://localhost:${backendDevPort}/api/staticfire/upload`,
   ),
   getStaticFireMetadataUrl: new URL(
-    `http://localhost:${backendDevPort}/api/staticfire/metadata`
+    `http://localhost:${backendDevPort}/api/staticfire/metadata`,
   ),
   postStaticFireColumnsUrl: new URL(
-    `http://localhost:${backendDevPort}/api/staticfire/columns`
+    `http://localhost:${backendDevPort}/api/staticfire/columns`,
   ),
 });

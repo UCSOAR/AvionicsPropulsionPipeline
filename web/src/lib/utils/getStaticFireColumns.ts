@@ -5,7 +5,7 @@ import type {
 } from "$lib/models/dashboardModels";
 
 export const fetchStaticFireColumns = async (
-  req: PostStaticFireColumnsRequest
+  req: PostStaticFireColumnsRequest,
 ): Promise<PostStaticFireColumnsResponse | null> => {
   try {
     const response = await fetch(endpointMapping.postStaticFireColumnsUrl, {
