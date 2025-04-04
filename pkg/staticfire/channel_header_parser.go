@@ -5,20 +5,20 @@ import (
 	"strconv"
 )
 
-var requiredChannelHeaderKeys = [...]string{
-	"Channels",
-	"Samples",
-	"Date",
-	"Time",
-	"Y_Unit_Label",
-	"X_Dimension",
-	"X0",
-	"Delta_X",
-}
-
 // Parses only the text that contains the channel header section.
 // Returns a struct representing the parsed channel header.
 func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
+	requiredChannelHeaderKeys := [...]string{
+		"Channels",
+		"Samples",
+		"Date",
+		"Time",
+		"Y_Unit_Label",
+		"X_Dimension",
+		"X0",
+		"Delta_X",
+	}
+
 	parsedHeader, err := ParseKv(rawHeaderText)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	// Parse samples
 	samples := make([]int, channelCount)
 
-	for i := 0; i < channelCount; i++ {
+	for i := range channelCount {
 		sampleCount, err := strconv.Atoi(parsedHeader.Kv["Samples"][i])
 
 		if err != nil {
@@ -70,7 +70,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	// Parse initial Xs
 	initialXs := make([]float64, channelCount)
 
-	for i := 0; i < channelCount; i++ {
+	for i := range channelCount {
 		initialX, err := strconv.ParseFloat(parsedHeader.Kv["X0"][i], 64)
 
 		if err != nil {
@@ -83,7 +83,7 @@ func ParseChannelHeader(rawHeaderText string) (ParsedChannelHeader, error) {
 	// Parse delta Xs
 	deltaXs := make([]float64, channelCount)
 
-	for i := 0; i < channelCount; i++ {
+	for i := range channelCount {
 		deltaX, err := strconv.ParseFloat(parsedHeader.Kv["Delta_X"][i], 64)
 
 		if err != nil {
