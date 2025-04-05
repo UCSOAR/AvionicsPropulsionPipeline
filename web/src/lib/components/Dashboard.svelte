@@ -17,6 +17,7 @@
   } from "@lucide/svelte";
 
   export let selectedFile: SelectedFile;
+  export let refreshGraph: () => Promise<void>;
 
   let plotlyChartDiv: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
@@ -77,7 +78,9 @@
     isLoadingPlotly = false;
   };
 
-  const refreshPlotly = async () => {
+  $: refreshGraph = refreshPlotly;
+
+  export const refreshPlotly = async () => {
     if (!selectedFile) {
       return;
     }

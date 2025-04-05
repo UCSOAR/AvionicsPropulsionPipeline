@@ -5,8 +5,10 @@
   import { PanelLeftClose, PanelLeftOpen, File,  RefreshCcw} from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
   export let selectedFile: SelectedFile | undefined = undefined;
+  export let refreshDashboardGraph: () => Promise<void>;
 
-  let isExpanded = true;
+
+  export let isExpanded = true;
   let files: Record<string, any> = {};
   let error: string | null = null;
 
@@ -53,9 +55,11 @@
   const handleUploadComplete = () => {
     fetchFiles();
   };
+
+
 </script>
 
-<aside class="side-bar {isExpanded ? 'expanded' : 'collapsed'}">
+<aside class="side-bar {isExpanded ? 'expanded' : 'collapsed'}" on:transitionend={refreshDashboardGraph}>
   <!-- Upload Section -->
   <div class="upload-container">
     <FileUploader onUploadComplete={handleUploadComplete} />
