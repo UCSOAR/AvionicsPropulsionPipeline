@@ -1,4 +1,5 @@
 <script lang="ts">
+
   import IconButton from "$lib/components/IconButton.svelte";
   import { UploadCloud } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
@@ -11,9 +12,7 @@
   const handleFileChange = async (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (!target.files || target.files.length === 0) return;
-
     const files = Array.from(target.files);
-
     uploading = true;
 
     for (const file of files) {
@@ -39,6 +38,7 @@
 
     uploading = false;
     target.value = "";
+
 
     onUploadComplete();
   };
@@ -75,3 +75,4 @@
     justify-content: center;
   }
 </style>
+

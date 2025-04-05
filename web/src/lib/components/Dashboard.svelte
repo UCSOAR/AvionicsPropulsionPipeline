@@ -17,12 +17,14 @@
   } from "@lucide/svelte";
 
   export let selectedFile: SelectedFile;
+  export let refreshGraph: () => Promise<void>;
 
   let plotlyChartDiv: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
   let startRow = 0;
   let numRows = 0;
+  let totalRows = 0;
   let isLoadingPlotly = false;
   let plotError = "";
 
@@ -70,14 +72,15 @@
     if (!data) {
       plotError = "Failed to fetch data.";
     }
-
     const Plotly = await import("plotly.js-dist-min");
     await Plotly.newPlot(plotlyChartDiv, data ?? [], layout, config);
 
     isLoadingPlotly = false;
   };
 
-  const refreshPlotly = async () => {
+  $: refreshGraph = refreshPlotly;
+
+  export const refreshPlotly = async () => {
     if (!selectedFile) {
       return;
     }
@@ -163,9 +166,10 @@
         />
         <Input
           id="num-rows"
-          placeholder="0"
+          value= {null}
+          placeholder= {selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
-          label="Row Count"
+          label= {`Row Count`}
           regex={numericRegex}
           onChange={(value) => (numRows = safeParseInt(value))}
         />

@@ -11,6 +11,7 @@ type PreviewMetadata struct {
 	Operator        string            `json:"operator"`
 	XColumnNames    []string          `json:"xColumnNames"`
 	YColumnNames    []string          `json:"yColumnNames"`
+	TotalRows       int               `json:"totalRows"`
 }
 
 // Represents a column node in the cache tree.

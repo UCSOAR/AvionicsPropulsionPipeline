@@ -2,6 +2,7 @@
   import type { HTMLInputTypeAttribute } from "svelte/elements";
 
   export let id: string;
+  export let value: number | null = 0;
   export let placeholder: string;
   export let label: string | null = null;
   export let type: HTMLInputTypeAttribute = "text";
@@ -33,6 +34,7 @@
     disabled={isDisabled}
     {type}
     {id}
+    {value}
     class="input-field"
     class:error={isError}
     on:input={handleInput}
