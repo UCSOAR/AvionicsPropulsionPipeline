@@ -163,8 +163,8 @@
         />
         <Input
           id="num-rows"
-          value = {selectedFile.metadata.totalRows}
-          placeholder= "0"
+          value= {null}
+          placeholder= {selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
           label= {`Row Count`}
           regex={numericRegex}
