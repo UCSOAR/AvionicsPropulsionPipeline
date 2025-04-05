@@ -8,7 +8,7 @@ export type PreviewMetadata = {
   operator: string;
   xColumnNames: string[];
   yColumnNames: string[];
-  totalRows:  number;
+  totalRows: number;
 };
 
 export type ColumnNode = {
