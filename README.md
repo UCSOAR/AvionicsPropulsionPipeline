@@ -7,6 +7,37 @@
 ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
+## To-Do List
+
+### Test Analysis
+
+- [ ] Detect test start and end based on:
+  - Spike in chamber pressure.
+  - Decrease in oxidizer pressure.
+  - Decrease in oxidizer mass.
+- [ ] Allow manual input for oxidizer shutoff time.
+- [ ] Define test end when chamber pressure returns to normal.
+
+### Data Handling
+
+- [ ] Provide a way to download the filtered data.
+- [ ] Display both unfiltered and filtered lines on the graph.
+- [ ] Add a legend to the Plotly graph to toggle lines on/off.
+
+### Graph Features
+
+- [ ] Implement two data smoothing filters that do not distort the data.
+- [ ] Add a button to enable full-screen mode for the graph.
+- [ ] Display mass flow rate on the graph.
+- [ ] (Optional) Plot fill mass and pressure over time.
+
+### Website Features
+
+- [ ] Integrate a home page into the application.
+- [ ] Implement a file organization system:
+  - [ ] Use a custom file extension or metadata to categorize files.
+  - [ ] Enable filtering of files for different website sections.
+
 ## Running with Docker
 
 Simply run the following command to start the application.

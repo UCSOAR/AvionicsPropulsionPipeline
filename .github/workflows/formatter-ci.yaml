@@ -1,0 +1,64 @@
+name: Formatter CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  format-frontend:
+    name: Format Frontend Code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Fix formatting for TypeScript, JavaScript, CSS, SCSS, and Markdown with Prettier
+        id: prettier-fix
+        run: prettier --write "**/*.{ts,tsx,mjs,md,css,scss}"
+
+      - name: Check for changes after Prettier
+        id: check_prettier_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Formatting issues detected. Please run Prettier locally and commit the changes."
+            exit 1
+          fi
+
+  format-backend:
+    name: Format Backend Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Fix formatting for Go files with gofmt
+        id: gofmt-fix
+        run: find . -name '*.go' -exec gofmt -w {} +
+
+      - name: Check for changes after gofmt
+        id: check_gofmt_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Formatting issues detected. Please run gofmt locally and commit the changes."
+            exit 1
+          fi

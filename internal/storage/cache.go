@@ -136,6 +136,7 @@ func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]staticfire.
 
 	if err != nil {
 		// Treat the cache directory as empty if it does not exist
+		//nolint: nilerr
 		return make(map[string]staticfire.PreviewMetadata), nil
 	}
 

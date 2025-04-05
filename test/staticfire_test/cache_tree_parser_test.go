@@ -1,4 +1,4 @@
-package tests
+package staticfire_test
 
 import (
 	"os"

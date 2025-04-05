@@ -2,22 +2,22 @@ package staticfire
 
 import "fmt"
 
-var requiredEntryHeaderKeys = [...]string{
-	"Writer_Version",
-	"Reader_Version",
-	"Separator",
-	"Decimal_Separator",
-	"Multi_Headings",
-	"X_Columns",
-	"Time_Pref",
-	"Operator",
-	"Date",
-	"Time",
-}
-
 // Parses only the text that contains the entry header section.
 // Returns a struct representing the parsed entry header.
 func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
+	requiredEntryHeaderKeys := [...]string{
+		"Writer_Version",
+		"Reader_Version",
+		"Separator",
+		"Decimal_Separator",
+		"Multi_Headings",
+		"X_Columns",
+		"Time_Pref",
+		"Operator",
+		"Date",
+		"Time",
+	}
+
 	parsedHeader, err := ParseKv(rawHeaderText)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 	}
 
 	// Create entry header structure
-	seperator, err := ParseFieldSeperator(parsedHeader.Kv["Separator"][0])
+	separator, err := ParseFieldseparator(parsedHeader.Kv["Separator"][0])
 
 	if err != nil {
 		return ParsedEntryHeader{}, err
@@ -68,7 +68,7 @@ func ParseEntryHeader(rawHeaderText string) (ParsedEntryHeader, error) {
 	}
 
 	entryHeader := ParsedEntryHeader{
-		Seperator:     seperator,
+		Separator:     separator,
 		MultiHeadings: multiHeadings,
 		XColumns:      xColumns,
 		Operator:      parsedHeader.Kv["Operator"][0],
