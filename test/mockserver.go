@@ -7,10 +7,6 @@ import (
 )
 
 // MockServer function to simulate API responses
-func MockServer(response interface{}, statusCode int) *httptest.Server {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(response)
-	})
+func mockServer(handler http.Handler) *httptest.Server {
 	return httptest.NewServer(handler)
 }
