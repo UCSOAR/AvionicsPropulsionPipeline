@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { Check, CheckCheck, ChevronDown, ChevronUp } from "@lucide/svelte";
+  import { Check, ChevronDown, ChevronUp } from "@lucide/svelte";
   import { onMount } from "svelte";
 
   export let id: string;
+  export let isDisabled: boolean = false;
   export let label: string | null = null;
   export let options: string[];
   export let onChange: (optionIndex: number) => void;
@@ -43,7 +44,11 @@
   {#if label}
     <label for={id}>{label}</label>
   {/if}
-  <button class="dropdown-button" on:click={toggleOptions}>
+  <button
+    disabled={isDisabled}
+    class="dropdown-button"
+    on:click={toggleOptions}
+  >
     <span>{options[selectedOptionIndex]}</span>
     {#if !isOptionsVisible}
       <ChevronDown />
@@ -59,7 +64,7 @@
           class:selected={index === selectedOptionIndex}
           on:click={() => handleSelect(index)}
         >
-          {option}
+          <span>{option}</span>
           {#if index === selectedOptionIndex}
             <Check />
           {/if}
@@ -71,6 +76,14 @@
 
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
+
+  button {
+    & > span {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
 
   div.container {
     display: flex;
@@ -90,6 +103,8 @@
       display: flex;
       align-items: center;
       gap: 0.8rem;
+      transition: all 0.06s ease;
+      min-width: 7rem;
 
       :global(.lucide-icon) {
         $size: 1rem;
@@ -105,6 +120,14 @@
       &:hover {
         :global(.lucide-icon) {
           opacity: 1;
+        }
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+
+        * {
+          color: $txt-color-2;
         }
       }
     }
@@ -135,6 +158,7 @@
           border-radius: $border-radius-1 * 0.7;
           background: none;
           padding: 0.6rem;
+          gap: 0.4rem;
           width: 100%;
 
           :global(.lucide-icon) {
@@ -146,7 +170,10 @@
 
           &:hover {
             background-color: $bg-color-highlighted;
-            color: $txt-color-highlighted;
+
+            & > span {
+              color: $txt-color-highlighted;
+            }
 
             :global(.lucide-icon) {
               stroke: $txt-color-highlighted;
