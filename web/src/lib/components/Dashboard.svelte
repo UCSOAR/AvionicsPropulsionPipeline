@@ -2,7 +2,6 @@
   import Dropdown from "./Dropdown.svelte";
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
-  import { browser } from "$app/environment";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
@@ -119,6 +118,10 @@
 
   selectedXColumnIndex.subscribe(refreshPlotly);
   selectedYColumnIndex.subscribe(refreshPlotly);
+
+  $: if (selectedFile) {
+    refreshPlotly();
+  }
 
   onMount(loadPlotly);
 </script>
