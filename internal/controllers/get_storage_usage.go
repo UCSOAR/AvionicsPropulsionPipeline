@@ -13,8 +13,8 @@ type StorageSizeResponse struct {
 	StorageSizeBytes int64 `json:"storageSizeBytes"`
 }
 
-// CalculateStorageUsage calculates the total size of the storage directory
-func CalculateStorageUsage(path string) (int64, error) {
+// Calculates the total size of the storage directory
+func calculateStorageUsage(path string) (int64, error) {
 	var size int64
 
 	// Walk through the directory and sum up file sizes
@@ -22,7 +22,9 @@ func CalculateStorageUsage(path string) (int64, error) {
 		if err != nil {
 			return err
 		}
+
 		size += info.Size()
+
 		return nil
 	})
 
@@ -35,7 +37,7 @@ func GetStorageUsage(w http.ResponseWriter, r *http.Request) {
 	storagePath := storage.StorageDirPath
 
 	// Calculate the storage usage
-	size, err := CalculateStorageUsage(storagePath)
+	size, err := calculateStorageUsage(storagePath)
 	if err != nil {
 		http.Error(w, "failed to calculate storage size", http.StatusInternalServerError)
 		return
@@ -46,5 +48,9 @@ func GetStorageUsage(w http.ResponseWriter, r *http.Request) {
 
 	// Set response header and encode response as JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
