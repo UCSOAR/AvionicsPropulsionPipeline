@@ -1,24 +1,26 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto } from "$app/navigation";
 
   function handleLogoClick() {
-    goto('/');
-  }
-
-  function nothing() {
-    // placeholder for future navigation
+    goto("/");
   }
 </script>
 
 <header class="top-bar">
-  <div class="logo" role="button" tabindex="0" on:click={handleLogoClick} on:keydown={handleLogoClick}>
+  <div
+    class="logo"
+    role="button"
+    tabindex="0"
+    on:click={handleLogoClick}
+    on:keydown={handleLogoClick}
+  >
     <img draggable={false} src="/soar-logo.svg" alt="SOAR Logo" />
   </div>
 
   <nav class="nav-links">
-    <button on:click={nothing}>TAC</button>
-    <button on:click={nothing}>HAC</button>
-    <button on:click={nothing}>Mapleleaf</button>
+    <button>TAC</button>
+    <button>HAC</button>
+    <button>Mapleleaf</button>
   </nav>
 </header>
 
@@ -36,25 +38,19 @@
   }
 
   .logo {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-right: auto;
-  cursor: pointer;
-  border-radius: 0.5rem;
-  transition: box-shadow 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-right: auto;
+    cursor: pointer;
+    border-radius: 0.5rem;
 
-  &:hover {
-    box-shadow: 0 0 12px 2px rgba(255, 0, 0, 0.6); // red glow effect
+    img {
+      height: 3rem;
+      width: auto;
+      display: block;
+    }
   }
-
-  img {
-    height: 3rem;
-    width: auto;
-    display: block;
-  }
-}
-
 
   .nav-links {
     display: flex;
