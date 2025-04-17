@@ -208,7 +208,5 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 		YColumnNodes:    yColumns,
 	}
 
-	fmt.Print(tree)
-
 	return tree, nil
 }

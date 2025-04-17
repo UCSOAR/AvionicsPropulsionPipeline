@@ -15,6 +15,7 @@
     MessageCircleWarningIcon,
     RefreshCcw,
   } from "@lucide/svelte";
+    import { X } from "lucide-svelte";
 
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
@@ -22,8 +23,12 @@
   let plotlyChartDiv: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
+  let xValues: number[] = [];
   let startRow = 0;
   let numRows = 0;
+  let testStart = 0;
+  let testEnd = 0; 
+  let burnEnd = 0;
   let totalRows = 0;
   let isLoadingPlotly = false;
   let plotError = "";
@@ -51,12 +56,19 @@
     },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
+
+    legend: {
+      orientation: "h",
+      x: 0.39
+    }
+
   };
 
   const safeParseInt = (value: string) => {
     const parsedValue = parseInt(value, 10);
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
+
 
   const loadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
@@ -67,11 +79,12 @@
 
     isLoadingPlotly = true;
 
-    const data = fetchData !== undefined ? await fetchData() : [];
+    const data = fetchData !== undefined ? await fetchData() : []
 
     if (!data) {
       plotError = "Failed to fetch data.";
     }
+
     const Plotly = await import("plotly.js-dist-min");
     await Plotly.newPlot(plotlyChartDiv, data ?? [], layout, config);
 
@@ -101,6 +114,41 @@
       yColumnNames: [yColumnName],
     };
 
+    layout.shapes = [
+      {
+        type: "line",
+        x0: testStart,
+        x1: testStart,
+        y0: 0,
+        y1: 1,
+        xref: "x",
+        yref: "paper",
+        name: "Test Start",
+        showlegend: true,
+        line: {
+          color: "blue",
+          width: 2,
+          dash: "dash"
+        }
+      },
+      {
+        type: "line",
+        x0: testEnd,
+        x1: testEnd,
+        y0: 0,
+        y1: 1,
+        xref: "x",
+        yref: "paper",
+        name: "Test End",
+        showlegend: true,
+        line: {
+          color: "green",
+          width: 2,
+          dash: "dash"
+        }
+      }
+    ]
+
     await loadPlotly(async () => {
       const res = await fetchStaticFireColumns(req);
 
@@ -113,6 +161,8 @@
         y: res.yColumns[yColumnName].rows,
         type: "scattergl",
         mode: "lines",
+        name: yColumnName,
+        showlegend: true,
         line: { color: style.themeColor },
       };
 
@@ -155,6 +205,23 @@
           options={selectedFile.metadata.yColumnNames}
         />
       </div>
+      <div class="time-select">
+        <Input
+          id="test-start"
+          placeholder="0"
+          isDisabled={isLoadingPlotly}
+          label= "Test Start"
+          onChange={(value) => (testStart = safeParseInt(value))}
+        />
+        <Input
+          id="test-end"
+          placeholder="0"
+          value={0}
+          isDisabled={isLoadingPlotly}
+          label= "Test End"
+          onChange={(value) => (testEnd = safeParseInt(value))}
+        />
+      </div>
       <div class="row-select">
         <Input
           id="start-row"
@@ -171,7 +238,7 @@
           isDisabled={isLoadingPlotly}
           label= {`Row Count`}
           regex={numericRegex}
-          onChange={(value) => (numRows = safeParseInt(value))}
+          onChange={(value) => {numRows = safeParseInt(value)}}
         />
       </div>
     </div>
