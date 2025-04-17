@@ -5,12 +5,17 @@
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
+  import { goto } from '$app/navigation';
+
+
+
 
   let selectedFile: SelectedFile | undefined = undefined;
 </script>
 
 <main class="app-container">
-  <TopBar />
+  <TopBar on:logoClick={() => goto('/')} />
+
 
   <div class="main-layout">
     <Sidebar bind:selectedFile />
