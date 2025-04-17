@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
+  import IconButton from "./IconButton.svelte";
 
   export let selectedFile: SelectedFile | undefined = undefined;
 
@@ -66,13 +67,13 @@
     {#if isExpanded}
       <h3>Files</h3>
     {/if}
-    <button class="layout-button" on:click={toggleSidebar}>
+    <div class="button-container">
       {#if isExpanded}
-        <PanelLeftClose size={20} />
+        <IconButton icon={PanelLeftClose} onClick={toggleSidebar} />
       {:else}
-        <PanelLeftOpen size={20} />
+        <IconButton icon={PanelLeftOpen} onClick={toggleSidebar} />
       {/if}
-    </button>
+    </div>
   </div>
 
   <!-- File List -->
@@ -89,7 +90,7 @@
           {/if}
         </button>
       {/each}
-    {:else}
+    {:else if isExpanded}
       <p class="empty">{error || "No uploaded files yet."}</p>
     {/if}
   </div>
@@ -109,11 +110,11 @@
     border-right: 1px solid $outline-color-1;
 
     &.expanded {
-      width: 280px;
+      width: 20rem;
     }
 
     &.collapsed {
-      width: 60px;
+      width: 4.5rem;
     }
   }
 
@@ -134,17 +135,6 @@
       font-size: 1.25rem;
       font-weight: 600;
       color: white;
-    }
-
-    .layout-button {
-      background: transparent;
-      border: none;
-      color: white;
-      padding: 0.25rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
   }
 

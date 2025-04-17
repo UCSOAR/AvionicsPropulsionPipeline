@@ -31,8 +31,6 @@ func ParseKv(rawHeaderText string) (ParsedKvHeader, error) {
 	// Read the header text line by line
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		// Split line at first tab or space
 		parts := strings.Fields(line)
 
 		if len(parts) < 2 {
