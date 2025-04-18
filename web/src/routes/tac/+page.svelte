@@ -5,19 +5,19 @@
   import Dashboard from "$lib/components/Dashboard.svelte";
   import TopBar from "$lib/components/TopBar.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
-  import { goto } from "$app/navigation";
 
   let selectedFile: SelectedFile | undefined = undefined;
+  let refreshDashboardGraph: () => Promise<void>;
 </script>
 
 <main class="app-container">
-  <TopBar on:logoClick={() => goto("/")} />
+  <TopBar />
 
   <div class="main-layout">
-    <Sidebar bind:selectedFile />
+    <Sidebar bind:selectedFile {refreshDashboardGraph} />
 
     {#if selectedFile}
-      <Dashboard {selectedFile} />
+      <Dashboard {selectedFile} bind:refreshGraph={refreshDashboardGraph} />
     {/if}
   </div>
 </main>

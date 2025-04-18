@@ -185,6 +185,13 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 		}
 	}
 
+	// Generate total rows in lvm file
+	var totalRows int
+
+	if len(xColumns) > 0 {
+		totalRows = len(xColumns[0].Rows)
+	}
+
 	tree := CacheTree{
 		PreviewMetadata: PreviewMetadata{
 			ResultTimestamp: TimestampMetadata{
@@ -194,6 +201,7 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 			Operator:     entryHeader.Operator,
 			XColumnNames: xColumnNames,
 			YColumnNames: yColumnNames,
+			TotalRows:    totalRows,
 		},
 		YColumnMetadata: yColumnMetadata,
 		XColumnNodes:    xColumns,

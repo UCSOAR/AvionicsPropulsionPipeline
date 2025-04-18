@@ -49,7 +49,7 @@
       font-size: 0.95rem;
     }
 
-    &:hover {
+    &:not([disabled]):hover {
       background-color: $bg-color-highlighted;
       border-color: $txt-color-highlighted;
 

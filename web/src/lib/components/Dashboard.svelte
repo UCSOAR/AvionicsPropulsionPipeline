@@ -16,12 +16,15 @@
   } from "@lucide/svelte";
 
   export let selectedFile: SelectedFile;
+  export let refreshGraph: () => Promise<void>;
 
   let plotlyChartDiv: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
   let startRow = 0;
   let numRows = 0;
+  let testStart = 0;
+  let testEnd = 0;
   let isLoadingPlotly = false;
   let plotError = "";
 
@@ -48,6 +51,11 @@
     },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
+
+    legend: {
+      orientation: "h",
+      x: 0.39,
+    },
   };
 
   const safeParseInt = (value: string) => {
@@ -55,7 +63,14 @@
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
 
-  const loadPlotly = async (
+  let data: Readonly<Partial<Data>[]> = [];
+
+  const loadPlotly = async (data: Readonly<Partial<Data>[]>) => {
+    const Plotly = await import("plotly.js-dist-min");
+    await Plotly.newPlot(plotlyChartDiv, data, layout, config);
+  };
+
+  const fetchAndLoadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
     if (isLoadingPlotly) {
@@ -63,20 +78,20 @@
     }
 
     isLoadingPlotly = true;
-
-    const data = fetchData !== undefined ? await fetchData() : [];
+    data = fetchData !== undefined ? await fetchData() : [];
 
     if (!data) {
       plotError = "Failed to fetch data.";
     }
 
-    const Plotly = await import("plotly.js-dist-min");
-    await Plotly.newPlot(plotlyChartDiv, data ?? [], layout, config);
+    await loadPlotly(data);
 
     isLoadingPlotly = false;
   };
 
-  const refreshPlotly = async () => {
+  $: refreshGraph = () => loadPlotly(data);
+
+  export const refreshPlotly = async () => {
     if (!selectedFile) {
       return;
     }
@@ -97,7 +112,42 @@
       yColumnNames: [yColumnName],
     };
 
-    await loadPlotly(async () => {
+    layout.shapes = [
+      {
+        type: "line",
+        x0: testStart,
+        x1: testStart,
+        y0: 0,
+        y1: 1,
+        xref: "x",
+        yref: "paper",
+        name: "Test Start",
+        showlegend: true,
+        line: {
+          color: "blue",
+          width: 2,
+          dash: "dash",
+        },
+      },
+      {
+        type: "line",
+        x0: testEnd,
+        x1: testEnd,
+        y0: 0,
+        y1: 1,
+        xref: "x",
+        yref: "paper",
+        name: "Test End",
+        showlegend: true,
+        line: {
+          color: "green",
+          width: 2,
+          dash: "dash",
+        },
+      },
+    ];
+
+    await fetchAndLoadPlotly(async () => {
       const res = await fetchStaticFireColumns(req);
 
       if (!res) {
@@ -109,6 +159,8 @@
         y: res.yColumns[yColumnName].rows,
         type: "scattergl",
         mode: "lines",
+        name: yColumnName,
+        showlegend: true,
         line: { color: style.themeColor },
       };
 
@@ -123,7 +175,7 @@
     refreshPlotly();
   }
 
-  onMount(loadPlotly);
+  onMount(fetchAndLoadPlotly);
 </script>
 
 <div class="container">
@@ -155,6 +207,23 @@
           options={selectedFile.metadata.yColumnNames}
         />
       </div>
+      <div class="time-select">
+        <Input
+          id="test-start"
+          placeholder="0"
+          isDisabled={isLoadingPlotly}
+          label="Test Start"
+          onChange={(value) => (testStart = safeParseInt(value))}
+        />
+        <Input
+          id="test-end"
+          placeholder="0"
+          value={0}
+          isDisabled={isLoadingPlotly}
+          label="Test End"
+          onChange={(value) => (testEnd = safeParseInt(value))}
+        />
+      </div>
       <div class="row-select">
         <Input
           id="start-row"
@@ -166,11 +235,14 @@
         />
         <Input
           id="num-rows"
-          placeholder="0"
+          value={null}
+          placeholder={selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
-          label="Row Count"
+          label={`Row Count`}
           regex={numericRegex}
-          onChange={(value) => (numRows = safeParseInt(value))}
+          onChange={(value) => {
+            numRows = safeParseInt(value);
+          }}
         />
       </div>
     </div>

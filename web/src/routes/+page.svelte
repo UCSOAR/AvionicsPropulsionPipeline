@@ -10,13 +10,10 @@
 </script>
 
 <main>
-  <header class="front-page">
+  <div class="content-container">
     <div class="logo">
       <img draggable={false} src="/soar-logo.svg" alt="SOAR Logo" />
     </div>
-  </header>
-
-  <div class="content-container">
     <div class="header-text">
       <h1>Avionics Propulsion Pipeline</h1>
       <p>
@@ -72,13 +69,7 @@
   main {
     background-color: $bg-color-1;
     height: 100%;
-  }
-
-  header {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding-top: 1rem;
+    overflow: auto;
   }
 
   div.content-container {
@@ -97,17 +88,16 @@
   }
 
   .header-text {
-    color: $txt-color-1;
     text-align: center;
 
     h1 {
-      color: $theme-color-1;
+      color: $txt-color-1;
       font-size: 2.5rem;
       margin: 0.5rem 0;
     }
 
     p {
-      color: inherit;
+      color: $txt-color-2;
       font-size: 1.1rem;
       margin: 0.5rem;
     }
