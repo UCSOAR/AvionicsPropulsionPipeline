@@ -185,7 +185,7 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 		}
 	}
 
-	// generate total rows in lvm file
+	// Generate total rows in lvm file
 	var totalRows int
 
 	if len(xColumns) > 0 {

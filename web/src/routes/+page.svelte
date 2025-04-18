@@ -8,18 +8,16 @@
 
   let selectedFile: SelectedFile | undefined = undefined;
   let refreshDashboardGraph: () => Promise<void>;
-
-
 </script>
 
 <main class="app-container">
   <TopBar />
 
   <div class="main-layout">
-    <Sidebar bind:selectedFile={selectedFile} {refreshDashboardGraph}/>
+    <Sidebar bind:selectedFile {refreshDashboardGraph} />
 
     {#if selectedFile}
-      <Dashboard {selectedFile} bind:refreshGraph={refreshDashboardGraph}/>
+      <Dashboard {selectedFile} bind:refreshGraph={refreshDashboardGraph} />
     {/if}
   </div>
 </main>

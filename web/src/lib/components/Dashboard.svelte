@@ -2,7 +2,6 @@
   import Dropdown from "./Dropdown.svelte";
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
-  import { browser } from "$app/environment";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
@@ -15,7 +14,6 @@
     MessageCircleWarningIcon,
     RefreshCcw,
   } from "@lucide/svelte";
-    import { X } from "lucide-svelte";
 
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
@@ -23,13 +21,10 @@
   let plotlyChartDiv: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
-  let xValues: number[] = [];
   let startRow = 0;
   let numRows = 0;
   let testStart = 0;
-  let testEnd = 0; 
-  let burnEnd = 0;
-  let totalRows = 0;
+  let testEnd = 0;
   let isLoadingPlotly = false;
   let plotError = "";
 
@@ -59,16 +54,14 @@
 
     legend: {
       orientation: "h",
-      x: 0.39
-    }
-
+      x: 0.39,
+    },
   };
 
   const safeParseInt = (value: string) => {
     const parsedValue = parseInt(value, 10);
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
-
 
   const loadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
@@ -79,7 +72,7 @@
 
     isLoadingPlotly = true;
 
-    const data = fetchData !== undefined ? await fetchData() : []
+    const data = fetchData !== undefined ? await fetchData() : [];
 
     if (!data) {
       plotError = "Failed to fetch data.";
@@ -128,8 +121,8 @@
         line: {
           color: "blue",
           width: 2,
-          dash: "dash"
-        }
+          dash: "dash",
+        },
       },
       {
         type: "line",
@@ -144,10 +137,10 @@
         line: {
           color: "green",
           width: 2,
-          dash: "dash"
-        }
-      }
-    ]
+          dash: "dash",
+        },
+      },
+    ];
 
     await loadPlotly(async () => {
       const res = await fetchStaticFireColumns(req);
@@ -210,7 +203,7 @@
           id="test-start"
           placeholder="0"
           isDisabled={isLoadingPlotly}
-          label= "Test Start"
+          label="Test Start"
           onChange={(value) => (testStart = safeParseInt(value))}
         />
         <Input
@@ -218,7 +211,7 @@
           placeholder="0"
           value={0}
           isDisabled={isLoadingPlotly}
-          label= "Test End"
+          label="Test End"
           onChange={(value) => (testEnd = safeParseInt(value))}
         />
       </div>
@@ -233,12 +226,14 @@
         />
         <Input
           id="num-rows"
-          value= {null}
-          placeholder= {selectedFile.metadata.totalRows.toString()}
+          value={null}
+          placeholder={selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
-          label= {`Row Count`}
+          label={`Row Count`}
           regex={numericRegex}
-          onChange={(value) => {numRows = safeParseInt(value)}}
+          onChange={(value) => {
+            numRows = safeParseInt(value);
+          }}
         />
       </div>
     </div>
