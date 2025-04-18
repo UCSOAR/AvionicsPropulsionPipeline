@@ -63,7 +63,14 @@
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
 
-  const loadPlotly = async (
+  let data: Readonly<Partial<Data>[]> = [];
+
+  const loadPlotly = async (data: Readonly<Partial<Data>[]>) => {
+    const Plotly = await import("plotly.js-dist-min");
+    await Plotly.newPlot(plotlyChartDiv, data, layout, config);
+  };
+
+  const fetchAndLoadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
     if (isLoadingPlotly) {
@@ -71,20 +78,18 @@
     }
 
     isLoadingPlotly = true;
-
-    const data = fetchData !== undefined ? await fetchData() : [];
+    data = fetchData !== undefined ? await fetchData() : [];
 
     if (!data) {
       plotError = "Failed to fetch data.";
     }
 
-    const Plotly = await import("plotly.js-dist-min");
-    await Plotly.newPlot(plotlyChartDiv, data ?? [], layout, config);
+    await loadPlotly(data);
 
     isLoadingPlotly = false;
   };
 
-  $: refreshGraph = refreshPlotly;
+  $: refreshGraph = () => loadPlotly(data);
 
   export const refreshPlotly = async () => {
     if (!selectedFile) {
@@ -142,7 +147,7 @@
       },
     ];
 
-    await loadPlotly(async () => {
+    await fetchAndLoadPlotly(async () => {
       const res = await fetchStaticFireColumns(req);
 
       if (!res) {
@@ -166,7 +171,11 @@
   selectedXColumnIndex.subscribe(refreshPlotly);
   selectedYColumnIndex.subscribe(refreshPlotly);
 
-  onMount(loadPlotly);
+  $: if (selectedFile) {
+    refreshPlotly();
+  }
+
+  onMount(fetchAndLoadPlotly);
 </script>
 
 <div class="container">

@@ -111,3 +111,7 @@ cmd/soarpipeline/storage/
 
 # SvelteKit build artifacts
 /web/build/
+
+# package files in root
+./package.json
+./package-lock.json

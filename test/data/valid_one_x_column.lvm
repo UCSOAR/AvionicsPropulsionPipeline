@@ -9,14 +9,14 @@ Time_Pref	Absolute
 Operator	LaGEsc
 Date	2020/08/07
 Time	09:47:02.1010842323303222656
-***End_of_Header***	
+***End_of_Header***
 	
 Channels	3			
 Samples	1	2	4	
 Date	2020/08/07	2020/08/08	2020/08/09	
 Time	09:47:02.1010842323303222656	09:47:02.1010842323303222656	09:47:02.1010842323303222656	
 Y_Unit_Label	MPa	degC	ml	
-X_Dimension Time1	Time2	Time3	
+X_Dimension	Time1	Time2	Time3	
 X0	0.0000000000000000E+0	0.0000000000000000E+0	0.0000000000000000E+0	
 Delta_X	1.000000	1.000000	1.000000	
 ***End_of_Header***				

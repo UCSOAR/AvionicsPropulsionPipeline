@@ -10,4 +10,5 @@ export const endpointMapping = Object.freeze({
   postStaticFireColumnsUrl: new URL(
     `http://localhost:${backendDevPort}/api/staticfire/columns`,
   ),
+  getUsageURL: new URL(`http://localhost:${backendDevPort}/api/usage`),
 });

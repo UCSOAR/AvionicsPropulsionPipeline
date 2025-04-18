@@ -1,12 +1,13 @@
 <script lang="ts">
-  import FileUploader from "$lib/components/UploadFile.svelte";
-  import type { SelectedFile } from "$lib/models/selectedFile";
-  import { onMount } from "svelte"; 
-  import { PanelLeftClose, PanelLeftOpen, File,  RefreshCcw} from "@lucide/svelte";
+  import UploadFile from "$lib/components/UploadFile.svelte";
+  import IconButton from "./IconButton.svelte";
+  import { onMount } from "svelte";
+  import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
+  import type { SelectedFile } from "$lib/models/selectedFile";
+
   export let selectedFile: SelectedFile | undefined = undefined;
   export let refreshDashboardGraph: () => Promise<void>;
-
 
   export let isExpanded = true;
   let files: Record<string, any> = {};
@@ -14,6 +15,7 @@
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
+    refreshDashboardGraph();
   };
 
   const handleFileClick = (fileName: string, metadata: any) => {
@@ -40,7 +42,7 @@
   const fetchFiles = async () => {
     try {
       const response = await fetch(endpointMapping.getStaticFireMetadataUrl);
-      if (!response.ok && isExpanded  ) throw new Error("Failed to fetch files");
+      if (!response.ok && isExpanded) throw new Error("Failed to fetch files");
       files = await response.json();
       error = null;
     } catch (err) {
@@ -48,21 +50,17 @@
     }
   };
 
-  onMount(() => {
-    fetchFiles();
-  });
+  onMount(fetchFiles);
 
   const handleUploadComplete = () => {
     fetchFiles();
   };
-
-
 </script>
 
-<aside class="side-bar {isExpanded ? 'expanded' : 'collapsed'}" on:transitionend={refreshDashboardGraph}>
+<aside class="side-bar {isExpanded ? 'expanded' : 'collapsed'}">
   <!-- Upload Section -->
   <div class="upload-container">
-    <FileUploader onUploadComplete={handleUploadComplete} />
+    <UploadFile onUploadComplete={handleUploadComplete} />
   </div>
 
   <!-- Files Header -->
@@ -70,13 +68,13 @@
     {#if isExpanded}
       <h3>Files</h3>
     {/if}
-    <button class="layout-button" on:click={toggleSidebar}>
+    <div class="button-container">
       {#if isExpanded}
-        <PanelLeftClose size={20} />
+        <IconButton icon={PanelLeftClose} onClick={toggleSidebar} />
       {:else}
-        <PanelLeftOpen size={20} />
+        <IconButton icon={PanelLeftOpen} onClick={toggleSidebar} />
       {/if}
-    </button>
+    </div>
   </div>
 
   <!-- File List -->
@@ -84,20 +82,20 @@
     {#if Object.keys(files).length > 0}
       {#each Object.entries(files) as [name, metadata]}
         <button
-          class={`${isExpanded ?"file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
+          class={`${isExpanded ? "file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
           on:click={() => handleFileClick(name, metadata)}
         >
-          <File size={16} color={selectedFile?.name === name ? "#e64d4d" : "white"}/>
+          <File
+            size={16}
+            color={selectedFile?.name === name ? "#e64d4d" : "white"}
+          />
           {#if isExpanded}
             <span class="file-name">{name.replace(/\.[^.]+$/, "")}</span>
-          {/if}  
+          {/if}
         </button>
       {/each}
-    {:else}
-
-    {#if isExpanded}
+    {:else if isExpanded}
       <p class="empty">{error || "No uploaded files yet."}</p>
-    {/if}
     {/if}
   </div>
 </aside>
@@ -110,17 +108,16 @@
     flex-direction: column;
     background-color: #121212;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-    transition: width 0.3s ease;
     height: 100vh;
     overflow: hidden;
     border-right: 1px solid $outline-color-1;
 
     &.expanded {
-      width: 280px;
+      width: 20rem;
     }
 
     &.collapsed {
-      width: 60px;
+      width: 4.5rem;
     }
   }
 
@@ -142,34 +139,46 @@
       font-weight: 600;
       color: white;
     }
-
-    .layout-button {
-      background: transparent;
-      border: none;
-      color: white;
-      padding: 0.25rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   }
 
   .file-list {
     flex: 1;
     overflow-y: auto;
     padding: 0 0.5rem;
+    gap: 0.3rem;
     display: flex;
     flex-direction: column;
+  }
+
+  .icon-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $txt-color-1;
+    padding: 0.5rem;
+    border-radius: $border-radius-1;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $bg-color-highlighted;
+    }
+  }
+
+  .empty {
+    color: #aaa;
+    font-size: 0.9rem;
+    padding: 1rem;
   }
 
   .file-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: white;
+    color: $txt-color-1;
     padding: 0.5rem;
-    border-radius: 4px;
+    border-radius: $border-radius-1;
     border: none;
     background: transparent;
     cursor: pointer;
@@ -181,59 +190,25 @@
       text-overflow: ellipsis;
     }
 
-    .side-bar.expanded .file-name {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
     &:hover {
       background-color: $bg-color-highlighted;
+
+      .file-name {
+        color: $txt-color-highlighted;
+      }
+
+      :global(.lucide-icon) {
+        stroke: $txt-color-highlighted;
+      }
     }
-
-    &:hover .file-name{
-      color: $txt-color-highlighted
-    }
-    
-  }
-
-  .icon-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: white;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-
-    &:hover {
-      background-color: $bg-color-highlighted;
-    }
-
-    &:hover .icon{
-      color: $txt-color-highlighted
-    }
-
-  }
-
-  .empty {
-    color: #aaa;
-    font-size: 0.9rem;
-    padding: 1rem;
   }
 
   .selected {
-  background-color: $bg-color-highlighted;
-  color: $txt-color-highlighted;
-
-  .file-name,
-  .icon {
+    background-color: $bg-color-highlighted;
     color: $txt-color-highlighted;
+
+    .file-name {
+      color: $txt-color-highlighted;
+    }
   }
-}
-
-
 </style>
-
