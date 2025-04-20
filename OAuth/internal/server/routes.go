@@ -71,7 +71,7 @@ func (s *Server) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request)
 
 	log.Printf("Authenticated user: %+v\n", user)
 
-	// ✅ Save user to session so frontend can access it later
+	// Save user to session so frontend can access it later
 	session, _ := gothic.Store.Get(r, "gothic-session")
 	session.Values["user"] = user
 	session.Save(r, w)

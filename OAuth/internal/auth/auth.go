@@ -38,10 +38,10 @@ func NewAuth() {
 	store.MaxAge(MaxAge)
 	store.Options = &sessions.Options{
 		Path:     "/",
-		Domain:   "localhost", // 👈 Required for cookies to work across ports on localhost
+		Domain:   "localhost", // Required for cookies to work across ports on localhost
 		HttpOnly: true,
 		Secure:   IsProd,      // false for local dev, true for production
-		SameSite: http.SameSiteLaxMode, // 👈 This is essential for cross-origin redirects
+		SameSite: http.SameSiteLaxMode, // essential for cross-origin redirects
 	}
 
 	// Configure Gothic
