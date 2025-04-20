@@ -27,6 +27,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/", s.HelloWorldHandler)
 	r.Get("/health", s.healthHandler)
+	r.Get("/api/user", s.userHandler)
 
 	// OAuth routes
 	r.Get("/auth/{provider}", gothic.BeginAuthHandler)
@@ -60,9 +61,6 @@ func (s *Server) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request)
 	// Store provider value in context using the custom key defined in auth package
 	r = r.WithContext(context.WithValue(r.Context(), auth.ProviderKey, provider))
 
-	// Log the session store and context to see if it's set correctly
-	log.Println("Auth Callback - Checking session and context:", r.Context())
-
 	// Complete the authentication using Gothic
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
@@ -71,10 +69,27 @@ func (s *Server) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Log authenticated user
 	log.Printf("Authenticated user: %+v\n", user)
 
-	// Redirect user to frontend after successful auth
+	// ✅ Save user to session so frontend can access it later
+	session, _ := gothic.Store.Get(r, "gothic-session")
+	session.Values["user"] = user
+	session.Save(r, w)
+
+	// Redirect user to frontend
 	http.Redirect(w, r, "http://localhost:5173/", http.StatusFound)
 }
+
+func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := gothic.Store.Get(r, "gothic-session")
+	user, ok := session.Values["user"]
+	if !ok {
+		http.Error(w, "Not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
 
