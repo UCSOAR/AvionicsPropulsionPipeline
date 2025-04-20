@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/markbates/goth/gothic"
+	"OAuth/internal/auth"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -55,8 +56,14 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
-	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 
+	// Store provider value in context using the custom key defined in auth package
+	r = r.WithContext(context.WithValue(r.Context(), auth.ProviderKey, provider))
+
+	// Log the session store and context to see if it's set correctly
+	log.Println("Auth Callback - Checking session and context:", r.Context())
+
+	// Complete the authentication using Gothic
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		log.Printf("OAuth callback error: %v", err)
@@ -67,5 +74,7 @@ func (s *Server) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request)
 	// Log authenticated user
 	log.Printf("Authenticated user: %+v\n", user)
 
+	// Redirect user to frontend after successful auth
 	http.Redirect(w, r, "http://localhost:5173/", http.StatusFound)
 }
+

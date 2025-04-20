@@ -1,22 +1,16 @@
+// main.go
 package main
 
 import (
-	// "context"
-	// "fmt"
-	// "log"
-	// "net/http"
-	// "os/signal"
-	// "syscall"
-	// "time"
-
-	"OAuth/internal/server"
 	"OAuth/internal/auth"
+	"OAuth/internal/server"
 )
 
 func main() {
-
-	//Instantiate Gothic
+	// Initialize Authentication
 	auth.NewAuth()
+
+	// Start the server
 	server := server.NewServer()
 
 	err := server.ListenAndServe()
@@ -24,4 +18,3 @@ func main() {
 		panic("cannot start server")
 	}
 }
-
