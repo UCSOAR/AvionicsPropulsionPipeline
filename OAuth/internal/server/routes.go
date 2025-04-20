@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
+	"OAuth/internal/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/markbates/goth/gothic"
-	"OAuth/internal/auth"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -91,5 +91,3 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
-
-

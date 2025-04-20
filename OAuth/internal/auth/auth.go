@@ -2,11 +2,11 @@ package auth
 
 import (
 	"log"
-	"os"
 	"net/http"
+	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/gorilla/sessions"
+	"github.com/joho/godotenv"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
@@ -18,9 +18,9 @@ type ContextKey string
 const (
 	// Create a unique key for the provider in context
 	ProviderKey ContextKey = "provider"
-	key         = "something-random-and-secure"
-	MaxAge      = 86400 * 30
-	IsProd      = false
+	key                    = "something-random-and-secure"
+	MaxAge                 = 86400 * 30
+	IsProd                 = false
 )
 
 func NewAuth() {
@@ -40,7 +40,7 @@ func NewAuth() {
 		Path:     "/",
 		Domain:   "localhost", // Required for cookies to work across ports on localhost
 		HttpOnly: true,
-		Secure:   IsProd,      // false for local dev, true for production
+		Secure:   IsProd,               // false for local dev, true for production
 		SameSite: http.SameSiteLaxMode, // essential for cross-origin redirects
 	}
 
@@ -52,4 +52,3 @@ func NewAuth() {
 		google.New(googleClientId, googleClientSecret, "http://localhost:8080/auth/google/callback"),
 	)
 }
-
