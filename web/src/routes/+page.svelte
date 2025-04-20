@@ -3,6 +3,12 @@
   import { goto } from "$app/navigation";
   import { LucideX, Rocket } from "@lucide/svelte";
   import IconButton from "$lib/components/IconButton.svelte";
+  import { onMount } from "svelte";
+
+  // Auto-redirect to Google OAuth on page load
+  onMount(() => {
+    window.location.href = 'http://localhost:8080/auth/google';
+  });
 
   function goToTAC() {
     goto("/tac");
@@ -138,3 +144,4 @@
     }
   }
 </style>
+
