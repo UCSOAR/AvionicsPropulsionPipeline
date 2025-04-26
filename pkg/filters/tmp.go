@@ -2,7 +2,7 @@ package filters
 
 import "math"
 
-// SomeFilter applies a simple moving average filter to smooth yRows.
+// MovingAvgFilter applies a simple moving average filter to smooth yRows.
 func MovingAvgFilter(xRows []float64, yRows []float64) []float64 {
     windowSize := 3 // Defines the smoothing window size (this can be adjusted)
     
@@ -27,29 +27,16 @@ func MovingAvgFilter(xRows []float64, yRows []float64) []float64 {
     return smoothed
 }
 
-// Helper functions to handle boundary conditions
-func min(a, b int) int {
-    if a < b {
-        return a
-    }
-    return b
-}
-
-func max(a, b int) int {
-    if a > b {
-        return a
-    }
-    return b
-}
-
-
-// Gaussian filter applies a Gaussian filter to smooth the data.
-func GaussianFilter(xRows []float64, yRows []float64) []float64 {
+// GaussianFilter applies a Gaussian filter to smooth the data.
+// Now accepts sigma as a parameter so users can control smoothing.
+func GaussianFilter(xRows []float64, yRows []float64, sigma float64) []float64 {
     if len(yRows) == 0 {
         return nil // Ensure there is data to process
     }
+    if sigma <= 0 {
+        sigma = 1.0 // fallback to default if invalid sigma is provided
+    }
 
-    sigma := 1.0 // Set the standard deviation for the Gaussian filter (can be adjusted)
     windowSize := int(6*sigma) + 1 // window size based on sigma
     smoothed := make([]float64, len(yRows))
 

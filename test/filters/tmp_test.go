@@ -25,7 +25,8 @@ func TestGaussianFilter(t *testing.T) {
 	xRows := []float64{1, 2, 3, 4, 5}
 	yRows := []float64{10, 20, 30, 40, 50}
 
-	result := filters.GaussianFilter(xRows, yRows)
+	sigma := 1.0 
+	result := filters.GaussianFilter(xRows, yRows, sigma) // pass it in!
 
 	// Ensure the output length matches the input length
 	if len(result) != len(yRows) {
