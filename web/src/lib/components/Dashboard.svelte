@@ -375,7 +375,12 @@
         border-radius: $border-radius-1;
         overflow: hidden;
         position: relative;
- 
+        height: 100%;
+
+      div.chart {
+        width: 100%;
+        height: 100%;
+}
         div.loading-overlay {
           position: absolute;
           top: 0;
