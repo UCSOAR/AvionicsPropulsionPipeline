@@ -6,14 +6,11 @@
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
   import { numericRegex } from "$lib/utils/regexps";
+  import { computeMassFlowRate } from "$lib/utils/massFlowRate";
   import type { Config, Data, Layout } from "plotly.js";
   import type { PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
   import type { SelectedFile } from "$lib/models/selectedFile";
-  import {
-    Loader2,
-    MessageCircleWarningIcon,
-    RefreshCcw,
-  } from "@lucide/svelte";
+  import { Loader2, MessageCircleWarningIcon, RefreshCcw } from "@lucide/svelte";
 
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
@@ -34,28 +31,17 @@
     txtColor: "#e1e1e1",
     themeColor: "#dc2626",
   };
+
   const config: Partial<Config> = { responsive: true };
   const layout: Partial<Layout> = {
     autosize: true,
-    margin: {
-      l: style.margin,
-      r: style.margin,
-      t: style.margin,
-      b: style.margin,
-    },
+    margin: { l: style.margin, r: style.margin, t: style.margin, b: style.margin },
     paper_bgcolor: style.bgColor,
     plot_bgcolor: style.bgColor,
-    font: {
-      family: "Inter",
-      color: "white",
-    },
+    font: { family: "Inter", color: "white" },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
-
-    legend: {
-      orientation: "h",
-      x: 0.39,
-    },
+    legend: { orientation: "h", x: 0.39 },
   };
 
   const safeParseInt = (value: string) => {
@@ -73,19 +59,11 @@
   const fetchAndLoadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
-    if (isLoadingPlotly) {
-      return;
-    }
-
+    if (isLoadingPlotly) return;
     isLoadingPlotly = true;
     data = fetchData !== undefined ? await fetchData() : [];
-
-    if (!data) {
-      plotError = "Failed to fetch data.";
-    }
-
+    if (!data) plotError = "Failed to fetch data.";
     await loadPlotly(data);
-
     isLoadingPlotly = false;
   };
 
@@ -93,24 +71,23 @@
 
   export const refreshPlotly = async () => {
     if (!selectedFile) {
+      console.warn("No selected file.");
       return;
     }
 
     plotError = "";
 
-    const xColumnName =
-      selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
-    const yColumnName =
-      selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+    const xColumnName = selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
+    let yColumnName = "Ox Mass Flow";
 
-    // Test request for now
-    const req: PostStaticFireColumnsRequest = {
-      name: selectedFile.name,
-      startRow,
-      numRows,
-      xColumnNames: [xColumnName],
-      yColumnNames: [yColumnName],
-    };
+  const req: PostStaticFireColumnsRequest = {
+    name: encodeURIComponent(selectedFile.name),
+    startRow,
+    numRows,
+    xColumnNames: [xColumnName],
+    yColumnNames: [yColumnName],
+  };
+
 
     layout.shapes = [
       {
@@ -123,11 +100,7 @@
         yref: "paper",
         name: "Test Start",
         showlegend: true,
-        line: {
-          color: "blue",
-          width: 2,
-          dash: "dash",
-        },
+        line: { color: "blue", width: 2, dash: "dash" },
       },
       {
         type: "line",
@@ -139,55 +112,69 @@
         yref: "paper",
         name: "Test End",
         showlegend: true,
-        line: {
-          color: "green",
-          width: 2,
-          dash: "dash",
-        },
+        line: { color: "green", width: 2, dash: "dash" },
       },
     ];
 
     await fetchAndLoadPlotly(async () => {
-      const res = await fetchStaticFireColumns(req);
+      console.log("Fetching with yColumn:", yColumnName);
 
+      const res = await fetchStaticFireColumns(req);
       if (!res) {
+        console.error("No response from fetchStaticFireColumns");
         return null;
       }
 
-      const data: Partial<Data> = {
-        x: res.xColumns[xColumnName].rows,
-        y: res.yColumns[yColumnName].rows,
-        type: "scattergl",
-        mode: "lines",
-        name: yColumnName,
-        showlegend: true,
-        line: { color: style.themeColor },
-      };
+      if (!res.yColumns[yColumnName]) {
+        yColumnName = selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+        console.warn(`Fallback to yColumn: ${yColumnName}`);
+        if (!res.yColumns[yColumnName]) {
+          plotError = `Neither "Ox Mass Flow" nor "${yColumnName}" found.`;
+          return null;
+        }
+      }
 
-      return [data];
+      const xVals = res.xColumns[xColumnName]?.rows;
+      const yVals = res.yColumns[yColumnName]?.rows;
+
+      if (!xVals || !yVals || xVals.length < 2 || yVals.length < 2) {
+        plotError = "Insufficient data for plotting.";
+        return null;
+      }
+
+      const timestep = xVals[1] - xVals[0] || 1;
+      const massFlowRate = computeMassFlowRate(yVals.map(Number), timestep);
+
+      return [
+        {
+          x: xVals.slice(1),
+          y: massFlowRate,
+          type: "scattergl",
+          mode: "lines",
+          name: `Mass Flow Rate (${yColumnName})`,
+          showlegend: true,
+          line: { color: style.themeColor },
+        },
+      ];
     });
   };
 
   selectedXColumnIndex.subscribe(refreshPlotly);
   selectedYColumnIndex.subscribe(refreshPlotly);
 
-  $: if (selectedFile) {
-    refreshPlotly();
-  }
+  $: if (selectedFile) refreshPlotly();
 
   onMount(fetchAndLoadPlotly);
 </script>
 
+<!-- HTML -->
 <div class="container">
   <div class="content-header">
     <div class="title">
       <h1>Dashboard for <i>{selectedFile.name}</i></h1>
       <p>
-        Visualizing data for <i
-          >{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i
-        >
-        and
-        <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
+        Visualizing data for <i>{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i>
+        and <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
       </p>
     </div>
     <div class="data-select">
@@ -247,6 +234,7 @@
       </div>
     </div>
   </div>
+
   <div class="content-container">
     <div class="chart-pod pod">
       <div class="title-container">
@@ -254,10 +242,7 @@
         <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
       </div>
       <div class="chart-wrapper">
-        <div
-          class="loading-overlay"
-          class:hidden={!isLoadingPlotly && !plotError}
-        >
+        <div class="loading-overlay" class:hidden={!isLoadingPlotly && !plotError}>
           {#if plotError}
             <div>
               <MessageCircleWarningIcon />
@@ -270,6 +255,7 @@
         <div bind:this={plotlyChartDiv} class="chart"></div>
       </div>
     </div>
+
     <div class="value-pods">
       <div class="min-val-pod pod">
         <label for="min-val">Minimum Value</label>
@@ -291,7 +277,7 @@
   @use "../styles/variables.scss" as *;
 
   .container {
-    flex-grow: 1; // This makes the dashboard expand to fill the remaining space
+    flex-grow: 1;
     padding: 1rem;
     overflow-y: auto;
     display: flex;
@@ -427,3 +413,4 @@
     }
   }
 </style>
+
