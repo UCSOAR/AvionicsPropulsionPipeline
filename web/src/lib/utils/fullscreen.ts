@@ -1,19 +1,31 @@
-// utils/fullscreen.ts
-export function requestFullscreen(el: HTMLElement) {
-  if (el.requestFullscreen) return el.requestFullscreen();
-  if ((el as any).webkitRequestFullscreen)
-    return (el as any).webkitRequestFullscreen();
-  if ((el as any).mozRequestFullScreen)
-    return (el as any).mozRequestFullScreen();
-  if ((el as any).msRequestFullscreen) return (el as any).msRequestFullscreen();
+interface FullscreenElement extends HTMLElement {
+  requestFullscreen(): Promise<void>;
+  webkitRequestFullscreen?: () => Promise<void>;
+  mozRequestFullScreen?: () => Promise<void>;
+  msRequestFullscreen?: () => Promise<void>;
 }
 
-export function exitFullscreen() {
-  if (document.exitFullscreen) return document.exitFullscreen();
-  if ((document as any).webkitExitFullscreen)
-    return (document as any).webkitExitFullscreen();
-  if ((document as any).mozCancelFullScreen)
-    return (document as any).mozCancelFullScreen();
-  if ((document as any).msExitFullscreen)
-    return (document as any).msExitFullscreen();
+interface FullscreenDocument extends Document {
+  exitFullscreen: () => Promise<void>;
+  webkitExitFullscreen?: () => Promise<void>;
+  mozCancelFullScreen?: () => Promise<void>;
+  msExitFullscreen?: () => Promise<void>;
+}
+
+export function requestFullscreen(el: HTMLElement): Promise<void> | void {
+  const element = el as FullscreenElement;
+
+  if (element.requestFullscreen) return element.requestFullscreen();
+  if (element.webkitRequestFullscreen) return element.webkitRequestFullscreen();
+  if (element.mozRequestFullScreen) return element.mozRequestFullScreen();
+  if (element.msRequestFullscreen) return element.msRequestFullscreen();
+}
+
+export function exitFullscreen(): Promise<void> | void {
+  const doc = document as FullscreenDocument;
+
+  if (doc.exitFullscreen) return doc.exitFullscreen();
+  if (doc.webkitExitFullscreen) return doc.webkitExitFullscreen();
+  if (doc.mozCancelFullScreen) return doc.mozCancelFullScreen();
+  if (doc.msExitFullscreen) return doc.msExitFullscreen();
 }

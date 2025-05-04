@@ -2,7 +2,7 @@
   import Dropdown from "./Dropdown.svelte";
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
-  import Fullscreen from "./Fullscreen.svelte";
+  import FullscreenButton from "./FullscreenButton.svelte";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
@@ -15,10 +15,10 @@
     MessageCircleWarningIcon,
     RefreshCcw,
   } from "@lucide/svelte";
- 
+
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
- 
+
   let plotlyChartDiv: HTMLDivElement;
   let fullscreenTarget: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
@@ -29,7 +29,7 @@
   let testEnd = 0;
   let isLoadingPlotly = false;
   let plotError = "";
- 
+
   const style = {
     margin: 50,
     bgColor: "#1f1f1f",
@@ -37,8 +37,10 @@
     themeColor: "#dc2626",
   };
   const config: Partial<Config> = { responsive: true };
+  const shrunkenHeight = 400;
   const layout: Partial<Layout> = {
     autosize: true,
+    height: shrunkenHeight,
     margin: {
       l: style.margin,
       r: style.margin,
@@ -53,51 +55,69 @@
     },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
- 
     legend: {
       orientation: "h",
       x: 0.39,
     },
   };
- 
+
   const safeParseInt = (value: string) => {
     const parsedValue = parseInt(value, 10);
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
- 
+
   let data: Partial<Data>[] = [];
- 
+
   const loadPlotly = async (data: Partial<Data>[]) => {
     const Plotly = await import("plotly.js-dist-min");
     await Plotly.newPlot(plotlyChartDiv, data, layout, config);
   };
- 
+
+  const onFullscreenChange = (isFullscreen: boolean) => {
+    const bottomPadding = 80;
+
+    if (isFullscreen) {
+      layout.autosize = false;
+      layout.width = window.innerWidth;
+      layout.height = window.innerHeight - bottomPadding;
+    } else {
+      console.log("shrunkenHeight", shrunkenHeight);
+      layout.autosize = true;
+      layout.width = undefined;
+      layout.height = shrunkenHeight;
+    }
+
+    loadPlotly(data);
+  };
+
   const fetchAndLoadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
     if (isLoadingPlotly) return;
- 
+
     isLoadingPlotly = true;
     data = fetchData !== undefined ? (await fetchData()) || [] : [];
- 
+
     if (!data) {
       plotError = "Failed to fetch data.";
     }
- 
+
     await loadPlotly(data);
     isLoadingPlotly = false;
   };
- 
+
   $: refreshGraph = () => loadPlotly(data);
- 
+
   export const refreshPlotly = async () => {
     if (!selectedFile) return;
- 
+
     plotError = "";
- 
-    const xColumnName = selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
-    const yColumnName = selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
- 
+
+    const xColumnName =
+      selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
+    const yColumnName =
+      selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+
     const req: PostStaticFireColumnsRequest = {
       name: selectedFile.name,
       startRow,
@@ -105,7 +125,7 @@
       xColumnNames: [xColumnName],
       yColumnNames: [yColumnName],
     };
- 
+
     layout.shapes = [
       {
         type: "line",
@@ -140,12 +160,12 @@
         },
       },
     ];
- 
+
     await fetchAndLoadPlotly(async () => {
       const res = await fetchStaticFireColumns(req);
- 
+
       if (!res) return null;
- 
+
       const data: Partial<Data> = {
         x: res.xColumns[xColumnName].rows,
         y: res.yColumns[yColumnName].rows,
@@ -155,27 +175,29 @@
         showlegend: true,
         line: { color: style.themeColor },
       };
- 
+
       return [data];
     });
   };
- 
+
   selectedXColumnIndex.subscribe(refreshPlotly);
   selectedYColumnIndex.subscribe(refreshPlotly);
- 
+
   $: if (selectedFile) {
     refreshPlotly();
   }
- 
+
   onMount(fetchAndLoadPlotly);
 </script>
- 
+
 <div class="container">
   <div class="content-header">
     <div class="title">
       <h1>Dashboard for <i>{selectedFile.name}</i></h1>
       <p>
-        Visualizing data for <i>{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i>
+        Visualizing data for <i
+          >{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i
+        >
         and <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
       </p>
     </div>
@@ -227,7 +249,7 @@
           value={null}
           placeholder={selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
-          label={`Row Count`}
+          label="Row Count"
           regex={numericRegex}
           onChange={(value) => {
             numRows = safeParseInt(value);
@@ -242,8 +264,10 @@
         <h2>Static Fire Chart</h2>
         <div style="display: flex; gap: 0.5rem;">
           <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
-          <Fullscreen targetElement={fullscreenTarget} />
- 
+          <FullscreenButton
+            onChange={onFullscreenChange}
+            targetElement={fullscreenTarget}
+          />
         </div>
       </div>
       <div class="chart-wrapper">
@@ -279,10 +303,10 @@
     </div>
   </div>
 </div>
- 
+
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
- 
+
   .container {
     flex-grow: 1;
     padding: 1rem;
@@ -290,17 +314,17 @@
     display: flex;
     flex-direction: column;
   }
- 
+
   div.content-header {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
     gap: 2rem;
- 
+
     div.title {
       margin-right: auto;
     }
- 
+
     div.data-select {
       display: flex;
       flex-direction: row;
@@ -309,68 +333,68 @@
       width: 100%;
       gap: 1rem;
       margin-bottom: 0.8rem;
- 
+
       & > div {
         gap: 1.5rem;
         flex-grow: 1;
         display: flex;
         flex-direction: row;
       }
- 
+
       & > div.row-select {
         justify-content: flex-end;
       }
     }
   }
- 
+
   div.pod {
     background-color: $bg-color-4;
     border: 1px solid $outline-color-1;
     border-radius: $border-radius-1;
     padding: 1rem;
- 
+
     h2 {
       margin: 0;
       margin-bottom: 0.5em;
     }
- 
+
     div.value {
       margin-top: 0.5rem;
       font-size: 1.5rem;
       font-weight: bold;
     }
   }
- 
+
   div.content-container {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     padding-bottom: 1rem;
- 
+
     div.value-pods {
       display: flex;
       flex-direction: row;
       gap: 1rem;
- 
+
       div.pod {
         flex-grow: 1;
       }
     }
- 
+
     div.chart-pod {
       flex-grow: 1;
- 
+
       div.title-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.7rem;
- 
+
         h2 {
           margin: 0;
         }
       }
- 
+
       div.chart-wrapper {
         border-radius: $border-radius-1;
         overflow: hidden;
@@ -387,28 +411,28 @@
           align-items: center;
           background-color: rgba(0, 0, 0, 0.5);
           z-index: 1;
- 
+
           :global(.lucide-icon) {
             width: 3.3rem;
             height: auto;
           }
- 
+
           &.hidden {
             display: none;
           }
- 
+
           & > div {
             display: flex;
             flex-direction: column;
             gap: 0.6rem;
             justify-content: center;
             align-items: center;
- 
+
             b {
               color: $txt-color-highlighted;
               font-size: 1.2rem;
             }
- 
+
             :global(.lucide-icon) {
               width: 3rem;
               height: auto;
