@@ -3,9 +3,11 @@
 
   export let icon: Component | null = null;
   export let label: string | null = null;
+  export let isDisabled: boolean = false;
+  export let onClick: () => void;
 </script>
 
-<button>
+<button onclick={onClick} disabled={isDisabled}>
   {#if icon}
     <svelte:component this={icon} />
   {/if}
@@ -47,7 +49,7 @@
       font-size: 0.95rem;
     }
 
-    &:hover {
+    &:not([disabled]):hover {
       background-color: $bg-color-highlighted;
       border-color: $txt-color-highlighted;
 
@@ -57,6 +59,20 @@
 
       span.label {
         color: $txt-color-highlighted;
+      }
+    }
+
+    &:disabled {
+      background-color: $bg-color-2;
+      border-color: $outline-color-1;
+      cursor: not-allowed;
+
+      :global(.lucide-icon) {
+        stroke: $outline-color-1;
+      }
+
+      span.label {
+        color: $outline-color-1;
       }
     }
   }

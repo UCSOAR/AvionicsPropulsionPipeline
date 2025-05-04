@@ -2,6 +2,7 @@ package staticfire
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -102,7 +103,7 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 	yColumns := make([]ColumnNode, yColumnCount)
 
 	// Initialize Y column metadata
-	for i := 0; i < yColumnCount; i++ {
+	for i := range yColumnCount {
 		yColumnMetadata[i] = YColumnMetadata{
 			Samples:    channelHeader.Samples[i],
 			Date:       channelHeader.Dates[i],
@@ -113,10 +114,10 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 
 	// Read column names
 	if !lvmScanner.Scan() {
-		return CacheTree{}, fmt.Errorf("no columns found")
+		return CacheTree{}, errors.New("no columns found")
 	}
 
-	columnNames := filterCommentColumn(strings.Split(lvmScanner.Text(), string(entryHeader.Seperator)))
+	columnNames := filterCommentColumn(strings.Split(lvmScanner.Text(), string(entryHeader.Separator)))
 
 	// Check that number of columns matches expectations
 	totalColumnCount := xColumnCount + yColumnCount
@@ -128,7 +129,7 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 	// Read until end of file
 	for lvmScanner.Scan() {
 		line := lvmScanner.Text()
-		values := strings.Split(line, string(entryHeader.Seperator))
+		values := strings.Split(line, string(entryHeader.Separator))
 
 		// Check if the last column is a comment
 		if len(values) > totalColumnCount {
@@ -184,6 +185,13 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 		}
 	}
 
+	// Generate total rows in lvm file
+	var totalRows int
+
+	if len(xColumns) > 0 {
+		totalRows = len(xColumns[0].Rows)
+	}
+
 	tree := CacheTree{
 		PreviewMetadata: PreviewMetadata{
 			ResultTimestamp: TimestampMetadata{
@@ -193,6 +201,7 @@ func ParseIntoCacheTree(reader io.Reader) (CacheTree, error) {
 			Operator:     entryHeader.Operator,
 			XColumnNames: xColumnNames,
 			YColumnNames: yColumnNames,
+			TotalRows:    totalRows,
 		},
 		YColumnMetadata: yColumnMetadata,
 		XColumnNodes:    xColumns,

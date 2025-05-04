@@ -108,3 +108,10 @@ cmd/soarpipeline/storage/
 **/*.njsproj
 **/*.sln
 **/*.sw?
+
+# SvelteKit build artifacts
+/web/build/
+
+# package files in root
+./package.json
+./package-lock.json

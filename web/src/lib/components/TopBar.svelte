@@ -1,13 +1,26 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import { goto } from "$app/navigation";
+
+  function handleLogoClick() {
+    goto("/");
+  }
+</script>
 
 <header class="top-bar">
-  <div class="logo">
+  <div
+    class="logo"
+    role="button"
+    tabindex="0"
+    on:click={handleLogoClick}
+    on:keydown={handleLogoClick}
+  >
     <img draggable={false} src="/soar-logo.svg" alt="SOAR Logo" />
   </div>
+
   <nav class="nav-links">
-    <a href="#">TAC</a>
-    <a href="#">HAC</a>
-    <a href="#">Mapleleaf</a>
+    <button>TAC</button>
+    <button>HAC</button>
+    <button>Mapleleaf</button>
   </nav>
 </header>
 
@@ -25,30 +38,42 @@
   }
 
   .logo {
-    margin-right: auto; /* Moves logo to the left */
+    background: none;
+    border: none;
+    padding: 0;
+    margin-right: auto;
+    cursor: pointer;
+    border-radius: 0.5rem;
+
+    img {
+      height: 3rem;
+      width: auto;
+      display: block;
+    }
   }
 
   .nav-links {
     display: flex;
-    justify-content: center; /* Centers links inside */
-    flex-grow: 1; /* Allows nav-links to take available space */
+    justify-content: center;
+    flex-grow: 1;
     gap: 2rem;
   }
 
-  .nav-links a {
-    text-decoration: none;
-    color: $txt-color-2; /* Light text */
+  .nav-links button {
+    background: none;
+    border: none;
+    color: $txt-color-2;
     font-size: 1.1rem;
     transition: color 0.2s ease;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .nav-links button:hover {
+    color: $txt-color-highlighted;
+  }
+
+  .nav-links button:focus {
     outline: none;
-  }
-
-  .logo img {
-    height: 3rem; /* Restores original size */
-    width: auto; /* Keeps aspect ratio */
-  }
-
-  .nav-links a:hover {
-    color: $txt-color-highlighted; /* Change color on hover */
   }
 </style>

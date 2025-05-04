@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"io"
 	"os"
 )
@@ -30,10 +29,8 @@ func (ctx *StorageContext) Store(name string, reader io.Reader) error {
 
 	defer dest.Close()
 
-	if len, err := io.Copy(dest, reader); err != nil {
+	if _, err := io.Copy(dest, reader); err != nil {
 		return err
-	} else {
-		fmt.Printf("Stored %s (%d bytes)\n", name, len)
 	}
 
 	return nil

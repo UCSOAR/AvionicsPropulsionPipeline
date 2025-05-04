@@ -1,4 +1,4 @@
-package tests
+package staticfire_test
 
 import (
 	"os"
@@ -19,6 +19,7 @@ func TestOneXColumnLvmParsesCorrectly(t *testing.T) {
 			Operator:     "LaGEsc",
 			XColumnNames: []string{"X_Value"},
 			YColumnNames: []string{"Pressure", "Temp", "Volume"},
+			TotalRows:    2,
 		},
 		YColumnMetadata: []staticfire.YColumnMetadata{
 			{
@@ -110,6 +111,7 @@ func TestMultiXColumnLvmParsesCorrectly(t *testing.T) {
 			Operator:     "Ladisk",
 			XColumnNames: []string{"(X) Voltage", "(X) Acceleration"},
 			YColumnNames: []string{"Voltage", "Acceleration"},
+			TotalRows:    3,
 		},
 		YColumnMetadata: []staticfire.YColumnMetadata{
 			{
