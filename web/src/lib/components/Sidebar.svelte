@@ -103,7 +103,14 @@
 <style lang="scss">
   @use "../styles/variables.scss" as *;
 
-  .side-bar {
+  .upload-container {
+    padding: 1rem;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
+  }
+
+  aside.side-bar {
     display: flex;
     flex-direction: column;
     background-color: #121212;
@@ -118,14 +125,11 @@
 
     &.collapsed {
       width: 4.5rem;
-    }
-  }
 
-  .upload-container {
-    width: 16rem;
-    padding: 1rem;
-    display: flex;
-    justify-content: center;
+      .upload-container {
+        display: none;
+      }
+    }
   }
 
   .files-header {

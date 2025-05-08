@@ -2,6 +2,7 @@
   import Dropdown from "./Dropdown.svelte";
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
+  import FullscreenButton from "./FullscreenButton.svelte";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
@@ -19,6 +20,7 @@
   export let refreshGraph: () => Promise<void>;
 
   let plotlyChartDiv: HTMLDivElement;
+  let fullscreenTarget: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
   let startRow = 0;
@@ -35,8 +37,10 @@
     themeColor: "#dc2626",
   };
   const config: Partial<Config> = { responsive: true };
+  const shrunkenHeight = 400;
   const layout: Partial<Layout> = {
     autosize: true,
+    height: shrunkenHeight,
     margin: {
       l: style.margin,
       r: style.margin,
@@ -51,7 +55,6 @@
     },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
-
     legend: {
       orientation: "h",
       x: 0.39,
@@ -63,38 +66,50 @@
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
 
-  let data: Readonly<Partial<Data>[]> = [];
+  let data: Partial<Data>[] = [];
 
-  const loadPlotly = async (data: Readonly<Partial<Data>[]>) => {
+  const loadPlotly = async (data: Partial<Data>[]) => {
     const Plotly = await import("plotly.js-dist-min");
     await Plotly.newPlot(plotlyChartDiv, data, layout, config);
+  };
+
+  const onFullscreenChange = (isFullscreen: boolean) => {
+    const bottomPadding = 80;
+
+    if (isFullscreen) {
+      layout.autosize = false;
+      layout.width = window.innerWidth;
+      layout.height = window.innerHeight - bottomPadding;
+    } else {
+      console.log("shrunkenHeight", shrunkenHeight);
+      layout.autosize = true;
+      layout.width = undefined;
+      layout.height = shrunkenHeight;
+    }
+
+    loadPlotly(data);
   };
 
   const fetchAndLoadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
-    if (isLoadingPlotly) {
-      return;
-    }
+    if (isLoadingPlotly) return;
 
     isLoadingPlotly = true;
-    data = fetchData !== undefined ? await fetchData() : [];
+    data = fetchData !== undefined ? (await fetchData()) || [] : [];
 
     if (!data) {
       plotError = "Failed to fetch data.";
     }
 
     await loadPlotly(data);
-
     isLoadingPlotly = false;
   };
 
   $: refreshGraph = () => loadPlotly(data);
 
   export const refreshPlotly = async () => {
-    if (!selectedFile) {
-      return;
-    }
+    if (!selectedFile) return;
 
     plotError = "";
 
@@ -103,7 +118,6 @@
     const yColumnName =
       selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
 
-    // Test request for now
     const req: PostStaticFireColumnsRequest = {
       name: selectedFile.name,
       startRow,
@@ -150,9 +164,7 @@
     await fetchAndLoadPlotly(async () => {
       const res = await fetchStaticFireColumns(req);
 
-      if (!res) {
-        return null;
-      }
+      if (!res) return null;
 
       const data: Partial<Data> = {
         x: res.xColumns[xColumnName].rows,
@@ -186,8 +198,7 @@
         Visualizing data for <i
           >{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i
         >
-        and
-        <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
+        and <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
       </p>
     </div>
     <div class="data-select">
@@ -238,7 +249,7 @@
           value={null}
           placeholder={selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
-          label={`Row Count`}
+          label="Row Count"
           regex={numericRegex}
           onChange={(value) => {
             numRows = safeParseInt(value);
@@ -248,10 +259,16 @@
     </div>
   </div>
   <div class="content-container">
-    <div class="chart-pod pod">
+    <div class="chart-pod pod" bind:this={fullscreenTarget}>
       <div class="title-container">
         <h2>Static Fire Chart</h2>
-        <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
+        <div style="display: flex; gap: 0.5rem;">
+          <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
+          <FullscreenButton
+            onChange={onFullscreenChange}
+            targetElement={fullscreenTarget}
+          />
+        </div>
       </div>
       <div class="chart-wrapper">
         <div
@@ -291,7 +308,7 @@
   @use "../styles/variables.scss" as *;
 
   .container {
-    flex-grow: 1; // This makes the dashboard expand to fill the remaining space
+    flex-grow: 1;
     padding: 1rem;
     overflow-y: auto;
     display: flex;
