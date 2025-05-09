@@ -3,6 +3,29 @@
   import { goto } from "$app/navigation";
   import { LucideX, Rocket } from "@lucide/svelte";
   import IconButton from "$lib/components/IconButton.svelte";
+  import { onMount } from "svelte";
+
+  // Auto-redirect to Google OAuth on page load
+  onMount(async () => {
+  try {
+    const res = await fetch("http://localhost:8080/api/user", {
+      credentials: "include", // Important for cookies to be sent
+    });
+
+    if (res.ok) {
+      const user = await res.json();
+      console.log("Logged in user:", user);
+      // TODO: Use `user` data to show user's name or avatar if needed
+    } else {
+      // Not authenticated, redirect to Google login
+      window.location.href = "http://localhost:8080/auth/google";
+    }
+  } catch (err) {
+    console.error("Auth check failed", err);
+    window.location.href = "http://localhost:8080/auth/google";
+  }
+});
+
 
   function goToTAC() {
     goto("/tac");
@@ -138,3 +161,5 @@
     }
   }
 </style>
+
+
