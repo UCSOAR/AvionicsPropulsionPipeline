@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 
 	controllers "soarpipeline/internal/controllers"
 	middlewares "soarpipeline/internal/middlewares"
@@ -15,6 +16,11 @@ import (
 const addr = ":8080"
 
 func main() {
+	// Read .env file
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 	// Ensure storage directories are initialized
 	if err := storage.InitStorageDirectories(); err != nil {
 		panic(err)
