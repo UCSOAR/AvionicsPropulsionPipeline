@@ -38,6 +38,19 @@
   - [ ] Use a custom file extension or metadata to categorize files.
   - [ ] Enable filtering of files for different website sections.
 
+## Example `.env` file
+
+```env
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+```
+
+## Running backend
+
+```bash
+go run cmd/soarpipeline/soarpipeline.go
+```
+
 ## Running with Docker
 
 Simply run the following command to start the application.
