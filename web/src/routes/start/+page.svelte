@@ -5,9 +5,9 @@
   import IconButton from "$lib/components/IconButton.svelte";
   import SplashHeader from "$lib/components/SplashHeader.svelte";
 
-  function goToTAC() {
+  const gotoTAC = () => {
     goto("/tac");
-  }
+  };
 </script>
 
 <main class="splash-main">
@@ -21,7 +21,7 @@
           from hybrid engine tests.
         </p>
         <div class="button-container">
-          <IconButton icon={Rocket} label="Get Started" onClick={goToTAC} />
+          <IconButton icon={Rocket} label="Get Started" onClick={gotoTAC} />
         </div>
       </div>
 

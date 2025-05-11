@@ -3,6 +3,11 @@
   import { KeyIcon } from "@lucide/svelte";
   import IconButton from "$lib/components/IconButton.svelte";
   import SplashHeader from "$lib/components/SplashHeader.svelte";
+  import { endpointMapping } from "$lib/utils/constants";
+
+  const gotoGoogleLogin = () => {
+    window.location.href = endpointMapping.getGoogleLoginUrl.toString();
+  };
 </script>
 
 <main class="splash-main">
@@ -20,7 +25,7 @@
           <IconButton
             icon={KeyIcon}
             label="Authenticate With Google"
-            onClick={() => {}}
+            onClick={gotoGoogleLogin}
           />
         </div>
       </div>
