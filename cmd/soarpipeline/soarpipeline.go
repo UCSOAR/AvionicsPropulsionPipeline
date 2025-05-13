@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -16,7 +18,56 @@ import (
 	storage "soarpipeline/internal/storage"
 )
 
-const addr = ":8080"
+const (
+	addr         = ":8080"
+	readTimeout  = 10 * time.Second
+	writeTimeout = 15 * time.Second
+	idleTimeout  = 10 * time.Second
+)
+
+var (
+	errMissingClientID     = errors.New("missing client ID")
+	errMissingClientSecret = errors.New("missing client secret")
+	errMissingInProduction = errors.New("missing in production environment variable")
+)
+
+func initDependencyInjection() (*controllers.DependencyInjection, error) {
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+
+	if len(clientID) == 0 {
+		return nil, errMissingClientID
+	}
+
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+
+	if len(clientSecret) == 0 {
+		return nil, errMissingClientSecret
+	}
+
+	redirectURL := fmt.Sprintf("http://localhost%s/auth/google/callback", addr)
+
+	oauthCfg := oauth2.Config{
+		RedirectURL:  redirectURL,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+		Endpoint:     google.Endpoint,
+	}
+
+	inProduction, err := strconv.ParseBool(os.Getenv("IN_PRODUCTION"))
+
+	if err != nil {
+		return nil, errMissingInProduction
+	}
+
+	injection := &controllers.DependencyInjection{
+		OAuthCfg:     oauthCfg,
+		InProduction: inProduction,
+	}
+
+	// NOTE: dependency injection pointer escapes to heap here
+	return injection, nil
+}
 
 func main() {
 	// Ensure storage directories are initialized
@@ -29,16 +80,10 @@ func main() {
 		panic(err)
 	}
 
-	oauthCfg := &oauth2.Config{
-		RedirectURL:  fmt.Sprintf("http://localhost%s/auth/google/callback", addr),
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-		Endpoint:     google.Endpoint,
-	}
-	injection := controllers.DependencyInjection{
-		OAuthCfg:          oauthCfg,
-		RandomStringState: os.Getenv("RANDOM_STRING_STATE"),
+	injection, err := initDependencyInjection()
+
+	if err != nil {
+		panic(err)
 	}
 
 	// Set up the router and middleware
@@ -73,9 +118,9 @@ func main() {
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      r,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  10 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
 	}
 
 	if err := server.ListenAndServe(); err != nil {
