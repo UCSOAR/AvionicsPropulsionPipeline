@@ -28,7 +28,8 @@ const (
 var (
 	errMissingClientID     = errors.New("missing client ID")
 	errMissingClientSecret = errors.New("missing client secret")
-	errMissingInProduction = errors.New("missing in production environment variable")
+	errMissingInProduction = errors.New("missing in production flag")
+	errMissingSigningKey   = errors.New("missing signing key")
 )
 
 func initDependencyInjection() (*controllers.DependencyInjection, error) {
@@ -44,6 +45,7 @@ func initDependencyInjection() (*controllers.DependencyInjection, error) {
 		return nil, errMissingClientSecret
 	}
 
+	// This should match route for callback in the router
 	redirectURL := fmt.Sprintf("http://localhost%s/auth/google/callback", addr)
 
 	oauthCfg := oauth2.Config{
@@ -60,9 +62,16 @@ func initDependencyInjection() (*controllers.DependencyInjection, error) {
 		return nil, errMissingInProduction
 	}
 
+	signingKey := []byte(os.Getenv("SIGNING_KEY"))
+
+	if len(signingKey) == 0 {
+		return nil, errMissingSigningKey
+	}
+
 	injection := &controllers.DependencyInjection{
 		OAuthCfg:     oauthCfg,
 		InProduction: inProduction,
+		SigningKey:   signingKey,
 	}
 
 	// NOTE: dependency injection pointer escapes to heap here
@@ -92,6 +101,7 @@ func main() {
 
 	// Subrouter for authentication
 	r.Route("/auth", func(r chi.Router) {
+		r.Get("/me", injection.GetMe)
 
 		// Subrouter for Google OAuth
 		r.Route("/google", func(r chi.Router) {

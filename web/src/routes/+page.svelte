@@ -1,9 +1,9 @@
 <script lang="ts">
   import "$lib/styles/global.scss";
-  import { KeyIcon } from "@lucide/svelte";
-  import { endpointMapping, redirectUriParam } from "$lib/utils/constants";
   import IconButton from "$lib/components/IconButton.svelte";
   import SplashHeader from "$lib/components/SplashHeader.svelte";
+  import { KeyIcon } from "@lucide/svelte";
+  import { endpointMapping, redirectUriParam } from "$lib/utils/constants";
 
   const gotoGoogleLogin = () => {
     const redirectUri = window.location.href;

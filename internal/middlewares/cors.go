@@ -6,7 +6,7 @@ import (
 )
 
 func UseCorsMiddleware(router *chi.Mux) {
-	corsCfg := cors.New(cors.Options{
+	corsConfig := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
@@ -15,5 +15,5 @@ func UseCorsMiddleware(router *chi.Mux) {
 		MaxAge:           300,
 	})
 
-	router.Use(corsCfg.Handler)
+	router.Use(corsConfig.Handler)
 }

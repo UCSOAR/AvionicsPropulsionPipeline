@@ -1,6 +1,9 @@
-package models
+package token
 
-type GoogleUser struct {
+import "github.com/golang-jwt/jwt/v5"
+
+type GoogleUserClaims struct {
+	jwt.RegisteredClaims
 	Email         string `json:"email"`
 	Name          string `json:"name"`
 	Picture       string `json:"picture"`

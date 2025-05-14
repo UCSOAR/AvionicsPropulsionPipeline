@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
-	"soarpipeline/internal/models"
+	securetoken "soarpipeline/pkg/securetoken"
 	"time"
 )
 
@@ -20,9 +20,9 @@ const (
 )
 
 const (
-	cookieName   = "session"
-	cookiePath   = "/"
-	cookieMaxAge = 2 * time.Hour
+	sessionCookieName = "session_token"
+	sessionCookiePath = "/"
+	tokenExpiry       = 12 * time.Hour
 )
 
 var (
@@ -59,7 +59,7 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 
 	// Exchange the code for an access token
 	ctx := r.Context()
-	token, err := d.OAuthCfg.Exchange(ctx, code)
+	accessToken, err := d.OAuthCfg.Exchange(ctx, code)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -67,7 +67,7 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 	}
 
 	// Use the access token to get user info
-	client := d.OAuthCfg.Client(ctx, token)
+	client := d.OAuthCfg.Client(ctx, accessToken)
 	res, err := client.Get(oauth2UserInfoEndpoint)
 
 	if err != nil {
@@ -76,19 +76,27 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 	}
 
 	defer res.Body.Close()
-	var user models.GoogleUser
+	var user securetoken.GoogleUserClaims
 
 	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	user.RegisteredClaims = securetoken.MakeRegisteredClaims(tokenExpiry)
+	token, err := securetoken.SignClaims(user, d.SigningKey)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Create cookie with user info
-	maxAge := int(cookieMaxAge.Abs().Seconds())
+	maxAge := int(tokenExpiry.Abs().Seconds())
 	cookie := &http.Cookie{
-		Name:     cookieName,
-		Value:    user.Email,
-		Path:     cookiePath,
+		Name:     sessionCookieName,
+		Value:    token,
+		Path:     sessionCookiePath,
 		HttpOnly: true,
 		Secure:   d.InProduction,
 		SameSite: http.SameSiteLaxMode,

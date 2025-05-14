@@ -44,9 +44,10 @@
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 IN_PRODUCTION=<true | false>
+SIGNING_KEY=...
 ```
 
-## Running backend
+## Running the backend
 
 ```bash
 go run cmd/soarpipeline/soarpipeline.go
