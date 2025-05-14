@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"soarpipeline/internal/models"
 	securetoken "soarpipeline/pkg/securetoken"
 )
 
@@ -15,15 +16,17 @@ func (d *DependencyInjection) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	signedString := cookie.Value
-	claims, err := securetoken.ExtractClaims[securetoken.GoogleUserClaims](signedString, d.SigningKey)
+	userClaims, err := securetoken.ExtractClaims[models.GoogleUserClaims](signedString, d.SigningKey)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
+	clientUser := userClaims.ToClientUser()
+
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(claims); err != nil {
+	if err := json.NewEncoder(w).Encode(clientUser); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

@@ -5,6 +5,7 @@ export const endpointMapping = Object.freeze({
   getGoogleLoginUrl: new URL(
     `http://localhost:${backendDevPort}/auth/google/login`
   ),
+  getMeUrl: new URL(`http://localhost:${backendDevPort}/auth/me`),
   uploadStaticFireUrl: new URL(
     `http://localhost:${backendDevPort}/api/staticfire/upload`
   ),

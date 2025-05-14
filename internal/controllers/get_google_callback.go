@@ -5,7 +5,9 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"soarpipeline/internal/models"
 	securetoken "soarpipeline/pkg/securetoken"
+	utils "soarpipeline/pkg/utils"
 	"time"
 )
 
@@ -76,15 +78,15 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 	}
 
 	defer res.Body.Close()
-	var user securetoken.GoogleUserClaims
+	var userClaims models.GoogleUserClaims
 
-	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&userClaims); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	user.RegisteredClaims = securetoken.MakeRegisteredClaims(tokenExpiry)
-	token, err := securetoken.SignClaims(user, d.SigningKey)
+	userClaims.RegisteredClaims = securetoken.MakeRegisteredClaims(tokenExpiry)
+	token, err := securetoken.SignClaims(userClaims, d.SigningKey)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,7 +94,6 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 	}
 
 	// Create cookie with user info
-	maxAge := int(tokenExpiry.Abs().Seconds())
 	cookie := &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    token,
@@ -100,7 +101,7 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 		HttpOnly: true,
 		Secure:   d.InProduction,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   maxAge,
+		MaxAge:   utils.DurationToSeconds(tokenExpiry),
 	}
 
 	http.SetCookie(w, cookie)
