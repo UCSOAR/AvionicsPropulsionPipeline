@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/mitchellh/mapstructure"
 )
 
 const (
@@ -34,21 +35,26 @@ func SignClaims[C jwt.Claims](claims C, secret []byte) (string, error) {
 	return signedToken, err
 }
 
-func ExtractClaims[C jwt.Claims](signedString string, secret []byte) (*C, error) {
-	claims := new(C)
+func ExtractClaims[C jwt.Claims](signedString string, secret []byte) (C, error) {
+	var claims C
 
-	token, err := jwt.ParseWithClaims(signedString, *claims, func(token *jwt.Token) (any, error) {
+	token, err := jwt.Parse(signedString, func(_ *jwt.Token) (any, error) {
 		return secret, nil
 	})
 
 	if err != nil {
-		return nil, err
+		return claims, err
 	}
 
-	if decodedClaims, ok := token.Claims.(C); ok && token.Valid {
-		*claims = decodedClaims
-		return claims, nil
+	claimsMap, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok || !token.Valid {
+		return claims, errMalformedToken
 	}
 
-	return nil, errMalformedToken
+	if err := mapstructure.Decode(claimsMap, &claims); err != nil {
+		return claims, err
+	}
+
+	return claims, nil
 }
