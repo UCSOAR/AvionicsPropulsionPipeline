@@ -3,6 +3,7 @@
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
   import FullscreenButton from "./FullscreenButton.svelte";
+  import { Download } from "@lucide/svelte";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
