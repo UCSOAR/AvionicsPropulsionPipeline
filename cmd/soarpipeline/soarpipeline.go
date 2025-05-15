@@ -102,6 +102,7 @@ func main() {
 	// Subrouter for authentication
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/me", injection.GetMe)
+		r.Post("/logout", injection.PostLogout)
 
 		// Subrouter for Google OAuth
 		r.Route("/google", func(r chi.Router) {

@@ -1,9 +1,10 @@
 <script lang="ts">
   import "$lib/styles/global.scss";
-  import { goto } from "$app/navigation";
-  import { LucideX, Rocket } from "@lucide/svelte";
   import IconButton from "$lib/components/IconButton.svelte";
   import SplashHeader from "$lib/components/SplashHeader.svelte";
+  import AccountInfo from "$lib/components/AccountInfo.svelte";
+  import { goto } from "$app/navigation";
+  import { LucideX, Rocket } from "@lucide/svelte";
 
   const gotoTAC = () => {
     goto("/tac");
@@ -11,6 +12,10 @@
 </script>
 
 <main class="splash-main">
+  <div class="account-info">
+    <AccountInfo />
+  </div>
+
   <div class="splash-content-container">
     <SplashHeader />
     <div class="card-container">
@@ -53,3 +58,9 @@
     </div>
   </div>
 </main>
+
+<style lang="scss" scoped>
+  div.account-info {
+    padding: 0.9rem;
+  }
+</style>

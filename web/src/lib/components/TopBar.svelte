@@ -1,8 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import AccountInfo from "./AccountInfo.svelte";
 
   function handleLogoClick() {
-    goto("/");
+    goto("/start");
   }
 </script>
 
@@ -22,6 +23,8 @@
     <button>HAC</button>
     <button>Mapleleaf</button>
   </nav>
+
+  <AccountInfo />
 </header>
 
 <style scoped lang="scss">

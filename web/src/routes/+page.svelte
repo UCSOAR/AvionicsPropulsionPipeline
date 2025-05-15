@@ -4,33 +4,16 @@
   import SplashHeader from "$lib/components/SplashHeader.svelte";
   import { KeyIcon } from "@lucide/svelte";
   import { endpointMapping, redirectUriParam } from "$lib/utils/constants";
-  import { onMount } from "svelte";
-  import { userStore } from "$lib/stores/userStore";
-  import { goto } from "$app/navigation";
-  import { fetchMe } from "$lib/utils/getMe";
 
   const gotoGoogleLogin = () => {
-    const redirectUri = window.location.href;
+    const redirectUrl = new URL(window.location.href);
+    redirectUrl.pathname = "/start";
+
     const endpoint = new URL(endpointMapping.getGoogleLoginUrl);
-    endpoint.searchParams.set(redirectUriParam, redirectUri);
+    endpoint.searchParams.set(redirectUriParam, redirectUrl.toString());
 
     window.location.href = endpoint.toString();
   };
-
-  onMount(() => {
-    if ($userStore) {
-      goto("/start");
-    } else {
-      (async () => {
-        const me = await fetchMe();
-
-        if (me) {
-          $userStore = me;
-          goto("/start");
-        }
-      })();
-    }
-  });
 </script>
 
 <main class="splash-main">
