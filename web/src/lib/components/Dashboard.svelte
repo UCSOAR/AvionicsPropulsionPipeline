@@ -108,6 +108,39 @@
 
   $: refreshGraph = () => loadPlotly(data);
 
+  const downloadCSV = async () => {
+  if (!selectedFile) return;
+
+  const xColumnName = selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
+  const yColumnName = selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+
+  const params = new URLSearchParams({
+    name: selectedFile.name,
+    startRow: startRow.toString(),
+    numRows: numRows.toString(),
+  });
+
+  params.append("xColumnNames", xColumnName);
+  params.append("yColumnNames", yColumnName);
+
+  const url = `/api/static_fire/download?${params.toString()}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    alert("Failed to download CSV.");
+    return;
+  }
+
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = `${selectedFile.name}_filtered.csv`;
+  link.click();
+  window.URL.revokeObjectURL(downloadUrl);
+};
+
+
   export const refreshPlotly = async () => {
     if (!selectedFile) return;
 
@@ -268,6 +301,11 @@
             onChange={onFullscreenChange}
             targetElement={fullscreenTarget}
           />
+          <IconButton
+          icon={Download}
+          onClick={downloadCSV}
+          label="Download CSV"
+        />
         </div>
       </div>
       <div class="chart-wrapper">
