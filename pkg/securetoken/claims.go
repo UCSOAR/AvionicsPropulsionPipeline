@@ -35,25 +35,25 @@ func SignClaims[C jwt.Claims](claims C, secret []byte) (string, error) {
 	return signedToken, err
 }
 
-func ExtractClaims[C jwt.Claims](signedString string, secret []byte) (C, error) {
-	var claims C
-
+func ExtractClaims[C jwt.Claims](signedString string, secret []byte) (*C, error) {
 	token, err := jwt.Parse(signedString, func(_ *jwt.Token) (any, error) {
 		return secret, nil
 	})
 
 	if err != nil {
-		return claims, err
+		return nil, err
 	}
 
 	claimsMap, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid {
-		return claims, errMalformedToken
+		return nil, errMalformedToken
 	}
 
+	claims := new(C)
+
 	if err := mapstructure.Decode(claimsMap, &claims); err != nil {
-		return claims, err
+		return nil, err
 	}
 
 	return claims, nil
