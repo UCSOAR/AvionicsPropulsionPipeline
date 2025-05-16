@@ -39,13 +39,21 @@
   - [ ] Use a custom file extension or metadata to categorize files.
   - [ ] Enable filtering of files for different website sections.
 
-## Example `.env` file
+## Example `.env.toml` file
 
-```env
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-IN_PRODUCTION=<true | false>
-SIGNING_KEY=...
+```toml
+# API keys.
+google_client_id="..."
+google_client_secret="..."
+
+# This is used to sign authorization tokens. It should be a long random string.
+signing_key="..."
+
+# Set this to true in a deployment environment.
+in_production=false
+
+# Place GMail addresses that are allowed to use the platform here.
+whitelist = ["example@gmail.com", "example2@gmail.com"]
 ```
 
 ## Running the backend

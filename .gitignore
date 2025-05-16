@@ -1,5 +1,5 @@
 # ENV files
-**/.env
+**/.env*
 
 # Ignore .pre-commit-config.yaml
 .pre-commit-config.yaml

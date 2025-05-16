@@ -7,11 +7,11 @@ import (
 
 func (d *DependencyInjection) PostLogout(w http.ResponseWriter, r *http.Request) {
 	cookie := &http.Cookie{
-		Name:     sessionCookieName,
+		Name:     SessionCookieName,
 		Value:    "",
 		Path:     sessionCookiePath,
 		HttpOnly: true,
-		Secure:   d.InProduction,
+		Secure:   d.AppConfig.InProduction,
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),

@@ -1,48 +1,37 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi/v5"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
 	controllers "soarpipeline/internal/controllers"
 	middlewares "soarpipeline/internal/middlewares"
+	"soarpipeline/internal/models"
 	storage "soarpipeline/internal/storage"
 )
 
 const (
-	addr         = ":8080"
 	readTimeout  = 10 * time.Second
 	writeTimeout = 15 * time.Second
 	idleTimeout  = 10 * time.Second
 )
 
-var (
-	errMissingClientID     = errors.New("missing client ID")
-	errMissingClientSecret = errors.New("missing client secret")
-	errMissingInProduction = errors.New("missing in production flag")
-	errMissingSigningKey   = errors.New("missing signing key")
+const (
+	addr        = ":8080"
+	envTomlFile = ".env.toml"
 )
 
 func initDependencyInjection() (*controllers.DependencyInjection, error) {
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	var env models.EnvToml
 
-	if len(clientID) == 0 {
-		return nil, errMissingClientID
-	}
-
-	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
-
-	if len(clientSecret) == 0 {
-		return nil, errMissingClientSecret
+	if _, err := toml.DecodeFile(envTomlFile, &env); err != nil {
+		return nil, err
 	}
 
 	// This should match route for callback in the router
@@ -50,32 +39,20 @@ func initDependencyInjection() (*controllers.DependencyInjection, error) {
 
 	oauthCfg := oauth2.Config{
 		RedirectURL:  redirectURL,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		ClientID:     env.GoogleClientID,
+		ClientSecret: env.GoogleClientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
 
-	inProduction, err := strconv.ParseBool(os.Getenv("IN_PRODUCTION"))
-
-	if err != nil {
-		return nil, errMissingInProduction
+	appConfig := env.ToAppConfig()
+	injection := controllers.DependencyInjection{
+		OAuthConfig: oauthCfg,
+		AppConfig:   appConfig,
 	}
 
-	signingKey := []byte(os.Getenv("SIGNING_KEY"))
-
-	if len(signingKey) == 0 {
-		return nil, errMissingSigningKey
-	}
-
-	injection := &controllers.DependencyInjection{
-		OAuthCfg:     oauthCfg,
-		InProduction: inProduction,
-		SigningKey:   signingKey,
-	}
-
-	// NOTE: dependency injection pointer escapes to heap here
-	return injection, nil
+	// Injection struct escapes to heap here
+	return &injection, nil
 }
 
 func main() {
@@ -84,12 +61,7 @@ func main() {
 		panic(err)
 	}
 
-	// Read .env file
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
-	injection, err := initDependencyInjection()
+	i, err := initDependencyInjection()
 
 	if err != nil {
 		panic(err)
@@ -97,22 +69,24 @@ func main() {
 
 	// Set up the router and middleware
 	r := chi.NewRouter()
-	middlewares.UseCorsMiddleware(r, injection.InProduction)
+	middlewares.UseCorsMiddleware(r, i.AppConfig.InProduction)
 
 	// Subrouter for authentication
 	r.Route("/auth", func(r chi.Router) {
-		r.Get("/me", injection.GetMe)
-		r.Post("/logout", injection.PostLogout)
+		r.Get("/me", i.GetMe)
+		r.Post("/logout", i.PostLogout)
 
 		// Subrouter for Google OAuth
 		r.Route("/google", func(r chi.Router) {
-			r.Get("/login", injection.GetGoogleLogin)
-			r.Get("/callback", injection.GetGoogleCallback) // This should match the redirect URL in the OAuth config
+			r.Get("/login", i.GetGoogleLogin)
+			r.Get("/callback", i.GetGoogleCallback) // This should match the redirect URL in the OAuth config
 		})
 	})
 
 	// Subrouter for API
 	r.Route("/api", func(r chi.Router) {
+		middlewares.UseAuthTokenExtractorMiddleware(r, i.AppConfig.SigningKey)
+
 		r.Get("/usage", controllers.GetStorageUsage)
 
 		// Subrouter for static fire data

@@ -12,11 +12,16 @@ const (
 	preflightCacheMaxAge = 300 * time.Second
 )
 
-func UseCorsMiddleware(router *chi.Mux, inProduction bool) {
-	allowedOrigin := "http://localhost:5173"
+const (
+	devCorsOrigin  = "http://localhost:5173"
+	prodCorsOrigin = "https://soarpipeline.com"
+)
+
+func UseCorsMiddleware(router chi.Router, inProduction bool) {
+	allowedOrigin := devCorsOrigin
 
 	if inProduction {
-		allowedOrigin = "https://soarpipeline.com"
+		allowedOrigin = prodCorsOrigin
 	}
 
 	corsConfig := cors.New(cors.Options{

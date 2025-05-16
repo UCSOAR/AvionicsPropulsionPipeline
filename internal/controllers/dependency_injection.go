@@ -1,9 +1,12 @@
 package controllers
 
-import "golang.org/x/oauth2"
+import (
+	"soarpipeline/internal/models"
+
+	"golang.org/x/oauth2"
+)
 
 type DependencyInjection struct {
-	OAuthCfg     oauth2.Config
-	InProduction bool
-	SigningKey   []byte
+	OAuthConfig oauth2.Config
+	AppConfig   models.AppConfig
 }

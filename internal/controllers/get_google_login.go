@@ -26,7 +26,7 @@ func (d *DependencyInjection) GetGoogleLogin(w http.ResponseWriter, r *http.Requ
 
 	// Store redirect URI in state parameter
 	state := url.QueryEscape(redirect)
-	url := d.OAuthCfg.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	url := d.OAuthConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
 
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }

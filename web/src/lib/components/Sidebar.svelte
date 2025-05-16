@@ -41,8 +41,18 @@
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch(endpointMapping.getStaticFireMetadataUrl);
-      if (!response.ok && isExpanded) throw new Error("Failed to fetch files");
+      const response = await fetch(endpointMapping.getStaticFireMetadataUrl, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok && isExpanded) {
+        throw new Error("Failed to fetch files");
+      }
+
       files = await response.json();
       error = null;
     } catch (err) {

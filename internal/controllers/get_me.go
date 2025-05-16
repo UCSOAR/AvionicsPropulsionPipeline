@@ -8,7 +8,7 @@ import (
 )
 
 func (d *DependencyInjection) GetMe(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie(sessionCookieName)
+	cookie, err := r.Cookie(SessionCookieName)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -16,7 +16,7 @@ func (d *DependencyInjection) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	signedString := cookie.Value
-	userClaims, err := securetoken.ExtractClaims[models.GoogleUserClaims](signedString, d.SigningKey)
+	userClaims, err := securetoken.ExtractClaims[models.GoogleUserClaims](signedString, d.AppConfig.SigningKey)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)

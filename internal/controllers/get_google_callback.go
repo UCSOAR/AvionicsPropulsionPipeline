@@ -22,14 +22,15 @@ const (
 )
 
 const (
-	sessionCookieName = "session_token"
+	SessionCookieName = "session_token"
 	sessionCookiePath = "/"
 	tokenExpiry       = 12 * time.Hour
 )
 
 var (
-	errMissingCode  = errors.New("missing code")
-	errMissingState = errors.New("missing state")
+	errMissingCode   = errors.New("missing code")
+	errMissingState  = errors.New("missing state")
+	errForbiddenUser = errors.New("user not in whitelist")
 )
 
 func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +62,7 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 
 	// Exchange the code for an access token
 	ctx := r.Context()
-	accessToken, err := d.OAuthCfg.Exchange(ctx, code)
+	accessToken, err := d.OAuthConfig.Exchange(ctx, code)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,7 +70,7 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 	}
 
 	// Use the access token to get user info
-	client := d.OAuthCfg.Client(ctx, accessToken)
+	client := d.OAuthConfig.Client(ctx, accessToken)
 	res, err := client.Get(oauth2UserInfoEndpoint)
 
 	if err != nil {
@@ -86,7 +87,14 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 	}
 
 	userClaims.RegisteredClaims = securetoken.MakeRegisteredClaims(tokenExpiry)
-	token, err := securetoken.SignClaims(userClaims, d.SigningKey)
+
+	// Ensure user is in whitelist
+	if !d.AppConfig.Whitelist.Has(userClaims.Email) {
+		http.Error(w, errForbiddenUser.Error(), http.StatusForbidden)
+		return
+	}
+
+	token, err := securetoken.SignClaims(userClaims, d.AppConfig.SigningKey)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -95,11 +103,11 @@ func (d *DependencyInjection) GetGoogleCallback(w http.ResponseWriter, r *http.R
 
 	// Create cookie with user info
 	cookie := &http.Cookie{
-		Name:     sessionCookieName,
+		Name:     SessionCookieName,
 		Value:    token,
 		Path:     sessionCookiePath,
 		HttpOnly: true,
-		Secure:   d.InProduction,
+		Secure:   d.AppConfig.InProduction,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   utils.DurationToSeconds(tokenExpiry),
 	}
