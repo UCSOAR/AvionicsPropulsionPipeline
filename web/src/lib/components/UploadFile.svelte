@@ -1,5 +1,4 @@
 <script lang="ts">
-
   import IconButton from "$lib/components/IconButton.svelte";
   import { UploadCloud } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
@@ -22,6 +21,7 @@
       try {
         const response = await fetch(endpointMapping.uploadStaticFireUrl, {
           method: "POST",
+          credentials: "include",
           body: formData,
         });
 
@@ -38,7 +38,6 @@
 
     uploading = false;
     target.value = "";
-
 
     onUploadComplete();
   };
@@ -75,4 +74,3 @@
     justify-content: center;
   }
 </style>
-

@@ -41,8 +41,18 @@
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch(endpointMapping.getStaticFireMetadataUrl);
-      if (!response.ok && isExpanded) throw new Error("Failed to fetch files");
+      const response = await fetch(endpointMapping.getStaticFireMetadataUrl, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok && isExpanded) {
+        throw new Error("Failed to fetch files");
+      }
+
       files = await response.json();
       error = null;
     } catch (err) {
@@ -114,17 +124,16 @@
     display: flex;
     flex-direction: column;
     background-color: #121212;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
     height: 100vh;
     overflow: hidden;
     border-right: 1px solid $outline-color-1;
 
     &.expanded {
-      width: 20rem;
+      min-width: 20rem;
     }
 
     &.collapsed {
-      width: 4.5rem;
+      min-width: 4.5rem;
 
       .upload-container {
         display: none;

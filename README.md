@@ -4,6 +4,7 @@
 
 ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
 ![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=for-the-badge&logo=svelte&logoColor=white)
+![OAuth2](https://img.shields.io/badge/oauth2-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
@@ -37,6 +38,29 @@
 - [ ] Implement a file organization system:
   - [ ] Use a custom file extension or metadata to categorize files.
   - [ ] Enable filtering of files for different website sections.
+
+## Example `.env.toml` file
+
+```toml
+# API keys.
+google_client_id="..."
+google_client_secret="..."
+
+# This is used to sign authorization tokens. It should be a long random string.
+signing_key="..."
+
+# Set this to true in a deployment environment.
+in_production=false
+
+# Place GMail addresses that are allowed to use the platform here.
+whitelist = ["example@gmail.com", "example2@gmail.com"]
+```
+
+## Running the backend
+
+```bash
+go run cmd/soarpipeline/soarpipeline.go
+```
 
 ## Running with Docker
 

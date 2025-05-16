@@ -9,6 +9,7 @@ export async function getStorageUsage(): Promise<StorageUsageResponse | null> {
   try {
     const response = await fetch(endpointMapping.getUsageURL.toString(), {
       method: "GET",
+      credentials: "include",
       headers: {
         Accept: "application/json",
       },

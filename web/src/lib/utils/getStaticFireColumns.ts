@@ -13,6 +13,7 @@ export const fetchStaticFireColumns = async (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(req),
     });
 
