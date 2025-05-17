@@ -33,6 +33,8 @@ func main() {
 			r.Get("/metadata", controllers.GetStaticFireMetadata)
 			r.Post("/columns", controllers.PostStaticFireColumns)
 			r.Post("/upload", controllers.PostUploadStaticFire)
+			r.Get("/download", controllers.PostStaticFireDownload)
+
 		})
 	})
 
