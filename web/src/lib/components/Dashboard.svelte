@@ -109,36 +109,27 @@
 
   $: refreshGraph = () => loadPlotly(data);
 
-  const downloadCSV = async () => {
+  const downloadCSV = () => {
   if (!selectedFile) return;
 
   const xColumnName = selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
   const yColumnName = selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
 
-  const params = new URLSearchParams({
-    name: selectedFile.name,
-    startRow: startRow.toString(),
-    numRows: numRows.toString(),
-  });
-
+  const params = new URLSearchParams();
+  params.set("name", selectedFile.name);
+  params.set("startRow", startRow.toString());
+  params.set("numRows", numRows.toString());
   params.append("xColumnNames", xColumnName);
   params.append("yColumnNames", yColumnName);
 
-  const url = `/api/static_fire/download?${params.toString()}`;
+  const url = `http://localhost:8080/api/staticfire/download?${params.toString()}`;
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    alert("Failed to download CSV.");
-    return;
-  }
-
-  const blob = await response.blob();
-  const downloadUrl = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = downloadUrl;
+  link.href = url;
   link.download = `${selectedFile.name}_filtered.csv`;
+  document.body.appendChild(link);
   link.click();
-  window.URL.revokeObjectURL(downloadUrl);
+  document.body.removeChild(link);
 };
 
 

@@ -8,8 +8,8 @@ import (
 	"soarpipeline/internal/storage"
 )
 
-func DownloadStaticFireColumns(w http.ResponseWriter, r *http.Request) {
-	// Parse query params (same as your PostStaticFireColumnsRequest)
+
+func PostStaticFireDownload(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	startRow, _ := strconv.Atoi(r.URL.Query().Get("startRow"))
 	numRows, _ := strconv.Atoi(r.URL.Query().Get("numRows"))
