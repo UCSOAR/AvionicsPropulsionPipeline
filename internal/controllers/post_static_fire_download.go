@@ -4,10 +4,9 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
-	"strconv"
 	"soarpipeline/internal/storage"
+	"strconv"
 )
-
 
 func PostStaticFireDownload(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
