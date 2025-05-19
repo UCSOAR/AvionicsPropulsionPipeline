@@ -29,19 +29,28 @@ func PostStaticFireDownload(w http.ResponseWriter, r *http.Request) {
 	defer csvWriter.Flush()
 
 	// Write header
-	header := append(xCols, yCols...)
-	csvWriter.Write(header)
+	header := make([]string, 0, len(xCols)+len(yCols))
+	header = append(header, xCols...)
+	header = append(header, yCols...)
+
+	if err := csvWriter.Write(header); err != nil {
+		http.Error(w, "failed to write CSV header", http.StatusInternalServerError)
+		return
+	}
 
 	// Write rows
 	rowCount := len(xColumns[xCols[0]].Rows)
 	for i := 0; i < rowCount; i++ {
-		row := []string{}
+		row := make([]string, 0, len(header))
 		for _, col := range xCols {
 			row = append(row, fmt.Sprint(xColumns[col].Rows[i]))
 		}
 		for _, col := range yCols {
 			row = append(row, fmt.Sprint(yColumns[col].Rows[i]))
 		}
-		csvWriter.Write(row)
+		if err := csvWriter.Write(row); err != nil {
+			http.Error(w, "failed to write CSV row", http.StatusInternalServerError)
+			return
+		}
 	}
 }
