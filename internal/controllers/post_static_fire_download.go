@@ -39,8 +39,7 @@ func PostStaticFireDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write rows
-	rowCount := len(xColumns[xCols[0]].Rows)
-	for i := 0; i < rowCount; i++ {
+	for i := range xColumns[xCols[0]].Rows {
 		row := make([]string, 0, len(header))
 		for _, col := range xCols {
 			row = append(row, fmt.Sprint(xColumns[col].Rows[i]))
@@ -50,7 +49,7 @@ func PostStaticFireDownload(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := csvWriter.Write(row); err != nil {
 			http.Error(w, "failed to write CSV row", http.StatusInternalServerError)
-			return
+			return	
 		}
 	}
 }
