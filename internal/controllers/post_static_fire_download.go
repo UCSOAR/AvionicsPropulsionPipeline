@@ -49,7 +49,7 @@ func PostStaticFireDownload(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := csvWriter.Write(row); err != nil {
 			http.Error(w, "failed to write CSV row", http.StatusInternalServerError)
-			return	
+			return
 		}
 	}
 }
