@@ -1,4 +1,4 @@
-package filter_test
+package filters_test
 
 import (
 	"reflect"
