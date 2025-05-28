@@ -10,13 +10,15 @@ type EnvToml struct {
 	Whitelist          []string `toml:"whitelist"`
 
 	Dev struct {
-		Host string `toml:"host"`
-		Port string `toml:"port"`
+		Host string   `toml:"host"`
+		Port string   `toml:"port"`
+		Cors []string `toml:"cors"`
 	} `toml:"dev"`
 
 	Prod struct {
-		Host string `toml:"host"`
-		Port string `toml:"port"`
+		Host string   `toml:"host"`
+		Port string   `toml:"port"`
+		Cors []string `toml:"cors"`
 	} `toml:"prod"`
 }
 
@@ -30,9 +32,11 @@ func (e *EnvToml) ToAppConfig() AppConfig {
 	// Choose host based on environment
 	host := e.Dev.Host
 	port := e.Dev.Port
+	cors := e.Dev.Cors
 	if e.InProduction {
 		host = e.Prod.Host
 		port = e.Prod.Port
+		cors = e.Prod.Cors
 	}
 
 	config := AppConfig{
@@ -41,6 +45,7 @@ func (e *EnvToml) ToAppConfig() AppConfig {
 		Whitelist:    whitelistSet,
 		Host:         host,
 		Port:         port,
+		Cors:         cors,
 	}
 
 	return config
