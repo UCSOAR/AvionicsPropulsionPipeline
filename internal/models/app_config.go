@@ -5,10 +5,10 @@ import (
 )
 
 type AppConfig struct {
-	InProduction bool
-	SigningKey   []byte
-	Whitelist    set.HashSet[string]
-	Host         string
-	Port         string
-	Cors         []string
+	InProduction   bool
+	SigningKey     []byte
+	Whitelist      set.HashSet[string]
+	Host           string
+	Port           string
+	AllowedOrigins []string
 }
