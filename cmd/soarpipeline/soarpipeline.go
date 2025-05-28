@@ -42,7 +42,7 @@ func initDependencyInjection() (*controllers.DependencyInjection, error) {
 	// - 443 for HTTPS (production)
 	// - 80 for HTTP (development)
 	portSuffix := ":" + port
-	useDefaultPort := (env.InProduction && port == "443") || (!env.InProduction && port == "80")
+	useDefaultPort := (env.InProduction && (port == "443" || port == "8080")) || (!env.InProduction && port == "80")
 	if useDefaultPort {
 		portSuffix = ""
 	}
