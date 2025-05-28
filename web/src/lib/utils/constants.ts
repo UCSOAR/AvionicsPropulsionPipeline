@@ -1,7 +1,7 @@
 // Read from environment variable or fallback to localhost
-const backendHost = import.meta.env.VITE_BACKEND_HOST ?? 'http://localhost:8080';
+import { backendHost } from '../config/env';
 
-export const redirectUriParam = "redirect_uri";
+export const redirectUriParam = 'redirect_uri';
 
 export const endpointMapping = Object.freeze({
   getGoogleLoginUrl: new URL(`${backendHost}/auth/google/login`),
