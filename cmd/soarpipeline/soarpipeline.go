@@ -20,22 +20,35 @@ const (
 	readTimeout  = 10 * time.Second
 	writeTimeout = 15 * time.Second
 	idleTimeout  = 10 * time.Second
-)
 
-const (
-	addr        = ":8080"
 	envTomlFile = ".env.toml"
 )
 
 func initDependencyInjection() (*controllers.DependencyInjection, error) {
 	var env models.EnvToml
-
 	if _, err := toml.DecodeFile(envTomlFile, &env); err != nil {
 		return nil, err
 	}
 
+	// Determine correct base URL based on environment
+	host := env.Dev.Host
+	port := env.Dev.Port
+	if env.InProduction {
+		host = env.Prod.Host
+		port = env.Prod.Port
+	}
+
+	// For cleaner redirect URLs, omit port if it's the default for the scheme:
+	// - 443 for HTTPS (production)
+	// - 80 for HTTP (development)
+	portSuffix := ":" + port
+	useDefaultPort := (env.InProduction && port == "443") || (!env.InProduction && port == "80")
+	if useDefaultPort {
+		portSuffix = ""
+	}
+
 	// This should match route for callback in the router
-	redirectURL := fmt.Sprintf("http://localhost%s/auth/google/callback", addr)
+	redirectURL := fmt.Sprintf("%s%s/auth/google/callback", host, portSuffix)
 
 	oauthCfg := oauth2.Config{
 		RedirectURL:  redirectURL,
@@ -62,10 +75,13 @@ func main() {
 	}
 
 	i, err := initDependencyInjection()
-
 	if err != nil {
 		panic(err)
 	}
+
+	// Determine correct port to listen on
+	port := i.AppConfig.Port
+	addr := ":" + port
 
 	// Set up the router and middleware
 	r := chi.NewRouter()
@@ -97,7 +113,8 @@ func main() {
 		})
 	})
 
-	fmt.Println("Server running on http://localhost" + addr)
+	fmt.Printf("Server listening on %s\n", addr)
+	fmt.Printf("Public-facing host is %s\n", i.AppConfig.Host)
 
 	// Start the server
 	server := &http.Server{
