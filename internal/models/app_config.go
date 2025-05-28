@@ -10,4 +10,5 @@ type AppConfig struct {
 	Whitelist    set.HashSet[string]
 	Host         string
 	Port         string
+	Cors         []string
 }
