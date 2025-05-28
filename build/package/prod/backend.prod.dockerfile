@@ -1,4 +1,7 @@
-# Explicitly use Go version when root access to Docker is unavailable.
+# Use the latest Go image if root access is available and version flexibility is acceptable.
+# FROM golang:latest AS build
+
+# Use a specific Go version for consistency and when rootless Docker environments require it.
 FROM golang:1.23 AS build
 
 # Set the working directory in the container
