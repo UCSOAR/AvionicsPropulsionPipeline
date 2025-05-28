@@ -85,7 +85,7 @@ func main() {
 
 	// Set up the router and middleware
 	r := chi.NewRouter()
-	middlewares.UseCorsMiddleware(r, i.AppConfig.InProduction)
+	middlewares.UseCorsMiddleware(r, i.AppConfig.Cors)
 
 	// Subrouter for authentication
 	r.Route("/auth", func(r chi.Router) {
