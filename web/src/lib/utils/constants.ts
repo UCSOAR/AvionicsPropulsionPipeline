@@ -1,7 +1,7 @@
 // Read from environment variable or fallback to localhost
-import { backendHost } from '../config/env';
+import { backendHost } from "../config/env";
 
-export const redirectUriParam = 'redirect_uri';
+export const redirectUriParam = "redirect_uri";
 
 export const endpointMapping = Object.freeze({
   getGoogleLoginUrl: new URL(`${backendHost}/auth/google/login`),
