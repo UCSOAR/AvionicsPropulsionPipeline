@@ -1,4 +1,4 @@
-import { formatBytes } from "$lib/utils/usage";
+import { formatBytes } from "$lib/utils/formatBytes";
 
 describe("formatBytes", () => {
   test("returns '0 Bytes' when input is 0", () => {
