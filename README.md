@@ -16,27 +16,28 @@
   - Spike in chamber pressure.
   - Decrease in oxidizer pressure.
   - Decrease in oxidizer mass.
-- [ ] Allow manual input for oxidizer shutoff time.
+- [x] Allow manual input for test start and end.
 - [ ] Define test end when chamber pressure returns to normal.
 
 ### Data Handling
 
-- [ ] Provide a way to download the filtered data.
+- [ ] Provide a way to download the filtered data. (Needs review)
 - [ ] Display both unfiltered and filtered lines on the graph.
-- [ ] Add a legend to the Plotly graph to toggle lines on/off.
+- [x] Add a legend to the Plotly graph to toggle lines on/off.
 
 ### Graph Features
 
-- [ ] Implement two data smoothing filters that do not distort the data.
-- [ ] Add a button to enable full-screen mode for the graph.
-- [ ] Display mass flow rate on the graph.
+- [x] Implement two data smoothing filters that do not distort the data.
+- [ ] Integrate the data smoothing filters into the graph.
+- [x] Add a button to enable full-screen mode for the graph.
+- [ ] Display mass flow rate on the graph. (Needs review)
 - [ ] (Optional) Plot fill mass and pressure over time.
 
 ### Website Features
 
-- [ ] Integrate a home page into the application.
+- [x] Integrate a home page into the application.
 - [ ] Implement a file organization system:
-  - [ ] Use a custom file extension or metadata to categorize files.
+  - [x] Use a custom file extension or metadata to categorize files.
   - [ ] Enable filtering of files for different website sections.
 
 ## Example `.env.toml` file
@@ -54,6 +55,18 @@ in_production=false
 
 # Place GMail addresses that are allowed to use the platform here.
 whitelist = ["example@gmail.com", "example2@gmail.com"]
+
+# Development configuration.
+[dev]
+host = "http://localhost"
+port = "8080"
+allowedorigins = ["http://localhost:5173"]
+
+# Production configuration.
+[prod]
+host = "https://api.soarpipeline.com"
+port = "8080"
+allowedorigins = ["https://soarpipeline.com", "https://api.soarpipeline.com"]
 ```
 
 ## Running the backend
