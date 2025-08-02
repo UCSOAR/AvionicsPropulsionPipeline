@@ -1,9 +1,11 @@
-FROM golang:latest AS build
+# Use the latest Go image if root access is available and version flexibility is acceptable.
+# Use a specific Go version for consistency and when rootless Docker environments require it.
+FROM golang:1.23 AS build
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the Go module files
+# Copy the Go module files. Make sure go.sum exists. If not, or if there's an error, run `go mod tidy` locally.
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -21,6 +23,9 @@ RUN apk --no-cache add ca-certificates
 
 # Set the working directory in the container
 WORKDIR /root/
+
+# Copy the .env.toml file
+COPY .env.toml .
 
 # Copy the built Go application from the build stage
 COPY --from=build /app/soarpipeline .
