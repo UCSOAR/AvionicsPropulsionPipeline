@@ -61,5 +61,19 @@
         color: $txt-color-highlighted;
       }
     }
+
+    &:disabled {
+      background-color: $bg-color-2;
+      border-color: $outline-color-1;
+      cursor: not-allowed;
+
+      :global(.lucide-icon) {
+        stroke: $outline-color-1;
+      }
+
+      span.label {
+        color: $outline-color-1;
+      }
+    }
   }
 </style>

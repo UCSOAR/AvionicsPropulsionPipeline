@@ -1,52 +1,40 @@
 <script lang="ts">
   import "$lib/styles/global.scss";
-  import "$lib/components/IconButton.svelte";
-  import type { SelectedFile } from "$lib/models/selectedFile";
-  import Dashboard from "$lib/components/Dashboard.svelte";
-  import TopBar from "$lib/components/TopBar.svelte";
-  import Sidebar from "$lib/components/Sidebar.svelte";
+  import IconButton from "$lib/components/IconButton.svelte";
+  import SplashHeader from "$lib/components/SplashHeader.svelte";
+  import { KeyIcon } from "@lucide/svelte";
+  import { endpointMapping, redirectUriParam } from "$lib/utils/constants";
 
-  let selectedFile: SelectedFile | undefined = undefined;
-  let refreshDashboardGraph: () => Promise<void>;
+  const gotoGoogleLogin = () => {
+    const redirectUrl = new URL(window.location.href);
+    redirectUrl.pathname = "/start";
 
+    const endpoint = new URL(endpointMapping.getGoogleLoginUrl);
+    endpoint.searchParams.set(redirectUriParam, redirectUrl.toString());
 
+    window.location.href = endpoint.toString();
+  };
 </script>
 
-<main class="app-container">
-  <TopBar />
-
-  <div class="main-layout">
-    <Sidebar bind:selectedFile={selectedFile} {refreshDashboardGraph}/>
-
-    {#if selectedFile}
-      <Dashboard {selectedFile} bind:refreshGraph={refreshDashboardGraph}/>
-    {/if}
+<main class="splash-main">
+  <div class="splash-content-container">
+    <SplashHeader />
+    <div class="card-container">
+      <div class="card">
+        <h2>Access Restricted</h2>
+        <p>
+          Please authenticate with your <b>Google</b> account credentials below
+          to access the pipeline. In order to use the pipeline, you must be
+          entered into the <b>whitelist</b>.
+        </p>
+        <div class="button-container">
+          <IconButton
+            icon={KeyIcon}
+            label="Authenticate With Google"
+            onClick={gotoGoogleLogin}
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </main>
-
-<style lang="scss">
-  @use "../lib/styles/variables.scss" as *;
-
-  main.app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh; /* fill the entire viewport */
-    width: 100%;
-  }
-
-  .main-layout {
-    display: flex;
-    flex: 1; /* take the remaining height after TopBar */
-    overflow: hidden; /* avoid scrollbars unless necessary */
-  }
-
-  /* Optional: make sure Sidebar and Dashboard stretch full height */
-  :global(.side-bar) {
-    height: 100%;
-  }
-
-  :global(.dashboard-container) {
-    flex: 1;
-    overflow-y: auto;
-  }
-</style>

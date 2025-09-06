@@ -22,6 +22,7 @@
       try {
         const response = await fetch(endpointMapping.uploadStaticFireUrl, {
           method: "POST",
+          credentials: "include",
           body: formData,
         });
 

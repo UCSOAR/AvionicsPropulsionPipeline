@@ -1,3 +1,6 @@
+# ENV files
+**/.env*
+
 # Ignore .pre-commit-config.yaml
 .pre-commit-config.yaml
 
@@ -111,3 +114,7 @@ cmd/soarpipeline/storage/
 
 # SvelteKit build artifacts
 /web/build/
+
+# package files in root
+./package.json
+./package-lock.json
