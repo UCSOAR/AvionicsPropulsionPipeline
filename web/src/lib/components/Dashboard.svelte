@@ -3,6 +3,7 @@
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
   import FullscreenButton from "./FullscreenButton.svelte";
+  import { Download } from "@lucide/svelte";
   import { writable } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
@@ -107,6 +108,30 @@
   };
 
   $: refreshGraph = () => loadPlotly(data);
+
+  const downloadCSV = () => {
+  if (!selectedFile) return;
+
+  const xColumnName = selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
+  const yColumnName = selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+
+  const params = new URLSearchParams();
+  params.set("name", selectedFile.name);
+  params.set("startRow", startRow.toString());
+  params.set("numRows", numRows.toString());
+  params.append("xColumnNames", xColumnName);
+  params.append("yColumnNames", yColumnName);
+
+  const url = `http://localhost:8080/api/staticfire/download?${params.toString()}`;
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${selectedFile.name}_filtered.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 
   export const refreshPlotly = async () => {
     if (!selectedFile) return;
@@ -268,6 +293,11 @@
             onChange={onFullscreenChange}
             targetElement={fullscreenTarget}
           />
+          <IconButton
+          icon={Download}
+          onClick={downloadCSV}
+          label="Download CSV"
+        />
         </div>
       </div>
       <div class="chart-wrapper">
