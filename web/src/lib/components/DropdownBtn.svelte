@@ -1,13 +1,17 @@
 <script lang="ts">
   import { Check, ChevronDown, ChevronUp } from "@lucide/svelte";
+  import type { Component } from "svelte";
   import { onMount } from "svelte";
   import IconButton from "./IconButton.svelte";
 
   export let id: string;
   export let isDisabled: boolean = false;
   export let label: string | null = null;
+  export let icon: Component | null = null;
   export let options: string[];
+  export let buttonize: boolean = false;
   export let onChange: (optionIndex: number) => void;
+  export let Click: () => void;
 
   if (!options) {
     throw new Error("At least one option must be provided.");
@@ -19,8 +23,9 @@
   const handleSelect = (index: number) => {
     onChange(index);
     selectedOptionIndex = index;
-    isOptionsVisible = false;
-
+    isOptionsVisible = false
+    Click?.();
+    selectedOptionIndex = 0;
   };
 
   const toggleOptions = () => {
@@ -43,37 +48,36 @@
 </script>
 
 <div class="container" {id}>
-  {#if label}
-    <label for={id}>{label}</label>
-  {/if}
   <button
     disabled={isDisabled}
     class="dropdown-button"
     on:click={toggleOptions}
   >
-  <span>{options[selectedOptionIndex]}</span>
-  {#if !isOptionsVisible}
-    <ChevronDown />
-  {:else}
-    <ChevronUp />
+  {#if buttonize && icon}
+    <div class="labelBtn">
+        <label for={id}>{label}</label>
+        <svelte:component this={icon} />
+    </div>
+    {#if !isOptionsVisible}
+      <ChevronDown />
+    {:else}
+      <ChevronUp />
+    {/if}
   {/if}
-</button>
-<ul class="options-container" class:visible={isOptionsVisible}>
-  {#each options as option, index}
-    <li>
-      <button
-        type="button"
-        class:selected={index === selectedOptionIndex}
-        on:click={() => handleSelect(index)}
-      >
-        <span>{option}</span>
-        {#if index === selectedOptionIndex}
-          <Check />
-        {/if}
-      </button>
-    </li>
-  {/each}
-</ul>
+  </button>
+  <ul class="options-container" class:visible={isOptionsVisible}>
+    {#each options as option, index}
+      <li>
+        <button
+          type="button"
+          class:selected={index === selectedOptionIndex}
+          on:click={() => handleSelect(index)}
+        >
+          <span>{option}</span>
+        </button>
+      </li>
+    {/each}
+  </ul>
 </div>
 
 <style scoped lang="scss">
@@ -98,9 +102,10 @@
     }
 
     button.dropdown-button {
-      background-color: $bg-color-6;
+      border: 1px solid $outline-color-1;
+      background-color: transparent;
       border-radius: $border-radius-1;
-      padding: 0.55rem;
+      padding: 0.6rem;
       font-size: 0.95rem;
       display: flex;
       align-items: center;
@@ -141,10 +146,9 @@
       box-sizing: border-box;
       background-color: $bg-color-6;
       z-index: 100;
-      padding: 0.5rem;
+      padding: 0.25rem;
       gap: 0.3rem;
-      margin: 0;
-      margin-top: 0.5rem;
+      margin: 0px;
       border-radius: $border-radius-1;
 
       & > li {
@@ -192,5 +196,13 @@
         left: 0;
       }
     }
+
+    .labelBtn {
+        display:flex;
+        gap: 0.35rem;
+        align-items: center;
+        justify-content: center;
+    }
+
   }
 </style>

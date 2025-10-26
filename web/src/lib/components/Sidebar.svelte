@@ -109,7 +109,6 @@
     {:else if isExpanded}
       <p class="empty">{error || "No uploaded files yet."}</p>
     {/if}
-    {/if}
   </div>
 </aside>
 

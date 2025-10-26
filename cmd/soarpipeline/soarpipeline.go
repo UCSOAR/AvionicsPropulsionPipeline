@@ -64,6 +64,8 @@ func initDependencyInjection() (*controllers.DependencyInjection, error) {
 		AppConfig:   appConfig,
 	}
 
+	fmt.Printf("OAuth Redirect URL: %s\n", oauthCfg.RedirectURL)
+
 	// Injection struct escapes to heap here
 	return &injection, nil
 }
@@ -110,6 +112,9 @@ func main() {
 			r.Get("/metadata", controllers.GetStaticFireMetadata)
 			r.Post("/columns", controllers.PostStaticFireColumns)
 			r.Post("/upload", controllers.PostUploadStaticFire)
+			r.Post("/filteredData", controllers.PostFilterData)
+			r.Get("/downloadLVM", controllers.GetLVMFile)
+			r.Get("/downloadExcel", controllers.GetExcelFromCache)
 		})
 	})
 

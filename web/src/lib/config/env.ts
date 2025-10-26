@@ -4,7 +4,7 @@ const getBackendHost = (): string => {
     }
 
     // Fallback for Node.js / test environment
-    return process.env.VITE_BACKEND_HOST ?? 'http://localhost:8080';
+    return import.meta.env.VITE_BACKEND_HOST ?? 'http://localhost:8080';
 };
 
 export const backendHost = getBackendHost();

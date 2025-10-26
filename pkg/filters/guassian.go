@@ -36,7 +36,7 @@ func GaussianFilter(xRows []float64, yRows []float64, sigma float64) []float64 {
 
 		smoothed[i] = sum / weightedSum
 	}
-
+	print(smoothed)
 	return smoothed
 }
 

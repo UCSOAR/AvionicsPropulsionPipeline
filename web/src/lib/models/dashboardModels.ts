@@ -13,3 +13,18 @@ export type PostStaticFireColumnsResponse = {
   xColumns: Record<string, ColumnNode>;
   yColumns: Record<string, ColumnNode>;
 };
+
+
+export type PostFilterDataRequest = {
+  xColumns: number[];
+  yColumns: number[];
+  filterValue: number;
+  filterNumber: number;
+};
+
+export type PostFilterDataResponse = {
+  xColumns: number[];
+  yColumns: number[];
+};
+
+

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"os"
 
 	"soarpipeline/pkg/staticfire"
@@ -340,4 +341,70 @@ func (ctx *CacheStorageContext) DeleteTree(name string) error {
 	}
 
 	return nil
+}
+
+// GetTree reads the cached preview + all X/Y columns and rebuilds a CacheTree.
+func (ctx *CacheStorageContext) GetTree(name string) (*staticfire.CacheTree, error) {
+	// 1) Read preview metadata (you stored it as a gob in "preview")
+	var preview staticfire.PreviewMetadata
+	if err := DecodeGobObject(ctx.GetPreviewMetadataFilePath(name), &preview); err != nil {
+		return nil, fmt.Errorf("read preview metadata: %w", err)
+	}
+
+	tree := &staticfire.CacheTree{
+		PreviewMetadata: preview,
+		// NOTE: it's fine to leave YColumnMetadata zeroed if you don't need it for Excel,
+		// but we can load it too (next block).
+		XColumnNodes:    make([]staticfire.ColumnNode, len(preview.XColumnNames)),
+		YColumnNodes:    make([]staticfire.ColumnNode, len(preview.YColumnNames)),
+		YColumnMetadata: make([]staticfire.YColumnMetadata, len(preview.YColumnNames)),
+	}
+
+	// 2) Read Y column metadata (one gob per column name)
+	for i, yName := range preview.YColumnNames {
+		var ymeta staticfire.YColumnMetadata
+		if err := DecodeGobObject(ctx.GetYColumnMetadataFilePath(name, yName), &ymeta); err != nil {
+			return nil, fmt.Errorf("read y metadata %q: %w", yName, err)
+		}
+		tree.YColumnMetadata[i] = ymeta
+	}
+
+	// helper: compute total rows from file size (float64 = 8 bytes) and decode all rows
+	readAll := func(filePath string) (staticfire.ColumnNode, error) {
+		fi, err := os.Stat(filePath)
+		if err != nil {
+			return staticfire.ColumnNode{}, fmt.Errorf("stat %s: %w", filePath, err)
+		}
+		totalRows := int(fi.Size() / 8) // float64 is 8 bytes, your encoder writes raw float64s
+		if totalRows < 0 {
+			totalRows = 0
+		}
+		node, err := DecodeColumnNode(filePath, 0, totalRows)
+		if err != nil {
+			return staticfire.ColumnNode{}, fmt.Errorf("decode %s: %w", filePath, err)
+		}
+		return node, nil
+	}
+
+	// 3) Load X columns
+	for i, xName := range preview.XColumnNames {
+		p := ctx.GetXColumnFilePath(name, xName) // e.g. ./storage/cache/<run>/x_columns/<name>
+		node, err := readAll(p)
+		if err != nil {
+			return nil, err
+		}
+		tree.XColumnNodes[i] = node
+	}
+
+	// 4) Load Y columns
+	for i, yName := range preview.YColumnNames {
+		p := ctx.GetYColumnFilePath(name, yName) // e.g. ./storage/cache/<run>/y_columns/<name>
+		node, err := readAll(p)
+		if err != nil {
+			return nil, err
+		}
+		tree.YColumnNodes[i] = node
+	}
+
+	return tree, nil
 }

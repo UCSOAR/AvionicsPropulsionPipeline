@@ -3,19 +3,28 @@
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
   import FullscreenButton from "./FullscreenButton.svelte";
-  import { writable } from "svelte/store";
+  import { writable, get } from "svelte/store";
   import { onMount } from "svelte";
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
   import { numericRegex } from "$lib/utils/regexps";
+  import {
+  exportFilteredExcel,
+  getFilteredSeriesRemote,
+} from "$lib/utils/exporters";
   import type { Config, Data, Layout } from "plotly.js";
-  import type { PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
+  import type { PostFilterDataRequest, PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
   import type { SelectedFile } from "$lib/models/selectedFile";
   import {
     Loader2,
     MessageCircleWarningIcon,
     RefreshCcw,
+    ChartLine,
+    Download,
   } from "@lucide/svelte";
     import { X } from "lucide-svelte";
+    import { fetchStaticFireFilteredData } from "$lib/utils/getFilteredData";
+    import DropdownBtn from "./DropdownBtn.svelte";
+    import { endpointMapping } from "$lib/utils/constants";
 
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
@@ -24,12 +33,17 @@
   let fullscreenTarget: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
-  let xValues: number[] = [];
+  let selectedFilterIndex : number = 0;
+  let selectedDownloadIndex: number = 0;
   let startRow = 0;
   let numRows = 0;
+  let sigma = 0;
+  let windowSize = 0;
   let testStart = 0;
-  let testEnd = 0;
+  let testEnd = 0.0;
   let isLoadingPlotly = false;
+  let isFilterOn = false;
+  
   let plotError = "";
 
   const style = {
@@ -68,6 +82,61 @@
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
 
+  const safeParseFloat = (value: string) => {
+    const parsedValue = parseFloat(value);
+    return isNaN(parsedValue) ? 0 : parsedValue;
+  };
+  
+  function handleFilter() {
+    isFilterOn = !isFilterOn;
+  }
+
+async function handleDownload() {
+  const filename = selectedFile.name;
+
+  if (selectedDownloadIndex === 0) {
+    const link = document.createElement("a");
+    link.href = `${endpointMapping.getLVMDownload}?file=${filename}.lvm`;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else if (selectedDownloadIndex === 1) {
+    isLoadingPlotly = true;
+    const a = document.createElement("a");
+    a.href = `${endpointMapping.getExcelDownload}?file=${encodeURIComponent(filename)}.lvm`;
+    a.setAttribute("download", `${filename}.xlsx`);
+    a.click();
+    isLoadingPlotly = false;
+  } else if (selectedDownloadIndex === 2) {
+    isLoadingPlotly = true;
+    try {
+      await exportFilteredExcel({
+        selectedFile,
+        xIndex: get(selectedXColumnIndex),
+        yIndex: get(selectedYColumnIndex),
+        startRow,
+        numRows,
+        filterNumber: selectedFilterIndex,
+        sigma,
+        windowSize,
+        fetchStaticFireColumns,
+        fetchStaticFireFilteredData,
+      });
+    } catch (e) {
+      console.error(e);
+      plotError =
+        e instanceof Error
+          ? e.message
+          : "Unexpected error while exporting filtered Excel.";
+    } finally {
+      isLoadingPlotly = false;
+    }
+  }
+}
+
+
+
   let data: Partial<Data>[] = [];
 
   const loadPlotly = async (data: Partial<Data>[]) => {
@@ -92,6 +161,44 @@
     loadPlotly(data);
   };
 
+  const retrievefilterData = async (x: number[], y: number[] ) => {
+
+    if (selectedFilterIndex == 1){
+        const req: PostFilterDataRequest = {
+          xColumns: x,
+          yColumns: y,
+          filterValue: sigma,
+          filterNumber: selectedFilterIndex
+      }
+
+      const res = await fetchStaticFireFilteredData(req)
+      
+      return {
+        x: res?.xColumns,
+        y: res?.yColumns
+      }
+
+    }
+
+    if (selectedFilterIndex == 2){
+        const req: PostFilterDataRequest = {
+          xColumns: x,
+          yColumns: y,
+          filterValue: windowSize,
+          filterNumber: selectedFilterIndex
+      }
+
+      const res = await fetchStaticFireFilteredData(req)
+      
+      return {
+        x: res?.xColumns,
+        y: res?.yColumns
+      }
+
+    }
+
+  };
+
   const fetchAndLoadPlotly = async (
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
@@ -103,84 +210,100 @@
     if (!data) {
       plotError = "Failed to fetch data.";
     }
-
     await loadPlotly(data);
     isLoadingPlotly = false;
   };
 
   $: refreshGraph = () => loadPlotly(data);
 
-  export const refreshPlotly = async () => {
-    if (!selectedFile) return;
+export const refreshPlotly = async () => {
+  if (!selectedFile) return;
+  plotError = "";
 
-    plotError = "";
+  const xColumnName =
+    selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
+  const yColumnName =
+    selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
 
-    const xColumnName =
-      selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
-    const yColumnName =
-      selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+  const req: PostStaticFireColumnsRequest = {
+    name: selectedFile.name,
+    startRow,
+    numRows,
+    xColumnNames: [xColumnName],
+    yColumnNames: [yColumnName],
+  };
 
-    const req: PostStaticFireColumnsRequest = {
-      name: selectedFile.name,
-      startRow,
-      numRows,
-      xColumnNames: [xColumnName],
-      yColumnNames: [yColumnName],
-    };
+  layout.shapes = [
+    {
+      type: "line",
+      x0: testStart,
+      x1: testStart,
+      y0: 0,
+      y1: 1,
+      xref: "x",
+      yref: "paper",
+      name: "Test Start",
+      showlegend: true,
+      line: { color: "blue", width: 2, dash: "dash" },
+    },
+    {
+      type: "line",
+      x0: testEnd,
+      x1: testEnd,
+      y0: 0,
+      y1: 1,
+      xref: "x",
+      yref: "paper",
+      name: "Test End",
+      showlegend: true,
+      line: { color: "green", width: 2, dash: "dash" },
+    },
+  ];
 
-    layout.shapes = [
+  await fetchAndLoadPlotly(async () => {
+    const res = await fetchStaticFireColumns(req);
+    if (!res) return null;
+
+    const xRaw = res.xColumns[xColumnName].rows;
+    const yRaw = res.yColumns[yColumnName].rows;
+
+    const datasets: Partial<Data>[] = [
       {
-        type: "line",
-        x0: testStart,
-        x1: testStart,
-        y0: 0,
-        y1: 1,
-        xref: "x",
-        yref: "paper",
-        name: "Test Start",
-        showlegend: true,
-        line: {
-          color: "blue",
-          width: 2,
-          dash: "dash",
-        },
-      },
-      {
-        type: "line",
-        x0: testEnd,
-        x1: testEnd,
-        y0: 0,
-        y1: 1,
-        xref: "x",
-        yref: "paper",
-        name: "Test End",
-        showlegend: true,
-        line: {
-          color: "green",
-          width: 2,
-          dash: "dash",
-        },
-      },
-    ];
-
-    await fetchAndLoadPlotly(async () => {
-      const res = await fetchStaticFireColumns(req);
-
-      if (!res) return null;
-
-      const data: Partial<Data> = {
-        x: res.xColumns[xColumnName].rows,
-        y: res.yColumns[yColumnName].rows,
+        x: xRaw,
+        y: yRaw,
         type: "scattergl",
         mode: "lines",
-        name: yColumnName,
-        showlegend: true,
-        line: { color: style.themeColor },
-      };
+        name: `${yColumnName} (Raw)`,
+        line: { color: "#FFFFFF" },
+      },
+    ];
+    if (selectedFilterIndex === 0) {
+      return datasets;
+    }
 
-      return [data];
-    });
-  };
+    const filtered = (await retrievefilterData(xRaw, yRaw)) ?? { x: [], y: [] };
+    const filterLabel =
+      selectedFilterIndex === 1 ? "Gaussian" : "Moving Avg";
+
+    const filteredDataset: Partial<Data> = {
+      x: filtered.x,
+      y: filtered.y,
+      type: "scattergl",
+      mode: "lines",
+      name: `${yColumnName} (${filterLabel} Filter)`,
+      line: { color: style.themeColor },
+    };
+
+    if (isFilterOn) {
+      datasets.push(filteredDataset);
+    } else {
+      datasets[0] = filteredDataset;
+    }
+
+    return datasets;
+  });
+};
+
 
   selectedXColumnIndex.subscribe(refreshPlotly);
   selectedYColumnIndex.subscribe(refreshPlotly);
@@ -219,14 +342,43 @@
           id="y-column"
           options={selectedFile.metadata.yColumnNames}
         />
+        <Dropdown
+        onChange={(index => {selectedFilterIndex = index;})}
+        isDisabled={isLoadingPlotly}
+        label="Filter"
+        id="filter"
+        options={["None", "Gaussian", "Moving Average"]}
+      />
+
       </div>
+      <div class = "filter-input">
+        { #if selectedFilterIndex == 1  }
+          <Input
+          id="sigma"
+          placeholder="0"
+          isDisabled={isLoadingPlotly}
+          label="Sigma"
+          onChange={(value) => (sigma = safeParseInt(value))}
+        />
+      {/if}
+      { #if selectedFilterIndex == 2  }
+          <Input
+          id="windowSize"
+          placeholder="0"
+          isDisabled={isLoadingPlotly}
+          label="Window Size"
+          onChange={(value) => (windowSize = safeParseInt(value))}
+        />
+      {/if}
+      </div>
+
       <div class="time-select">
         <Input
           id="test-start"
           placeholder="0"
           isDisabled={isLoadingPlotly}
           label="Test Start"
-          onChange={(value) => (testStart = safeParseInt(value))}
+          onChange={(value) => (testStart = safeParseFloat(value))}
         />
         <Input
           id="test-end"
@@ -234,7 +386,7 @@
           value={0}
           isDisabled={isLoadingPlotly}
           label="Test End"
-          onChange={(value) => (testEnd = safeParseInt(value))}
+          onChange={(value) => (testEnd = safeParseFloat(value))}
         />
       </div>
       <div class="row-select">
@@ -265,12 +417,32 @@
       <div class="title-container">
         <h2>Static Fire Chart</h2>
         <div style="display: flex; gap: 0.5rem;">
+          <div> 
+            <DropdownBtn
+            onChange={(index => {selectedDownloadIndex = index})}
+            Click={handleDownload}
+            label="Download"
+            isDisabled={isLoadingPlotly}
+            id={"download"}
+            buttonize = {true}
+            icon={Download}
+
+            options={["LVM", "Raw CSV", "Filtered CSV"]}
+            />
+          </div>
+
+          <IconButton
+            icon={ChartLine}
+            onClick={handleFilter}
+            toggle= {true}
+          />
           <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
           <FullscreenButton
             onChange={onFullscreenChange}
             targetElement={fullscreenTarget}
           />
         </div>
+
       </div>
       <div class="chart-wrapper">
         <div
@@ -309,6 +481,12 @@
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
 
+
+  .toggle-container.active {
+    background-color: $bg-color-highlighted; 
+  }
+
+
   .container {
     flex-grow: 1;
     padding: 1rem;
@@ -325,6 +503,19 @@
 
     div.title {
       margin-right: auto;
+    }
+
+    div.container:hover > button.dropdown-button {
+    background-color: $bg-color-highlighted;
+    border-color: $txt-color-highlighted;
+
+    :global(.lucide-icon) {
+      stroke: $txt-color-highlighted;
+    }
+
+    span.label {
+      color: $txt-color-highlighted;
+    }
     }
 
     div.data-select {

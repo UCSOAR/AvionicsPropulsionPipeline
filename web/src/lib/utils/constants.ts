@@ -11,4 +11,7 @@ export const endpointMapping = Object.freeze({
   getStaticFireMetadataUrl: new URL(`${backendHost}/api/staticfire/metadata`),
   postStaticFireColumnsUrl: new URL(`${backendHost}/api/staticfire/columns`),
   getUsageURL: new URL(`${backendHost}/api/usage`),
+  getFilterData: new URL(`${backendHost}/api/staticfire/filteredData`),
+  getLVMDownload: new URL(`${backendHost}/api/staticfire/downloadLVM`),
+  getExcelDownload: new URL (`${backendHost}/api/staticfire/downloadExcel`),
 });

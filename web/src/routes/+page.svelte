@@ -7,13 +7,14 @@
 
   const gotoGoogleLogin = () => {
     const redirectUrl = new URL(window.location.href);
+    console.log(redirectUrl);
     redirectUrl.pathname = "/start";
+    const endpoint = new URL(endpointMapping.getGoogleLoginUrl);  
 
-    const endpoint = new URL(endpointMapping.getGoogleLoginUrl);
     endpoint.searchParams.set(redirectUriParam, redirectUrl.toString());
 
     window.location.href = endpoint.toString();
-  };
+  }; 
 </script>
 
 <main class="splash-main">
