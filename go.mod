@@ -6,6 +6,7 @@ toolchain go1.24.9
 
 require (
 	github.com/BurntSushi/toml v1.5.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/cors v1.2.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
@@ -25,3 +26,5 @@ require (
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 )
+
+require cloud.google.com/go/compute/metadata v0.3.0 // indirect

@@ -1,20 +1,26 @@
 <script lang="ts">
   import UploadFile from "$lib/components/UploadFile.svelte";
   import IconButton from "./IconButton.svelte";
+  import UploadFile from "$lib/components/UploadFile.svelte";
+  import IconButton from "./IconButton.svelte";
   import { onMount } from "svelte";
   import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
   import type { SelectedFile } from "$lib/models/selectedFile";
+  import type { SelectedFile } from "$lib/models/selectedFile";
 
   export let selectedFile: SelectedFile | undefined = undefined;
   export let refreshDashboardGraph: () => Promise<void>;
+  export let refreshDashboardGraph: () => Promise<void>;
 
+  export let isExpanded = true;
   export let isExpanded = true;
   let files: Record<string, any> = {};
   let error: string | null = null;
 
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
+    refreshDashboardGraph();
     refreshDashboardGraph();
   };
 
@@ -30,6 +36,7 @@
           },
           xColumnNames: [],
           yColumnNames: [],
+          totalRows: 0,
           totalRows: 0,
         },
       };
@@ -53,6 +60,18 @@
         throw new Error("Failed to fetch files");
       }
 
+      const response = await fetch(endpointMapping.getStaticFireMetadataUrl, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok && isExpanded) {
+        throw new Error("Failed to fetch files");
+      }
+
       files = await response.json();
       error = null;
     } catch (err) {
@@ -60,6 +79,7 @@
     }
   };
 
+  onMount(fetchFiles);
   onMount(fetchFiles);
 
   const handleUploadComplete = () => {
@@ -73,6 +93,7 @@
   <!-- Upload Section -->
   <div class="upload-container">
     <UploadFile onUploadComplete={handleUploadComplete} />
+    <UploadFile onUploadComplete={handleUploadComplete} />
   </div>
 
   <!-- Files Header -->
@@ -81,11 +102,15 @@
       <h3>Files</h3>
     {/if}
     <div class="button-container">
+    <div class="button-container">
       {#if isExpanded}
+        <IconButton icon={PanelLeftClose} onClick={toggleSidebar} />
         <IconButton icon={PanelLeftClose} onClick={toggleSidebar} />
       {:else}
         <IconButton icon={PanelLeftOpen} onClick={toggleSidebar} />
+        <IconButton icon={PanelLeftOpen} onClick={toggleSidebar} />
       {/if}
+    </div>
     </div>
   </div>
 
@@ -95,8 +120,13 @@
       {#each Object.entries(files) as [name, metadata]}
         <button
           class={`${isExpanded ? "file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
+          class={`${isExpanded ? "file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
           on:click={() => handleFileClick(name, metadata)}
         >
+          <File
+            size={16}
+            color={selectedFile?.name === name ? "#e64d4d" : "white"}
+          />
           <File
             size={16}
             color={selectedFile?.name === name ? "#e64d4d" : "white"}
@@ -106,6 +136,7 @@
           {/if}  
         </button>
       {/each}
+    {:else if isExpanded}
     {:else if isExpanded}
       <p class="empty">{error || "No uploaded files yet."}</p>
     {/if}
@@ -123,6 +154,14 @@
   }
 
   aside.side-bar {
+  .upload-container {
+    padding: 1rem;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
+  }
+
+  aside.side-bar {
     display: flex;
     flex-direction: column;
     background-color: #121212;
@@ -132,9 +171,16 @@
 
     &.expanded {
       min-width: 20rem;
+      min-width: 20rem;
     }
 
     &.collapsed {
+      min-width: 4.5rem;
+
+      .upload-container {
+        display: none;
+      }
+    }
       min-width: 4.5rem;
 
       .upload-container {
@@ -160,6 +206,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 0 0.5rem;
+    gap: 0.3rem;
     gap: 0.3rem;
     display: flex;
     flex-direction: column;
@@ -202,7 +249,7 @@
     gap: 0.5rem;
     color: white;
     padding: 0.5rem;
-    border-radius: 4px;
+    border-radius: $border-radius-1;
     border: none;
     background: transparent;
     cursor: pointer;

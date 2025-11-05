@@ -28,8 +28,10 @@
 
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
+  export let refreshGraph: () => Promise<void>;
 
   let plotlyChartDiv: HTMLDivElement;
+  let fullscreenTarget: HTMLDivElement;
   let fullscreenTarget: HTMLDivElement;
   let selectedXColumnIndex = writable(0);
   let selectedYColumnIndex = writable(0);
@@ -54,8 +56,10 @@
   };
   const config: Partial<Config> = { responsive: true };
   const shrunkenHeight = 400;
+  const shrunkenHeight = 400;
   const layout: Partial<Layout> = {
     autosize: true,
+    height: shrunkenHeight,
     height: shrunkenHeight,
     margin: {
       l: style.margin,
@@ -71,6 +75,10 @@
     },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
+    legend: {
+      orientation: "h",
+      x: 0.39,
+    },
     legend: {
       orientation: "h",
       x: 0.39,
@@ -203,8 +211,10 @@ async function handleDownload() {
     fetchData?: () => Promise<Partial<Data>[] | null>
   ) => {
     if (isLoadingPlotly) return;
+    if (isLoadingPlotly) return;
 
     isLoadingPlotly = true;
+    data = fetchData !== undefined ? (await fetchData()) || [] : [];
     data = fetchData !== undefined ? (await fetchData()) || [] : [];
 
     if (!data) {
@@ -313,6 +323,11 @@ export const refreshPlotly = async () => {
   }
 
   onMount(fetchAndLoadPlotly);
+  $: if (selectedFile) {
+    refreshPlotly();
+  }
+
+  onMount(fetchAndLoadPlotly);
 </script>
 
 <div class="container">
@@ -323,6 +338,7 @@ export const refreshPlotly = async () => {
         Visualizing data for <i
           >{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i
         >
+        and <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
         and <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
       </p>
     </div>
@@ -402,9 +418,14 @@ export const refreshPlotly = async () => {
           id="num-rows"
           value={null}
           placeholder={selectedFile.metadata.totalRows.toString()}
+          value={null}
+          placeholder={selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
           label= {`Row Count`}
           regex={numericRegex}
+          onChange={(value) => {
+            numRows = safeParseInt(value);
+          }}
           onChange={(value) => {
             numRows = safeParseInt(value);
           }}
@@ -413,6 +434,7 @@ export const refreshPlotly = async () => {
     </div>
   </div>
   <div class="content-container">
+    <div class="chart-pod pod" bind:this={fullscreenTarget}>
     <div class="chart-pod pod" bind:this={fullscreenTarget}>
       <div class="title-container">
         <h2>Static Fire Chart</h2>
@@ -488,6 +510,7 @@ export const refreshPlotly = async () => {
 
 
   .container {
+    flex-grow: 1;
     flex-grow: 1;
     padding: 1rem;
     overflow-y: auto;
