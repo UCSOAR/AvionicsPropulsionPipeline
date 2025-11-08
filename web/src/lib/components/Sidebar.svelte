@@ -28,8 +28,6 @@
   /** When a file is selected */
 const handleFileSelect = async (path: string, metadata: any, type: string) => {
   if (type !== "file") {
-    // clicked a folder → don’t trigger dashboard update
-    console.log("📁 Folder selected:", path);
     return;
   }
 
@@ -117,7 +115,7 @@ function buildTree(map: Record<string, any>): Node[] {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "folder", // ✅ required field for backend switch
+          type: "folder", 
           path,
           name,
         }),
