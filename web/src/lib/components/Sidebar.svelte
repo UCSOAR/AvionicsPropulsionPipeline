@@ -1,165 +1,214 @@
 <script lang="ts">
   import UploadFile from "$lib/components/UploadFile.svelte";
   import IconButton from "./IconButton.svelte";
-  import UploadFile from "$lib/components/UploadFile.svelte";
-  import IconButton from "./IconButton.svelte";
-  import { onMount } from "svelte";
-  import { PanelLeftClose, PanelLeftOpen, File } from "@lucide/svelte";
+  import FolderTree, { type Node } from "$lib/components/FolderTree.svelte";
+  import { onMount, tick } from "svelte";
+  import { PanelLeftClose, PanelLeftOpen, FolderPlus, UploadCloud } from "@lucide/svelte";
   import { endpointMapping } from "$lib/utils/constants";
   import type { SelectedFile } from "$lib/models/selectedFile";
-  import type { SelectedFile } from "$lib/models/selectedFile";
+  import CreateFileModal from "$lib/components/CreateFileModal.svelte";
+  import UploadFileModal from "./UploadFileModal.svelte";
+
 
   export let selectedFile: SelectedFile | undefined = undefined;
   export let refreshDashboardGraph: () => Promise<void>;
-  export let refreshDashboardGraph: () => Promise<void>;
+  export let isExpanded = true;
 
-  export let isExpanded = true;
-  export let isExpanded = true;
   let files: Record<string, any> = {};
+  let tree: Node[] = [];
   let error: string | null = null;
-
+  let showCreateModal = false;
+  let showUploadModal = false;
+  /** Toggle sidebar open/close */
   const toggleSidebar = () => {
     isExpanded = !isExpanded;
     refreshDashboardGraph();
-    refreshDashboardGraph();
   };
 
-  const handleFileClick = (fileName: string, metadata: any) => {
-    if (!selectedFile) {
-      selectedFile = {
-        name: "",
-        metadata: {
-          operator: "",
-          resultTimestamp: {
-            date: "",
-            time: "",
-          },
-          xColumnNames: [],
-          yColumnNames: [],
-          totalRows: 0,
-          totalRows: 0,
-        },
-      };
+  /** When a file is selected */
+const handleFileSelect = async (path: string, metadata: any, type: string) => {
+  if (type !== "file") {
+    // clicked a folder → don’t trigger dashboard update
+    console.log("📁 Folder selected:", path);
+    return;
+  }
+
+  selectedFile = { name: path, metadata };
+  await tick(); // ensure DOM ready
+  refreshDashboardGraph?.();
+};
+
+
+  /** Converts flat path map → nested folder structure */
+function buildTree(map: Record<string, any>): Node[] {
+  const root: Node[] = [];
+
+  function insert(path: string, metadata: any) {
+    // Normalize slashes and remove trailing ones
+    const cleanPath = path.replace(/\\/g, "/").replace(/\/+$/, "");
+    const parts = cleanPath.split("/").filter(Boolean);
+
+    let current = root;
+    let accumulated = "";
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      accumulated = accumulated ? `${accumulated}/${part}` : part;
+
+      let existing = current.find((n) => n.name === part);
+
+      const isLastPart = i === parts.length - 1;
+      const isFolder = metadata === null || !isLastPart;
+
+      // If this node doesn't exist yet, create it
+      if (!existing) {
+        existing = {
+          name: part,
+          path: accumulated,
+          type: isFolder ? "folder" : "file",
+          children: isFolder ? [] : undefined,
+        };
+        current.push(existing);
+      }
+
+      // If it's a folder, go deeper into its children
+      if (isFolder) {
+        current = existing.children!;
+      } else {
+        // Attach metadata only to files
+        existing.metadata = metadata;
+      }
     }
+  }
 
-    selectedFile.name = fileName;
-    selectedFile.metadata = metadata;
-  };
+  // Iterate through every entry in the map
+  Object.entries(map).forEach(([path, meta]) => insert(path, meta));
 
+  return root;
+}
+
+
+  /** Fetch files and build tree */
   const fetchFiles = async () => {
     try {
       const response = await fetch(endpointMapping.getStaticFireMetadataUrl, {
         method: "GET",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok && isExpanded) {
-        throw new Error("Failed to fetch files");
-      }
-
-      const response = await fetch(endpointMapping.getStaticFireMetadataUrl, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok && isExpanded) {
-        throw new Error("Failed to fetch files");
-      }
+      if (!response.ok) throw new Error("Failed to fetch files");
 
       files = await response.json();
+      console.log(files);
+      tree = buildTree(files);
       error = null;
+    } catch (err) {
+      error = err instanceof Error ? err.message : "An error occurred.";
+      tree = [];
+    }
+  };
+
+  /** Create a new folder in the backend */
+  const createFolder = async (path: string, name: string) => {
+    try {
+      const response = await fetch(endpointMapping.createFileOrFolderUrl, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "folder", // ✅ required field for backend switch
+          path,
+          name,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create folder: ${response.statusText}`);
+      }
+
+      await fetchFiles();
     } catch (err) {
       error = err instanceof Error ? err.message : "An error occurred.";
     }
   };
 
-  onMount(fetchFiles);
+
+
   onMount(fetchFiles);
 
+  /** Refresh after upload */
   const handleUploadComplete = () => {
     fetchFiles();
   };
-
-
 </script>
 
 <aside class="side-bar {isExpanded ? 'expanded' : 'collapsed'}" on:transitionend={refreshDashboardGraph}>
   <!-- Upload Section -->
   <div class="upload-container">
-    <UploadFile onUploadComplete={handleUploadComplete} />
-    <UploadFile onUploadComplete={handleUploadComplete} />
-  </div>
+  <IconButton
+  icon={UploadCloud}
+  onClick={() => (showUploadModal = true)}
+/>
 
-  <!-- Files Header -->
+{#if showUploadModal}
+  <UploadFileModal
+    tree={tree}
+    onClose={() => (showUploadModal = false)}
+    onUploadComplete={fetchFiles}
+/>
+{/if}
+  <IconButton
+    icon={FolderPlus}
+    onClick={() => (showCreateModal = true)}
+  />
+</div>
+
+
+  <!-- Header -->
   <div class="files-header">
     {#if isExpanded}
       <h3>Files</h3>
     {/if}
     <div class="button-container">
-    <div class="button-container">
       {#if isExpanded}
-        <IconButton icon={PanelLeftClose} onClick={toggleSidebar} />
         <IconButton icon={PanelLeftClose} onClick={toggleSidebar} />
       {:else}
         <IconButton icon={PanelLeftOpen} onClick={toggleSidebar} />
-        <IconButton icon={PanelLeftOpen} onClick={toggleSidebar} />
       {/if}
-    </div>
     </div>
   </div>
 
-  <!-- File List -->
+  <!-- File Tree -->
   <div class="file-list">
-    {#if Object.keys(files).length > 0}
-      {#each Object.entries(files) as [name, metadata]}
-        <button
-          class={`${isExpanded ? "file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
-          class={`${isExpanded ? "file-item" : "icon-item"}  ${selectedFile?.name === name ? "selected" : ""}`}
-          on:click={() => handleFileClick(name, metadata)}
-        >
-          <File
-            size={16}
-            color={selectedFile?.name === name ? "#e64d4d" : "white"}
-          />
-          <File
-            size={16}
-            color={selectedFile?.name === name ? "#e64d4d" : "white"}
-          />
-          {#if isExpanded}
-            <span class="file-name">{name.replace(/\.[^.]+$/, "")}</span>
-          {/if}  
-        </button>
-      {/each}
-    {:else if isExpanded}
+    {#if tree.length > 0}
+      <FolderTree
+        nodes={tree}
+        selected={selectedFile?.name ?? ""}
+        on:select={(e) => handleFileSelect(e.detail.path, e.detail.metadata, e.detail.type)}
+        isCollapsed={!isExpanded}
+      />
     {:else if isExpanded}
       <p class="empty">{error || "No uploaded files yet."}</p>
     {/if}
   </div>
+
+  {#if showCreateModal}
+    <CreateFileModal
+      tree={tree}
+      onClose={() => (showCreateModal = false)}
+      onCreate={async (path, name) => {
+        await createFolder(path, name);
+        await fetchFiles();
+        showCreateModal = false;
+      }}
+    />
+  {/if}
+
 </aside>
 
 <style lang="scss">
   @use "../styles/variables.scss" as *;
-
-  .upload-container {
-    padding: 1rem;
-    white-space: nowrap;
-    display: flex;
-    justify-content: center;
-  }
-
-  aside.side-bar {
-  .upload-container {
-    padding: 1rem;
-    white-space: nowrap;
-    display: flex;
-    justify-content: center;
-  }
 
   aside.side-bar {
     display: flex;
@@ -168,9 +217,9 @@
     height: 100vh;
     overflow: hidden;
     border-right: 1px solid $outline-color-1;
+    transition: all 0.2s ease;
 
     &.expanded {
-      min-width: 20rem;
       min-width: 20rem;
     }
 
@@ -181,12 +230,13 @@
         display: none;
       }
     }
-      min-width: 4.5rem;
+  }
 
-      .upload-container {
-        display: none;
-      }
-    }
+  .upload-container {
+    padding: 1rem;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
   }
 
   .files-header {
@@ -207,61 +257,8 @@
     overflow-y: auto;
     padding: 0 0.5rem;
     gap: 0.3rem;
-    gap: 0.3rem;
     display: flex;
     flex-direction: column;
-  }
-
-  .icon-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: $txt-color-1;
-    padding: 0.5rem;
-    border-radius: $border-radius-1;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-
-    &:hover {
-      background-color: $bg-color-highlighted;
-    }
-
-    .side-bar.expanded .file-name {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    &:hover {
-      background-color: $bg-color-highlighted;
-    }
-
-    &:hover .file-name{
-      color: $txt-color-highlighted
-    }
-    
-  }
-
-  .icon-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: white;
-    padding: 0.5rem;
-    border-radius: $border-radius-1;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-
-    &:hover {
-      background-color: $bg-color-highlighted;
-    }
-
-    &:hover .icon{
-      color: $txt-color-highlighted
-    }
-
   }
 
   .empty {
@@ -269,45 +266,4 @@
     font-size: 0.9rem;
     padding: 1rem;
   }
-
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: $txt-color-1;
-    padding: 0.5rem;
-    border-radius: $border-radius-1;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-
-    .file-name {
-      font-size: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    &:hover {
-      background-color: $bg-color-highlighted;
-
-      .file-name {
-        color: $txt-color-highlighted;
-      }
-
-      :global(.lucide-icon) {
-        stroke: $txt-color-highlighted;
-      }
-    }
-  }
-
-  .selected {
-    background-color: $bg-color-highlighted;
-    color: $txt-color-highlighted;
-
-    .file-name {
-      color: $txt-color-highlighted;
-    }
-  }
 </style>
-

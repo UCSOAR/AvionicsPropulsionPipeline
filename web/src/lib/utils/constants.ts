@@ -2,10 +2,6 @@
 import { backendHost } from '../config/env';
 
 export const redirectUriParam = 'redirect_uri';
-// Read from environment variable or fallback to localhost
-import { backendHost } from '../config/env';
-
-export const redirectUriParam = 'redirect_uri';
 
 export const endpointMapping = Object.freeze({
   getGoogleLoginUrl: new URL(`${backendHost}/auth/google/login`),
@@ -18,4 +14,6 @@ export const endpointMapping = Object.freeze({
   getFilterData: new URL(`${backendHost}/api/staticfire/filteredData`),
   getLVMDownload: new URL(`${backendHost}/api/staticfire/downloadLVM`),
   getExcelDownload: new URL (`${backendHost}/api/staticfire/downloadExcel`),
+  createFileOrFolderUrl: new URL (`${backendHost}/api/staticfire/create `),
+  getStaticFireTreeUrl: new URL (`${backendHost}/api/staticfire/tree `),
 });

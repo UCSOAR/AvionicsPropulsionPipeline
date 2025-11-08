@@ -6,16 +6,12 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi/v5"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
 	controllers "soarpipeline/internal/controllers"
 	middlewares "soarpipeline/internal/middlewares"
-	"soarpipeline/internal/models"
 	"soarpipeline/internal/models"
 	storage "soarpipeline/internal/storage"
 )
@@ -104,35 +100,8 @@ func main() {
 			r.Get("/callback", i.GetGoogleCallback) // This should match the redirect URL in the OAuth config
 		})
 	})
-	i, err := initDependencyInjection()
-	if err != nil {
-		panic(err)
-	}
-
-	// Determine correct port to listen on
-	port := i.AppConfig.Port
-	addr := ":" + port
-
-	// Set up the router and middleware
-	r := chi.NewRouter()
-	middlewares.UseCorsMiddleware(r, i.AppConfig.AllowedOrigins)
-
-	// Subrouter for authentication
-	r.Route("/auth", func(r chi.Router) {
-		r.Get("/me", i.GetMe)
-		r.Post("/logout", i.PostLogout)
-
-		// Subrouter for Google OAuth
-		r.Route("/google", func(r chi.Router) {
-			r.Get("/login", i.GetGoogleLogin)
-			r.Get("/callback", i.GetGoogleCallback) // This should match the redirect URL in the OAuth config
-		})
-	})
 
 	// Subrouter for API
-	r.Route("/api", func(r chi.Router) {
-		middlewares.UseAuthTokenExtractorMiddleware(r, i.AppConfig.SigningKey)
-
 	r.Route("/api", func(r chi.Router) {
 		middlewares.UseAuthTokenExtractorMiddleware(r, i.AppConfig.SigningKey)
 
@@ -146,21 +115,18 @@ func main() {
 			r.Post("/filteredData", controllers.PostFilterData)
 			r.Get("/downloadLVM", controllers.GetLVMFile)
 			r.Get("/downloadExcel", controllers.GetExcelFromCache)
+			r.Post("/create", controllers.PostCreateFolder)
+			r.Post("/upload/path", controllers.PostUploadPathStaticFire)
+
 		})
 	})
 
-	fmt.Printf("Server listening on %s\n", addr)
-	fmt.Printf("Public-facing host is %s\n", i.AppConfig.Host)
 	fmt.Printf("Server listening on %s\n", addr)
 	fmt.Printf("Public-facing host is %s\n", i.AppConfig.Host)
 
 	// Start the server
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      r,
-		ReadTimeout:  readTimeout,
-		WriteTimeout: writeTimeout,
-		IdleTimeout:  idleTimeout,
 		Handler:      r,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,

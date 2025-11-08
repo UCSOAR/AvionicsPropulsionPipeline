@@ -2,10 +2,13 @@ package storage
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
+	"sync"
 
 	"soarpipeline/pkg/staticfire"
-	"sync"
 )
 
 // Stores the cache tree data in the cache directory.
@@ -126,59 +129,70 @@ func (ctx *CacheStorageContext) StoreTree(name string, tree *staticfire.CacheTre
 // Returns:
 //   - metadata: A map of cache names to their respective preview metadata.
 //   - error: An error if the metadata could not be read, or nil if the operation was successful.
-func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]staticfire.PreviewMetadata, error) {
+//
+// Reads the preview metadata for all caches in the cache directory, recursively.
+// This version supports subfolders (e.g. /cache/TestRuns/2025/RHT_2025-02-12_TestRun).
+func (ctx *CacheStorageContext) ReadAllPreviewMetadata() (map[string]*staticfire.PreviewMetadata, error) {
 	type MetadataKV struct {
 		name     string
-		metadata staticfire.PreviewMetadata
+		metadata *staticfire.PreviewMetadata
 	}
 
-	// Look at all subdirectories in the cache directory
-	entries, err := os.ReadDir(ctx.BasePath)
-
-	if err != nil {
-		// Treat the cache directory as empty if it does not exist
-		//nolint: nilerr
-		return make(map[string]staticfire.PreviewMetadata), nil
-	}
-
-	// Read the preview metadata for each cache
-	metadata := make(map[string]staticfire.PreviewMetadata, len(entries))
-	metadataChan := make(chan MetadataKV, len(entries))
+	basePath := ctx.BasePath
+	metadata := make(map[string]*staticfire.PreviewMetadata)
+	metadataChan := make(chan MetadataKV)
 	errorChan := make(chan error)
 	wg := sync.WaitGroup{}
 
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-
-		cacheName := entry.Name()
-
-		// Read the preview metadata
-		previewMetadataPath := ctx.GetPreviewMetadataFilePath(cacheName)
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-			var metadata staticfire.PreviewMetadata
-
-			if err := DecodeGobObject(previewMetadataPath, &metadata); err != nil {
-				errorChan <- err
-			} else {
-				metadataChan <- MetadataKV{cacheName, metadata}
-			}
-		}()
-	}
-
-	// Ensure channels are closed
+	// Start directory walk
 	go func() {
-		wg.Wait()
+		filepath.WalkDir(basePath, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				errorChan <- err
+				return err
+			}
+			if !d.IsDir() {
+				return nil
+			}
 
+			// Get relative path (skip base itself)
+			rel, err := filepath.Rel(basePath, path)
+			if err != nil || rel == "." {
+				return nil
+			}
+
+			// Always add folder with nil metadata first
+			folderKey := rel + string(os.PathSeparator)
+			metadataChan <- MetadataKV{name: folderKey, metadata: nil}
+
+			// Check if this directory has a preview file
+			previewPath := filepath.Join(path, "preview")
+			if _, err := os.Stat(previewPath); err == nil {
+				wg.Add(1)
+				go func(previewPath string, folderKey string) {
+					defer wg.Done()
+					var m staticfire.PreviewMetadata
+					if err := DecodeGobObject(previewPath, &m); err != nil {
+						errorChan <- fmt.Errorf("decode preview at %s: %w", previewPath, err)
+						return
+					}
+					// Treat the preview as the "file" under this folder
+					fileKey := strings.TrimSuffix(folderKey, string(os.PathSeparator))
+					metadataChan <- MetadataKV{name: fileKey, metadata: &m}
+				}(previewPath, folderKey)
+
+				// Skip internal folders (x_columns, y_columns, etc.)
+				return filepath.SkipDir
+			}
+			return nil
+		})
+
+		wg.Wait()
 		close(metadataChan)
 		close(errorChan)
 	}()
 
-	// Check for errors and collect metadata
+	// Collect results
 	for metadataChan != nil || errorChan != nil {
 		select {
 		case kv, ok := <-metadataChan:

@@ -71,7 +71,7 @@
 
 <style lang="scss">
   .uploader-container {
-    width: 100%;
+    width: 50%;
     display: flex;
     justify-content: center;
   }
