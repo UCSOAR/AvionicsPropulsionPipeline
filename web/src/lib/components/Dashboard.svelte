@@ -3,57 +3,76 @@
   import Input from "./Input.svelte";
   import IconButton from "./IconButton.svelte";
   import FullscreenButton from "./FullscreenButton.svelte";
+  import DropdownBtn from "./DropdownBtn.svelte";
+
   import { writable, get } from "svelte/store";
   import { onMount } from "svelte";
+
   import { fetchStaticFireColumns } from "$lib/utils/getStaticFireColumns";
+  import { fetchStaticFireFilteredData } from "$lib/utils/getFilteredData";
   import { numericRegex } from "$lib/utils/regexps";
-  import {
-  exportFilteredExcel,
-  getFilteredSeriesRemote,
-} from "$lib/utils/exporters";
+  import { exportFilteredExcel } from "$lib/utils/exporters";
+  import { endpointMapping } from "$lib/utils/constants";
+
   import type { Config, Data, Layout } from "plotly.js";
-  import type { PostFilterDataRequest, PostStaticFireColumnsRequest } from "$lib/models/dashboardModels";
+  import type {
+    PostFilterDataRequest,
+    PostStaticFireColumnsRequest
+  } from "$lib/models/dashboardModels";
   import type { SelectedFile } from "$lib/models/selectedFile";
+
   import {
     Loader2,
     MessageCircleWarningIcon,
     RefreshCcw,
     ChartLine,
     Download,
+    ChevronLeft,
+    ChevronRight
   } from "@lucide/svelte";
-    import { X } from "lucide-svelte";
-    import { fetchStaticFireFilteredData } from "$lib/utils/getFilteredData";
-    import DropdownBtn from "./DropdownBtn.svelte";
-    import { endpointMapping } from "$lib/utils/constants";
+  import { X } from "lucide-svelte";
 
   export let selectedFile: SelectedFile;
   export let refreshGraph: () => Promise<void>;
 
   let plotlyChartDiv: HTMLDivElement;
   let fullscreenTarget: HTMLDivElement;
-  let selectedXColumnIndex = writable(0);
-  let selectedYColumnIndex = writable(0);
-  let selectedFilterIndex : number = 0;
-  let selectedDownloadIndex: number = 0;
-  let startRow = 0;
-  let numRows = 0;
+
+  const selectedXColumnIndex = writable(0);
+  const selectedYColumnIndex = writable(0);
+
+  let selectedFilterIndex = 0;
+  let selectedDownloadIndex = 0;
+
+  // User inputs
+  let startRow = 0; // user Start Row
+  let numRows = 0;  // user Row Count (treated as END index, exclusive)
+
+  // Pagination
+  const ROLLING_WINDOW = 250000;
+  let isRollingMode = false;
+  let pageOffset = 0; // offset from startRow for current page
+
+  // Filter + misc
   let sigma = 0;
   let windowSize = 0;
   let testStart = 0;
-  let testEnd = 0.0;
+  let testEnd = 0;
   let isLoadingPlotly = false;
   let isFilterOn = false;
-  
+
   let plotError = "";
 
   const style = {
     margin: 50,
     bgColor: "#1f1f1f",
     txtColor: "#e1e1e1",
-    themeColor: "#dc2626",
+    themeColor: "#dc2626"
   };
+
   const config: Partial<Config> = { responsive: true };
   const shrunkenHeight = 400;
+
   const layout: Partial<Layout> = {
     autosize: true,
     height: shrunkenHeight,
@@ -61,20 +80,20 @@
       l: style.margin,
       r: style.margin,
       t: style.margin,
-      b: style.margin,
+      b: style.margin
     },
     paper_bgcolor: style.bgColor,
     plot_bgcolor: style.bgColor,
     font: {
       family: "Inter",
-      color: "white",
+      color: "white"
     },
     xaxis: { color: style.txtColor },
     yaxis: { color: style.txtColor },
     legend: {
       orientation: "h",
-      x: 0.39,
-    },
+      x: 0.39
+    }
   };
 
   const safeParseInt = (value: string) => {
@@ -86,62 +105,109 @@
     const parsedValue = parseFloat(value);
     return isNaN(parsedValue) ? 0 : parsedValue;
   };
-  
-  function handleFilter() {
+
+  const handleFilter = () => {
     isFilterOn = !isFilterOn;
-  }
+    if (data.length > 0) {
+      refreshPlotly();
+    }
+  };
 
-async function handleDownload() {
-  const filename = selectedFile.name;
+  // Interpret Start Row / Row Count
+  // Row Count is treated as an END index (exclusive).
+  const getSelectionInfo = () => {
+    if (!selectedFile) return null;
+    if (numRows <= 0) return null;
 
-  if (selectedDownloadIndex === 0) {
-    const link = document.createElement("a");
-    link.href = `${endpointMapping.getLVMDownload}?file=${filename}.lvm`;
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } else if (selectedDownloadIndex === 1) {
-    isLoadingPlotly = true;
-    const a = document.createElement("a");
-    a.href = `${endpointMapping.getExcelDownload}?file=${encodeURIComponent(filename)}.lvm`;
-    a.setAttribute("download", `${filename}.xlsx`);
-    a.click();
-    isLoadingPlotly = false;
-  } else if (selectedDownloadIndex === 2) {
-    isLoadingPlotly = true;
-    try {
-      await exportFilteredExcel({
-        selectedFile,
-        xIndex: get(selectedXColumnIndex),
-        yIndex: get(selectedYColumnIndex),
-        startRow,
-        numRows,
-        filterNumber: selectedFilterIndex,
-        sigma,
-        windowSize,
-        fetchStaticFireColumns,
-        fetchStaticFireFilteredData,
-      });
-    } catch (e) {
-      console.error(e);
-      plotError =
-        e instanceof Error
-          ? e.message
-          : "Unexpected error while exporting filtered Excel.";
-    } finally {
-      isLoadingPlotly = false;
+    const totalRows = selectedFile.metadata.totalRows ?? 0;
+
+    let start = startRow;
+    if (!Number.isFinite(start) || start < 0) start = 0;
+    if (start > totalRows) start = totalRows;
+
+    let end = numRows;
+    if (!Number.isFinite(end) || end < 0) end = 0;
+
+    if (end < start) end = start;
+    if (end > totalRows) end = totalRows;
+
+    const span = end - start;
+    if (span <= 0) return null;
+
+    return { start, end, span, totalRows };
+  };
+
+  async function handleDownload() {
+    const filename = selectedFile.name;
+
+    // LVM
+    if (selectedDownloadIndex === 0) {
+      const link = document.createElement("a");
+      link.href = `${endpointMapping.getLVMDownload}?file=${filename}.lvm`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
+    // Raw CSV
+    if (selectedDownloadIndex === 1) {
+      isLoadingPlotly = true;
+      try {
+        const a = document.createElement("a");
+        a.href = `${endpointMapping.getExcelDownload}?file=${encodeURIComponent(
+          filename
+        )}.lvm`;
+        a.setAttribute("download", `${filename}.xlsx`);
+        a.click();
+      } finally {
+        isLoadingPlotly = false;
+      }
+      return;
+    }
+
+    // Filtered CSV (respecting current selection span)
+    if (selectedDownloadIndex === 2) {
+      const info = getSelectionInfo();
+      if (!info) {
+        plotError =
+          "Please enter a valid Start Row and Row Count before exporting.";
+        return;
+      }
+      const { start, span } = info;
+
+      isLoadingPlotly = true;
+      try {
+        await exportFilteredExcel({
+          selectedFile,
+          xIndex: get(selectedXColumnIndex),
+          yIndex: get(selectedYColumnIndex),
+          startRow: start,
+          numRows: span,
+          filterNumber: selectedFilterIndex,
+          sigma,
+          windowSize,
+          fetchStaticFireColumns,
+          fetchStaticFireFilteredData
+        });
+      } catch (e) {
+        console.error(e);
+        plotError =
+          e instanceof Error
+            ? e.message
+            : "Unexpected error while exporting filtered Excel.";
+      } finally {
+        isLoadingPlotly = false;
+      }
     }
   }
-}
-
-
 
   let data: Partial<Data>[] = [];
 
-  const loadPlotly = async (data: Partial<Data>[]) => {
+  const loadPlotly = async (datasets: Partial<Data>[]) => {
     const Plotly = await import("plotly.js-dist-min");
-    await Plotly.newPlot(plotlyChartDiv, data, layout, config);
+    await Plotly.newPlot(plotlyChartDiv, datasets, layout, config);
   };
 
   const onFullscreenChange = (isFullscreen: boolean) => {
@@ -152,7 +218,6 @@ async function handleDownload() {
       layout.width = window.innerWidth;
       layout.height = window.innerHeight - bottomPadding;
     } else {
-      console.log("shrunkenHeight", shrunkenHeight);
       layout.autosize = true;
       layout.width = undefined;
       layout.height = shrunkenHeight;
@@ -161,42 +226,23 @@ async function handleDownload() {
     loadPlotly(data);
   };
 
-  const retrievefilterData = async (x: number[], y: number[] ) => {
+  const retrievefilterData = async (x: number[], y: number[]) => {
+    if (selectedFilterIndex === 0) return null;
 
-    if (selectedFilterIndex == 1){
-        const req: PostFilterDataRequest = {
-          xColumns: x,
-          yColumns: y,
-          filterValue: sigma,
-          filterNumber: selectedFilterIndex
-      }
+    const req: PostFilterDataRequest = {
+      xColumns: x,
+      yColumns: y,
+      filterValue: selectedFilterIndex === 1 ? sigma : windowSize,
+      filterNumber: selectedFilterIndex
+    };
 
-      const res = await fetchStaticFireFilteredData(req)
-      
-      return {
-        x: res?.xColumns,
-        y: res?.yColumns
-      }
+    const res = await fetchStaticFireFilteredData(req);
+    if (!res) return null;
 
-    }
-
-    if (selectedFilterIndex == 2){
-        const req: PostFilterDataRequest = {
-          xColumns: x,
-          yColumns: y,
-          filterValue: windowSize,
-          filterNumber: selectedFilterIndex
-      }
-
-      const res = await fetchStaticFireFilteredData(req)
-      
-      return {
-        x: res?.xColumns,
-        y: res?.yColumns
-      }
-
-    }
-
+    return {
+      x: res.xColumns,
+      y: res.yColumns
+    };
   };
 
   const fetchAndLoadPlotly = async (
@@ -205,114 +251,219 @@ async function handleDownload() {
     if (isLoadingPlotly) return;
 
     isLoadingPlotly = true;
-    data = fetchData !== undefined ? (await fetchData()) || [] : [];
+    plotError = "";
 
-    if (!data) {
-      plotError = "Failed to fetch data.";
+    try {
+      const newData = fetchData ? await fetchData() : [];
+      data = newData ?? [];
+      await loadPlotly(data);
+    } catch (e) {
+      console.error(e);
+      plotError =
+        e instanceof Error
+          ? e.message
+          : "Unexpected error while loading chart data.";
+    } finally {
+      isLoadingPlotly = false;
     }
-    await loadPlotly(data);
-    isLoadingPlotly = false;
   };
 
+  // Parent hook – just redraw current data/layout
   $: refreshGraph = () => loadPlotly(data);
 
-export const refreshPlotly = async () => {
-  if (!selectedFile) return;
-  plotError = "";
+  const goPrev = () => {
+    if (!isRollingMode) return;
+    const info = getSelectionInfo();
+    if (!info) return;
 
-  const xColumnName =
-    selectedFile.metadata.xColumnNames[$selectedXColumnIndex];
-  const yColumnName =
-    selectedFile.metadata.yColumnNames[$selectedYColumnIndex];
+    pageOffset -= ROLLING_WINDOW;
+    if (pageOffset < 0) pageOffset = 0;
 
-  const req: PostStaticFireColumnsRequest = {
-    name: selectedFile.name,
-    startRow,
-    numRows,
-    xColumnNames: [xColumnName],
-    yColumnNames: [yColumnName],
+    refreshPlotly();
   };
 
-  layout.shapes = [
-    {
-      type: "line",
-      x0: testStart,
-      x1: testStart,
-      y0: 0,
-      y1: 1,
-      xref: "x",
-      yref: "paper",
-      name: "Test Start",
-      showlegend: true,
-      line: { color: "blue", width: 2, dash: "dash" },
-    },
-    {
-      type: "line",
-      x0: testEnd,
-      x1: testEnd,
-      y0: 0,
-      y1: 1,
-      xref: "x",
-      yref: "paper",
-      name: "Test End",
-      showlegend: true,
-      line: { color: "green", width: 2, dash: "dash" },
-    },
-  ];
+  const goNext = () => {
+    if (!isRollingMode) return;
+    const info = getSelectionInfo();
+    if (!info) return;
 
-  await fetchAndLoadPlotly(async () => {
-    const res = await fetchStaticFireColumns(req);
-    if (!res) return null;
+    const { span } = info;
+    pageOffset += ROLLING_WINDOW;
 
-    const xRaw = res.xColumns[xColumnName].rows;
-    const yRaw = res.yColumns[yColumnName].rows;
+    const maxStartOffset = Math.max(span - ROLLING_WINDOW, 0);
+    if (pageOffset > maxStartOffset) pageOffset = maxStartOffset;
 
-    const datasets: Partial<Data>[] = [
-      {
-        x: xRaw,
-        y: yRaw,
-        type: "scattergl",
-        mode: "lines",
-        name: `${yColumnName} (Raw)`,
-        line: { color: "#FFFFFF" },
-      },
-    ];
-    if (selectedFilterIndex === 0) {
-      return datasets;
+    refreshPlotly();
+  };
+
+  const handleRefreshClick = () => {
+    // Reset pagination when user changes selection
+    pageOffset = 0;
+    refreshPlotly();
+  };
+
+  export const refreshPlotly = async () => {
+    if (!selectedFile) return;
+
+    const info = getSelectionInfo();
+    if (!info) {
+      // Invalid selection: clear chart, show error, no fetch.
+      isRollingMode = false;
+      plotError = "Please enter a Row Count greater than Start Row.";
+      data = [];
+      await loadPlotly(data);
+      return;
     }
 
-    const filtered = (await retrievefilterData(xRaw, yRaw)) ?? { x: [], y: [] };
-    const filterLabel =
-      selectedFilterIndex === 1 ? "Gaussian" : "Moving Avg";
+    const { start, span } = info;
 
-    const filteredDataset: Partial<Data> = {
-      x: filtered.x,
-      y: filtered.y,
-      type: "scattergl",
-      mode: "lines",
-      name: `${yColumnName} (${filterLabel} Filter)`,
-      line: { color: style.themeColor },
+    // Pagination rule: if (Row Count - Start Row) > 250k, paginate.
+    isRollingMode = span > ROLLING_WINDOW;
+
+    // Clamp pageOffset inside the current selection span
+    let effectiveOffset = pageOffset;
+    if (!isRollingMode) {
+      effectiveOffset = 0;
+      pageOffset = 0;
+    } else {
+      const maxStartOffset = Math.max(span - ROLLING_WINDOW, 0);
+      if (effectiveOffset < 0) effectiveOffset = 0;
+      if (effectiveOffset > maxStartOffset) effectiveOffset = maxStartOffset;
+      pageOffset = effectiveOffset;
+    }
+
+    const rowsThisPage = isRollingMode
+      ? Math.min(ROLLING_WINDOW, span - effectiveOffset)
+      : span;
+
+    // Safety guard
+    if (rowsThisPage <= 0) {
+      isRollingMode = false;
+      plotError = "Nothing to plot for this selection.";
+      data = [];
+      await loadPlotly(data);
+      return;
+    }
+
+    const apiStartRow = start + effectiveOffset;
+
+    const xColumnName =
+      selectedFile.metadata.xColumnNames[get(selectedXColumnIndex)];
+    const yColumnName =
+      selectedFile.metadata.yColumnNames[get(selectedYColumnIndex)];
+
+    const req: PostStaticFireColumnsRequest = {
+      name: selectedFile.name,
+      startRow: apiStartRow,
+      numRows: rowsThisPage,
+      xColumnNames: [xColumnName],
+      yColumnNames: [yColumnName]
     };
 
-    if (isFilterOn) {
-      datasets.push(filteredDataset);
-    } else {
-      datasets[0] = filteredDataset;
-    }
+    await fetchAndLoadPlotly(async () => {
+      const res = await fetchStaticFireColumns(req);
+      if (!res) return null;
 
-    return datasets;
+      const xRaw = res.xColumns[xColumnName].rows as number[];
+      const yRaw = res.yColumns[yColumnName].rows as number[];
+
+      // Build shapes only if Test Start / End lie inside this page's x-range
+      const numericX = xRaw
+        .map((v) => Number(v))
+        .filter((v) => Number.isFinite(v));
+
+      let shapes: any[] = [];
+      if (numericX.length > 0) {
+        // *** FIX: avoid Math.min(...bigArray) / Math.max(...bigArray) ***
+        let xMin = Infinity;
+        let xMax = -Infinity;
+        for (const v of numericX) {
+          if (v < xMin) xMin = v;
+          if (v > xMax) xMax = v;
+        }
+
+        const shapeDefs: { x: number; color: string; name: string }[] = [];
+
+        if (testStart !== 0 && testStart >= xMin && testStart <= xMax) {
+          shapeDefs.push({ x: testStart, color: "blue", name: "Test Start" });
+        }
+        if (testEnd !== 0 && testEnd >= xMin && testEnd <= xMax) {
+          shapeDefs.push({ x: testEnd, color: "green", name: "Test End" });
+        }
+
+        shapes = shapeDefs.map((s) => ({
+          type: "line",
+          x0: s.x,
+          x1: s.x,
+          y0: 0,
+          y1: 1,
+          xref: "x",
+          yref: "paper",
+          name: s.name,
+          showlegend: true,
+          line: { color: s.color, width: 2, dash: "dash" }
+        }));
+      }
+      layout.shapes = shapes;
+
+      let datasets: Partial<Data>[] = [
+        {
+          x: xRaw,
+          y: yRaw,
+          type: "scattergl",
+          mode: "lines",
+          name: `${yColumnName} (Raw)`,
+          line: { color: "#FFFFFF" }
+        }
+      ];
+
+      if (selectedFilterIndex !== 0) {
+        const filtered =
+          (await retrievefilterData(xRaw, yRaw)) ?? { x: [], y: [] };
+        const filterLabel =
+          selectedFilterIndex === 1 ? "Gaussian" : "Moving Avg";
+
+        const filteredDataset: Partial<Data> = {
+          x: filtered.x,
+          y: filtered.y,
+          type: "scattergl",
+          mode: "lines",
+          name: `${yColumnName} (${filterLabel} Filter)`,
+          line: { color: style.themeColor }
+        };
+
+        if (isFilterOn) {
+          // Overlay filtered on top of raw
+          datasets.push(filteredDataset);
+        } else {
+          // Only show filtered
+          datasets[0] = filteredDataset;
+        }
+      }
+
+      // Hover behaviour
+      if (isRollingMode) {
+        layout.hovermode = false;
+        datasets.forEach((d) => {
+          d.hoverinfo = "skip";
+          d.hovertemplate = "";
+        });
+      } else {
+        layout.hovermode = "closest";
+        datasets.forEach((d) => {
+          delete d.hoverinfo;
+          delete d.hovertemplate;
+        });
+      }
+
+      return datasets;
+    });
+  };
+
+  // No auto plotting on mount – just mount an empty chart
+  onMount(async () => {
+    await loadPlotly([]);
   });
-};
-
-
-  selectedXColumnIndex.subscribe(refreshPlotly);
-  selectedYColumnIndex.subscribe(refreshPlotly);
-
-  $: if (selectedFile) {
-    refreshPlotly();
-  }
-
-  onMount(fetchAndLoadPlotly);
 </script>
 
 <div class="container">
@@ -320,10 +471,10 @@ export const refreshPlotly = async () => {
     <div class="title">
       <h1>Dashboard for <i>{selectedFile.name}</i></h1>
       <p>
-        Visualizing data for <i
-          >{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i
-        >
-        and <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
+        Visualizing data for
+        <i>{selectedFile.metadata.xColumnNames[$selectedXColumnIndex]}</i>
+        and
+        <i>{selectedFile.metadata.yColumnNames[$selectedYColumnIndex]}</i>
       </p>
     </div>
     <div class="data-select">
@@ -343,33 +494,35 @@ export const refreshPlotly = async () => {
           options={selectedFile.metadata.yColumnNames}
         />
         <Dropdown
-        onChange={(index => {selectedFilterIndex = index;})}
-        isDisabled={isLoadingPlotly}
-        label="Filter"
-        id="filter"
-        options={["None", "Gaussian", "Moving Average"]}
-      />
-
+          onChange={(index) => {
+            selectedFilterIndex = index;
+          }}
+          isDisabled={isLoadingPlotly}
+          label="Filter"
+          id="filter"
+          options={["None", "Gaussian", "Moving Average"]}
+        />
       </div>
-      <div class = "filter-input">
-        { #if selectedFilterIndex == 1  }
+
+      <div class="filter-input">
+        {#if selectedFilterIndex === 1}
           <Input
-          id="sigma"
-          placeholder="0"
-          isDisabled={isLoadingPlotly}
-          label="Sigma"
-          onChange={(value) => (sigma = safeParseInt(value))}
-        />
-      {/if}
-      { #if selectedFilterIndex == 2  }
+            id="sigma"
+            placeholder="0"
+            isDisabled={isLoadingPlotly}
+            label="Sigma"
+            onChange={(value) => (sigma = safeParseInt(value))}
+          />
+        {/if}
+        {#if selectedFilterIndex === 2}
           <Input
-          id="windowSize"
-          placeholder="0"
-          isDisabled={isLoadingPlotly}
-          label="Window Size"
-          onChange={(value) => (windowSize = safeParseInt(value))}
-        />
-      {/if}
+            id="windowSize"
+            placeholder="0"
+            isDisabled={isLoadingPlotly}
+            label="Window Size"
+            onChange={(value) => (windowSize = safeParseInt(value))}
+          />
+        {/if}
       </div>
 
       <div class="time-select">
@@ -383,12 +536,12 @@ export const refreshPlotly = async () => {
         <Input
           id="test-end"
           placeholder="0"
-          value={0}
           isDisabled={isLoadingPlotly}
           label="Test End"
           onChange={(value) => (testEnd = safeParseFloat(value))}
         />
       </div>
+
       <div class="row-select">
         <Input
           id="start-row"
@@ -396,53 +549,58 @@ export const refreshPlotly = async () => {
           isDisabled={isLoadingPlotly}
           label="Start Row"
           regex={numericRegex}
-          onChange={(value) => (startRow = safeParseInt(value))}
+          onChange={(value) => {
+            startRow = safeParseInt(value);
+            pageOffset = 0;
+          }}
         />
         <Input
           id="num-rows"
-          value={null}
           placeholder={selectedFile.metadata.totalRows.toString()}
           isDisabled={isLoadingPlotly}
-          label= {`Row Count`}
+          label="Row Count"
           regex={numericRegex}
           onChange={(value) => {
             numRows = safeParseInt(value);
+            pageOffset = 0;
           }}
         />
       </div>
     </div>
   </div>
+
   <div class="content-container">
     <div class="chart-pod pod" bind:this={fullscreenTarget}>
       <div class="title-container">
         <h2>Static Fire Chart</h2>
         <div style="display: flex; gap: 0.5rem;">
-          <div> 
+          <div>
             <DropdownBtn
-            onChange={(index => {selectedDownloadIndex = index})}
-            Click={handleDownload}
-            label="Download"
-            isDisabled={isLoadingPlotly}
-            id={"download"}
-            buttonize = {true}
-            icon={Download}
-
-            options={["LVM", "Raw CSV", "Filtered CSV"]}
+              onChange={(index) => {
+                selectedDownloadIndex = index;
+              }}
+              Click={handleDownload}
+              label="Download"
+              isDisabled={isLoadingPlotly}
+              id="download"
+              buttonize={true}
+              icon={Download}
+              options={["LVM", "Raw CSV", "Filtered CSV"]}
             />
           </div>
 
-          <IconButton
-            icon={ChartLine}
-            onClick={handleFilter}
-            toggle= {true}
-          />
-          <IconButton icon={RefreshCcw} onClick={refreshPlotly} />
+          {#if isRollingMode}
+            <IconButton icon={ChevronLeft} onClick={goPrev} />
+            <IconButton icon={ChevronRight} onClick={goNext} />
+          {/if}
+
+          <IconButton icon={ChartLine} onClick={handleFilter} toggle={true} />
+          <IconButton icon={RefreshCcw} onClick={handleRefreshClick} />
           <FullscreenButton
             onChange={onFullscreenChange}
             targetElement={fullscreenTarget}
           />
         </div>
-
       </div>
       <div class="chart-wrapper">
         <div
@@ -481,11 +639,9 @@ export const refreshPlotly = async () => {
 <style scoped lang="scss">
   @use "../styles/variables.scss" as *;
 
-
   .toggle-container.active {
-    background-color: $bg-color-highlighted; 
+    background-color: $bg-color-highlighted;
   }
-
 
   .container {
     flex-grow: 1;
@@ -506,16 +662,16 @@ export const refreshPlotly = async () => {
     }
 
     div.container:hover > button.dropdown-button {
-    background-color: $bg-color-highlighted;
-    border-color: $txt-color-highlighted;
+      background-color: $bg-color-highlighted;
+      border-color: $txt-color-highlighted;
 
-    :global(.lucide-icon) {
-      stroke: $txt-color-highlighted;
-    }
+      :global(.lucide-icon) {
+        stroke: $txt-color-highlighted;
+      }
 
-    span.label {
-      color: $txt-color-highlighted;
-    }
+      span.label {
+        color: $txt-color-highlighted;
+      }
     }
 
     div.data-select {
